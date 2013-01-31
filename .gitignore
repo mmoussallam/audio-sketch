@@ -1,0 +1,8 @@
+*.pyc
+*.so
+*.db
+*.wav
+*.eps
+*.project
+*.pydevproject
+
