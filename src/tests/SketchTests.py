@@ -33,7 +33,7 @@ class SketchTest(unittest.TestCase):
 #        xmdctmpsketch = sketch.XMDCTSparseSketch()
         
         sketches_to_test = [sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
-                            sketch.STFTPeaksSketch(**{'scale':512, 'step':256}),                            
+                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),                            
                             ]
         
         # for all sketches, we performe the same testing

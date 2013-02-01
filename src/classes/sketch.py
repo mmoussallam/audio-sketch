@@ -53,7 +53,7 @@ class AudioSketch(object):
 Params: %s ''' % (self.__class__.__name__, str(self.orig_signal),str(self.params))
         return  strret
     
-    def synthesize(self, synthparams):    
+    def synthesize(self):    
         raise NotImplementedError("NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
     
     def represent(self):
@@ -107,7 +107,7 @@ class STFTPeaksSketch(AudioSketch):
                              self.params['step'])
 
     def represent(self):
-        import matplotlib.pyplot as plt
+        
         plt.figure()
         for chanIdx in range(self.rep.shape[0]):
             plt.subplot(self.rep.shape[0],1,chanIdx+1)
@@ -161,7 +161,7 @@ class STFTPeaksSketch(AudioSketch):
     def represent_sparse(self):
         if self.sp_rep is None:
             raise ValueError("no sparse rep constructed yet")
-        import matplotlib.pyplot as plt
+        
         plt.figure()
         for chanIdx in range(self.sp_rep.shape[0]):
             plt.subplot(self.sp_rep.shape[0],1,chanIdx+1)
@@ -271,5 +271,4 @@ class XMDCTSparseSketch(AudioSketch):
             return self.rep.recomposed_signal
         else:
             return self.sp_rep.recomposed_signal
-        
         
