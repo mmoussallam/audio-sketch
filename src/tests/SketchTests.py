@@ -32,7 +32,8 @@ class SketchTest(unittest.TestCase):
 #        kwargs = {'dico':[64,512,2048], 'n_atoms':100}
 #        xmdctmpsketch = sketch.XMDCTSparseSketch()
         
-        sketches_to_test = [sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+        sketches_to_test = [sketch.CochleoPeaksSketch(),
+                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
                             sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),                            
                             ]
         

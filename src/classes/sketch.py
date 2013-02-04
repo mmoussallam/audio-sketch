@@ -272,3 +272,22 @@ class XMDCTSparseSketch(AudioSketch):
         else:
             return self.sp_rep.recomposed_signal
         
+
+class CochleoPeaksSketch(AudioSketch):
+    ''' Sketch based on a cochleogram and pairs of peaks as a sparsifier '''
+    
+    # parameters
+    n_bands = 64; # number of cochlear filters
+    
+    
+    def __init__(self, original_sig=None, **kwargs):        
+        # add all the parameters that you want
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        
+        if original_sig is not None:
+            self.orig_signal = original_sig
+            self.recompute()
+            
+    
