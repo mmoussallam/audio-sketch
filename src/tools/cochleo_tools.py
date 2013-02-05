@@ -211,18 +211,24 @@ class cochleogram(object):
         
         return y2, y3, vx
 
-    def _process_mask(self, n_frames, vx, vt, ch, L_frm):
+    def _process_mask(self, n_frames, vx, vt, ch, L_frm, y3):
         # matching
-        s = 2.0*np.ones((n_frames, ))
+        
+#        s = 2.0*np.ones((n_frames, ))
+        s = np.ones((n_frames, ))
+        
         ind = np.nonzero(vx)[0]
         
-        s[ind] = vt[ch, ind] / vx[ind]
-
-        s[np.where((vx * vt[ch, :])==0)] = 1.;
+        s[ind] *= vt[ch, ind] / vx[ind]
+        
+        # I do not really understand this value...
+        s[np.nonzero(vt[ch, :])[0]] *= 2.0
+        
+#        s[np.where((vx * vt[ch, :])==0)] = 1.;
 
         #?? hard scaling TODO Refactoring
 #        s = np.multiply(s, np.ones((1, L_frm)))
-        return s.repeat(L_frm)
+        return s.repeat(L_frm) * y3
 
         
     def invert(self, v5=None, init_vec=None, shift=0, dec=8, fac=-2, rec=None, nb_iter=2, display=False):
@@ -263,8 +269,8 @@ class cochleogram(object):
         if not np.isreal(v5).all():
             self.autofix(v5)
 
-        # convert to array is needed
-        v5 = np.array(v5)
+        # convert to array if needed
+#        v5 = np.array(v5)
         n_frames = v5.shape[1]
         v5_new = v5.copy()
         v5_mean = np.mean(v5)
@@ -301,13 +307,13 @@ class cochleogram(object):
 #                print v5_new.shape, vx.shape, ch
                 v5_new[ch, :] = vx
 
-                s = self._process_mask(n_frames, vx, vt, ch, L_frm)
+#                s = self._process_mask(n_frames, vx, vt, ch, L_frm)
 #                print "repeating s :", s.shape
 
 #                if (fac == -2):            # linear hair cell
 #                    print y3.shape, s.shape
 #                dy = y3
-                y1 = y3 * s
+                y1 = self._process_mask(n_frames, vx, vt, ch, L_frm, y3)
 
 #                else:                # nonlinear hair cell
 #                    ind = (y3 >= 0)

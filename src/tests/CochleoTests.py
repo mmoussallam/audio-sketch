@@ -56,13 +56,31 @@ class CochleoTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, gram.build_aud)
         
         
-        sig = Signal(audio_test_file, mono=True,)                
+        sig = Signal(audio_test_file, mono=True, normalize=True)                
         gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
         
         gram.build_aud()
         gram.plot_aud()
         
-#        plt.show()   
+        
+        t = time.clock()
+        init_rec_data = gram.init_inverse()
+        rec_data = gram.invert(init_vec = init_rec_data,
+                               nb_iter=10, display=False)
+        print "Elapsed :", time.clock() -t
+        
+        min_error = min([np.sum((rec_data - sig.data[0:rec_data.shape[0]])**2),
+                           np.sum((rec_data + sig.data[0:rec_data.shape[0]])**2)])
+                
+#        plt.figure()
+#        plt.plot(sig.data)
+#        plt.plot(rec_data)
+#        plt.plot(rec_data - sig.data[0:rec_data.shape[0]])
+#        plt.show() 
+        
+#        self.assertGreater(sig.energy*0.1, min_error)
+
+          
         
 #        cProfile.runctx('gram.build_aud()', globals(), locals())
 #        t0 = time.time()
