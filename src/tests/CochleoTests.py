@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from PyMP import Signal
 plt.switch_backend('Agg')
 audio_test_file = '/sons/tests/Bach_prelude_4s.wav'
+audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Hand-made Toolbox/forAngelique/61_sadness.wav'
 import time
 import cProfile
 from scipy.io import loadmat
@@ -26,47 +27,44 @@ class staticMethodTest(unittest.TestCase):
 
     def runTest(self):
         
-        data = hann(1024)*np.random.random(1024,)
-        d = loadmat(filter_coeffs_path)
-        coeffs = d['COCHBA'] 
+        sig = Signal(audio_test_file, mono=True, normalize=True)                
         
-        p = int(coeffs[0, 10].real)
-        b  = coeffs[range(1,p+2), chan_idx].real
-        a  = coeffs[range(1,p+2), chan_idx].imag
+        gram = cochleo_tools.cochleogram(sig.data)
         
-        filt_coeff = lfilter() 
-        
-        # filtering
-        filt_data = np.array([ cochleo_tools.coch_filt(data, coeffs, ch) for ch in range(coeffs.shape[1])])
-                
-        
-        rec_data = cochleo_tools.inv_coch_filt(np.sum(filt_data,axis=0), coeffs, 0)
+        gram._toy2()
+        rec_data = gram.invert_y2()
         
 #        rec_data = [cochleo_tools.inv_coch_filt(filt_data[ch], coeffs, ch) for ch in rec_channels]),axis=0)
 #        
-#        print rec_data.shape
+#        print rec_data.shape        
         
-        
-        plt.figure()
-        plt.plot(data)
-        plt.plot(rec_data,'r:')
-        plt.show()
-        
-        
+#        plt.figure()
+#        plt.plot(sig.data)
+#        plt.plot(rec_data,'r:')
+#        plt.show()
+
         
 
 class CochleoTest(unittest.TestCase):
 
 
     def runTest(self):
+        
+        # test bad call
         sig = Signal(audio_test_file)
+        gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+        self.assertRaises(NotImplementedError, gram.build_aud)
         
         
+        sig = Signal(audio_test_file, mono=True,)                
         gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
         
+        gram.build_aud()
+        gram.plot_aud()
         
+#        plt.show()   
         
-#        cProfile.runctx('gram._toaud()', globals(), locals())
+#        cProfile.runctx('gram.build_aud()', globals(), locals())
 #        t0 = time.time()
 #        gram._toy1()
 #        print "%1.3f elapsed " % (time.time() - t0)
@@ -74,9 +72,9 @@ class CochleoTest(unittest.TestCase):
         
 #        aud = cochleo_tools.wav2aud(sig.data, sig.fs)
         
-        " Ok this is working"
+#        " Ok this is working"
 #        aud, duration = cochleo_tools.auditory_spectrum(audio_test_file)
-#
+
 #        cochleo_tools.plot_auditory(aud, duration)
 
 if __name__ == "__main__":
