@@ -5,4 +5,5 @@
 *.eps
 *.project
 *.pydevproject
-
+*.png
+*.pdf
