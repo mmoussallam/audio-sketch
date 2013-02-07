@@ -274,20 +274,20 @@ class OffsetDetectionTest(unittest.TestCase):
         max_nb_seg = 10;
         nb_atoms = 150;
         
-        dico = SpreadDico([8192], penalty=0.1, mask_time=2, mask_freq=20)
+        scales = SpreadDico([8192], penalty=0.1, mask_time=2, mask_freq=20)
         
-#        dico = Dico([8192])
+#        scales = Dico([8192])
         for segIdx in range(min(max_nb_seg,pySig.n_seg)):
             pySigLocal = pySig.get_sub_signal(
-                segIdx, 1, mono=True, normalize=False, channel=0, pad=dico.get_pad())
+                segIdx, 1, mono=True, normalize=False, channel=0, pad=scales.get_pad())
             print "MP on segment %d" % segIdx
             # run the decomposition
             approx, decay = mp.mp(
-                pySigLocal, dico, 2, nb_atoms, pad=False)
+                pySigLocal, scales, 2, nb_atoms, pad=False)
 
             print "Populating database with offset " + str(segIdx * pySig.segment_size / pySig.fs)
             ppdb.populate(
-                approx, 0, offset=(segIdx * pySig.segment_size) - dico.get_pad())
+                approx, 0, offset=(segIdx * pySig.segment_size) - scales.get_pad())
     
 
         # ok we have a DB with only 1 file and different segments, now 
@@ -298,11 +298,11 @@ class OffsetDetectionTest(unittest.TestCase):
         count = 0
         for segIdx in range(min(nb_test_seg,long_sig_test.n_seg)):
             pySigLocal = long_sig_test.get_sub_signal(
-                segIdx, 1, mono=True, normalize=False, channel=0, pad=dico.get_pad())
+                segIdx, 1, mono=True, normalize=False, channel=0, pad=scales.get_pad())
 #            print "MP on segment %d" % segIdx
             # run the decomposition
             approx, decay = mp.mp(
-                pySigLocal, dico, 2, nb_atoms, pad=False)
+                pySigLocal, scales, 2, nb_atoms, pad=False)
             print approx.atom_number
             
             histograms = ppdb.retrieve(approx, nbCandidates=1)

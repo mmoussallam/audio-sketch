@@ -402,16 +402,36 @@ class cochleogram(object):
         x0 /= np.std(x0)
         return x0
 
-    def plot_aud(self):
-        plt.figure()
-        plt.imshow(np.array(self.y5),
+    def plot_aud(self, aud_spec=None, ax=None, duration=None):
+        if ax is None:
+            fig =plt.figure()
+            ax = plt.subplot(111)
+            
+        if aud_spec is None:
+            aud_spec =  np.array(self.y5)
+            
+        ax.imshow(aud_spec,
                    aspect='auto',
                    origin='lower',
-                   cmap=cm.jet,
-                   interpolation='nearest')
-        plt.colorbar()
-        plt.xlabel('Time (s)')
-        plt.ylabel('Frequency')
+                   cmap=cm.copper_r,
+                   interpolation='bilinear')
+#        plt.colorbar(ax)
+        N = aud_spec.shape[0]
+        gram = getattr(auditory, 'Y5')
+        
+        f_vec = (gram.erb_space(N / 10, 180. , 7246.)).astype(int)
+        y = np.linspace(0, N, f_vec.shape[0])
+        
+        if duration is not None:
+            t_vec = np.arange(0, duration, 0.1)
+            x = np.linspace(0, aud_spec.shape[1], t_vec.shape[0])
+            plt.xticks(x, ["%1.1f"%t for t in t_vec])
+            ax.set_xlabel('Time (s)')
+        
+#        ax.set_yticks(np.flipud(y), ["%d"%int(f) for f in f_vec])
+        plt.yticks(np.flipud(y), ["%d"%int(f) for f in f_vec])
+        print ["%d"%int(f) for f in f_vec]
+        ax.set_ylabel('Frequency (Hz)')
 
 
 def coch_filt(data, coeffs, chan_idx):

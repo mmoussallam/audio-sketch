@@ -14,7 +14,7 @@ from scipy.io import savemat, loadmat
 audio_files_path = '/sons/rwc/rwc-g-m01/'
 default_db_path = '/home/manu/workspace/fgpt_sparse/db/'
 
-def fgpt_expe(file_names, n_atoms, dico,
+def fgpt_expe(file_names, n_atoms, scales,
               db_name=None,
               create_base=True,
               test_base=True,
@@ -34,15 +34,15 @@ def fgpt_expe(file_names, n_atoms, dico,
         db_name = '%sMPdb_%dfiles_%datoms_%dx%s.db' %(default_db_path,
                                                      len(file_names),
                                                            n_atoms,
-                                                           len(dico.sizes),
-                                                           dico.nature)
+                                                           len(scales.sizes),
+                                                           scales.nature)
 
     # load or create the base
     ppdb = pydb.ppBDB(db_name, load=(not create_base), persistent=True)
 
     if create_base:
         print 'Reconstructing The base'
-        db_creation(ppdb, file_names, n_atoms, dico,
+        db_creation(ppdb, file_names, n_atoms, scales,
                    db_name=db_name, seg_duration=seg_duration, step=learn_step)
 
     if test_base:
@@ -58,7 +58,7 @@ def fgpt_expe(file_names, n_atoms, dico,
 
         t_start = time.time()
         if not hierarchical:
-            score = db_test(ppdb, file_names, n_atoms, dico,
+            score = db_test(ppdb, file_names, n_atoms, scales,
                            test_n_atom=testNatom, test_files=testFiles,
                            seg_duration=seg_duration, step=test_step)
         else:
@@ -66,7 +66,7 @@ def fgpt_expe(file_names, n_atoms, dico,
                 raise ValueError('Not enough arguments provided for Hierarchical pruning!!')
 
             score = db_hierarchical_test(
-                ppdb, file_names, n_atoms, dico, n_test_files,
+                ppdb, file_names, n_atoms, scales, n_test_files,
                 testNatom=testNatom, testFiles=testFiles,
                 seg_duration=seg_duration, step=test_step,
                 threshold=threshold, nbAtomPerIter=n_atom_step)
@@ -74,7 +74,7 @@ def fgpt_expe(file_names, n_atoms, dico,
     return score, ppdb, time.time() - t_start
 
 
-def db_creation(ppdb, file_names, n_atoms, dico,
+def db_creation(ppdb, file_names, n_atoms, scales,
                db_name=None, 
                seg_duration=5.0, 
                padZ=None, 
@@ -83,7 +83,7 @@ def db_creation(ppdb, file_names, n_atoms, dico,
     ''' method to create a DB with the given dictionary and parameters 
         can take a pydb object or a string with the db name to be created'''
     n_files = len(file_names)
-    sizes = dico.sizes
+    sizes = scales.sizes
     
     if files_path is None:
         files_path = audio_files_path
@@ -95,7 +95,7 @@ def db_creation(ppdb, file_names, n_atoms, dico,
                                                            n_files,
                                                            n_atoms,
                                                            len(sizes),
-                                                           dico.nature)
+                                                           scales.nature)
 
         # create the base
         ppdb = pydb.ppBDB(db_name, load=False)
@@ -123,7 +123,7 @@ def db_creation(ppdb, file_names, n_atoms, dico,
             # run the decomposition
             try:
                 approx = mp.mp(pySigLocal,
-                               dico, 20, n_atoms,
+                               scales, 20, n_atoms,
                                pad=False,
                                silent_fail=True)[0]
             except ValueError:
@@ -171,7 +171,7 @@ def get_rnd_file(file_names, seg_duration, step, sizes, fileIndex, n_files=None)
 def db_test(ppdb,
             file_names,
             n_atoms,
-            dico,
+            scales,
             test_n_atom=None,
             test_files=None,
             seg_duration=5,
@@ -183,7 +183,7 @@ def db_test(ppdb,
         nbAtoms = test_n_atom
 
     n_files = len(file_names)
-    sizes = dico.sizes
+    sizes = scales.sizes
     " change the order of the files for testing"
     sortedIndexes = range(n_files)
     if shuffle:
@@ -217,7 +217,7 @@ def db_test(ppdb,
 #            print "MP on segment %d"%segIdx
             # run the decomposition
             approx, decay = mp.mp(
-                pySigLocal, dico, 20, nbAtoms, pad=False, silent_fail=True)
+                pySigLocal, scales, 20, nbAtoms, pad=False, silent_fail=True)
 
 # print "Populating database with offset "
 # +str(segIdx*segmentLength/11025)
@@ -254,21 +254,21 @@ def db_test(ppdb,
         print "Global Score of " + str(countok / countall)
     return countok / countall
 
-# ppdb, file_names , nbAtoms, dico , test_n_atom=None , test_files = None,
+# ppdb, file_names , nbAtoms, scales , test_n_atom=None , test_files = None,
 # seg_duration=5, step = 2.5):
 
 
 def db_hierarchical_test(ppdb,
                          file_names, 
                          n_atoms,
-                         dico,
+                         scales,
                          nbFiles,
                        testNatom=None, testFiles=None, seg_duration=5,
                        step=2.5, threshold=0.4, nbAtomPerIter=10, debug=True):
     ''' Same as db_test, except that the search is hierarchically pruned if distance between best candidate
     and second best one is above a pre-defined threshold
     '''
-    sizes = dico.sizes
+    sizes = scales.sizes
 
     if testNatom is not None:
         n_atoms = testNatom
@@ -299,7 +299,7 @@ def db_hierarchical_test(ppdb,
 #            print "MP on segment %d"%segIdx
             # run the decomposition
             approx, decay = mp.mp(
-                pySigLocal, dico, 20, nbAtomPerIter, pad=False)
+                pySigLocal, scales, 20, nbAtomPerIter, pad=False)
             histograms = ppdb.retrieve(approx, nbCandidates=nbFiles)
 
             condition = True
@@ -328,7 +328,7 @@ def db_hierarchical_test(ppdb,
                 else:
                     if debug:
                         print " We are under threshold. %.2f-  Let'sizes go further , best Guess is :" % score, bestGuess
-                    approx, decay = mp.mp_continue(approx, pySigLocal, dico, 20, nbAtomPerIter, pad=False, debug=0)
+                    approx, decay = mp.mp_continue(approx, pySigLocal, scales, 20, nbAtomPerIter, pad=False, debug=0)
                     histograms = ppdb.retrieve(approx, nbCandidates=nbFiles)
                     condition = (approx.atomNumber < n_atoms)
 

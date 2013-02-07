@@ -6,6 +6,8 @@ Created on Jan 30, 2013
 import numpy as np
 from PyMP import Signal
 import matplotlib.pyplot as plt
+from tools import cochleo_tools
+
 class AudioSketch(object):
     ''' This class should be used as an abstract one, specify the
     audio sketches interface. 
@@ -53,10 +55,10 @@ class AudioSketch(object):
 Params: %s ''' % (self.__class__.__name__, str(self.orig_signal),str(self.params))
         return  strret
     
-    def synthesize(self):    
+    def synthesize(self, sparse=False):    
         raise NotImplementedError("NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
     
-    def represent(self):
+    def represent(self, sparse=False):
         raise NotImplementedError("NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
 
     def fgpt(self):
@@ -106,12 +108,16 @@ class STFTPeaksSketch(AudioSketch):
                              self.params['scale'],
                              self.params['step'])
 
-    def represent(self):
+    def represent(self, sparse=False):
+        if sparse:
+            rep = self.sp_rep
+        else:
+            rep = self.rep        
         
         plt.figure()
-        for chanIdx in range(self.rep.shape[0]):
-            plt.subplot(self.rep.shape[0],1,chanIdx+1)
-            plt.imshow(10*np.log10(np.abs(self.rep[chanIdx,:,:])),
+        for chanIdx in range(rep.shape[0]):
+            plt.subplot(rep.shape[0],1,chanIdx+1)
+            plt.imshow(10*np.log10(np.abs(rep[chanIdx,:,:])),
                aspect='auto',
                interpolation='nearest',
                origin='lower')
@@ -158,25 +164,31 @@ class STFTPeaksSketch(AudioSketch):
         print "Sparse rep of %d element computed" % self.nnz
         
         
-    def represent_sparse(self):
-        if self.sp_rep is None:
-            raise ValueError("no sparse rep constructed yet")
-        
-        plt.figure()
-        for chanIdx in range(self.sp_rep.shape[0]):
-            plt.subplot(self.sp_rep.shape[0],1,chanIdx+1)
-            plt.imshow(10*np.log10(np.abs(self.sp_rep[chanIdx,:,:])),
-               aspect='auto',
-               interpolation='nearest',
-               origin='lower')
+#    def represent_sparse(self):
+#        if self.sp_rep is None:
+#            raise ValueError("no sparse rep constructed yet")
+#        
+#        plt.figure()
+#        for chanIdx in range(self.sp_rep.shape[0]):
+#            plt.subplot(self.sp_rep.shape[0],1,chanIdx+1)
+#            plt.imshow(10*np.log10(np.abs(self.sp_rep[chanIdx,:,:])),
+#               aspect='auto',
+#               interpolation='nearest',
+#               origin='lower')
 
-    def synthesize(self):
+    def synthesize(self, sparse=False):
         import stft
-        self.rec_signal = Signal(stft.istft(self.sp_rep,
+        
+        if sparse:        
+            return Signal(stft.istft(self.sp_rep,
                                             self.params['step'],
                                             self.orig_signal.length),
                                  self.orig_signal.fs)
-        return self.rec_signal
+        else:
+            return Signal(stft.istft(self.rep,
+                                            self.params['step'],
+                                            self.orig_signal.length),
+                                 self.orig_signal.fs)
 
 
 class XMDCTSparseSketch(AudioSketch):
@@ -221,20 +233,23 @@ class XMDCTSparseSketch(AudioSketch):
                          self.params['n_atoms'],
                          debug=0)[0]
         
-    def represent(self, fig=None):
+    def represent(self, fig=None,  sparse=False):
         if fig is None:
             plt.figure()
-            
-        self.rep.plot_tf()
+
+        if sparse:
+            self.sp_rep.plot_tf()    
+        else:   
+            self.rep.plot_tf()
         
-    def represent_sparse(self, fig=None):                
-        if fig is None:
-            fig = plt.figure()        
-        
-        if self.sp_rep is None:
-            return self.represent(fig)
-                
-        self.sp_rep.plot_tf()
+#    def represent_sparse(self, fig=None, sparse=False):                
+#        if fig is None:
+#            fig = plt.figure()        
+#        
+#        if self.sp_rep is None:
+#            return self.represent(fig)
+#                
+#        self.sp_rep.plot_tf()
         
     def sparsify(self, sparsity, **kwargs):
         ''' here behaviour is this:
@@ -266,8 +281,8 @@ class XMDCTSparseSketch(AudioSketch):
         self.nnz = self.sp_rep.atom_number        
         print "Sparse rep of %d element computed" % self.nnz
     
-    def synthesize(self):
-        if self.sp_rep is None:
+    def synthesize(self, sparse=False):
+        if not sparse:
             return self.rep.recomposed_signal
         else:
             return self.sp_rep.recomposed_signal
@@ -289,5 +304,66 @@ class CochleoPeaksSketch(AudioSketch):
         if original_sig is not None:
             self.orig_signal = original_sig
             self.recompute()
+        
             
+    def synthesize(self, sparse=False):    
+        ''' synthesize the sparse rep or the original rep?'''
+        if sparse:
+            v5 = self.sp_rep
+        else:
+            v5 = np.array(self.cochleogram.y5)
+            
+        # initialize invert
+        init_vec =  self.cochleogram.init_inverse(v5)
+        # then do 20 iteration (TODO pass as a parameter)
+        return Signal(self.cochleogram.invert(v5, init_vec, nb_iter=10),
+                      self.orig_signal.fs)
     
+    def represent(self, fig=None, sparse=False):
+        if fig is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)            
+        else:
+            ax = plt.gca()
+            
+        if sparse:
+            self.cochleogram.plot_aud(ax = ax,
+                                      aud_spec=self.sp_rep,
+                                      duration= self.orig_signal.get_duration())
+        else:
+            self.cochleogram.plot_aud(ax = ax,
+                                      duration= self.orig_signal.get_duration())
+    
+    def fgpt(self):
+        raise NotImplementedError("NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+    
+    def recompute(self, signal = None, **kwargs):
+        ''' recomputing the cochleogram'''
+        if signal is not None:
+            if isinstance(signal, str):
+                # TODO allow for stereo signals
+                signal = Signal(signal, normalize=True, mono=True)
+            self.orig_signal = signal
+        
+        if self.orig_signal is None:
+            raise ValueError("No original Sound has been given")
+        
+        self.cochleogram = cochleo_tools.cochleogram(self.orig_signal.data)
+        self.cochleogram.build_aud()
+    
+    def sparsify(self, sparsity):
+        ''' sparsify using the peaks '''
+        if self.cochleogram.y5 is None:
+            raise ValueError("cochleogram not computed yet")
+        
+        v5 = np.array(self.cochleogram.y5)        
+        self.sp_rep = np.zeros_like(v5.ravel())
+#        print self.sp_rep.shape
+        # peak picking
+        max_indexes = np.argsort(v5.ravel())
+        self.sp_rep[max_indexes[-sparsity:]] = v5.ravel()[max_indexes[-sparsity:]]
+        
+        self.sp_rep = np.reshape(self.sp_rep, v5.shape)
+    
+                
+        

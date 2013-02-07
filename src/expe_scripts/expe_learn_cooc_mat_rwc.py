@@ -47,20 +47,24 @@ I = 150
 pad = 8192
 NbAtom = 100
 dicotype = 'LoMP'
-dico = [128, 1024, 8192]
+scales = [128, 1024, 8192]
 
 energyTr = M / 2
 # HEURISTIQUE!
-maxIndex = len(dico) * (M + (2 * pad))
+maxIndex = len(scales) * (M + (2 * pad))
 window = np.hanning(M)
 
-args = [filePath,herePath,fileGroup, filenames, M, I, pad, dico, NbAtom, energyTr]
+args = [filePath,herePath,fileGroup, filenames, M, I, pad, scales, NbAtom, energyTr]
 kwargs = {'dicotype': dicotype}
 
-compute = True
+compute = False
 
 if compute:
-    squareMat, pyDico, L, fs = compute_cooc_mat(*args, **kwargs)
+    squareMat, L, fs = compute_cooc_mat(*args, **kwargs)
+    if dicotype == 'MDCT':
+        pyDico = Dico(scales)
+    elif dicotype == 'LoMP':
+        pyDico = LODico(scales)
 else:
     squareMat, pyDico, L, fs = load_cooc_mat(*args, **kwargs)
 
@@ -76,9 +80,9 @@ localApprox = app.Approx(pyDico, [], None,
                          fs)
 
 scaleNum = 2
-if scaleNum <= len(dico):
-    firstIndex = int(math.floor(scaleNum * maxIndex / len(dico)))
-    lastIndex = int(math.floor((scaleNum + 1) * maxIndex / len(dico)))
+if scaleNum <= len(scales):
+    firstIndex = int(math.floor(scaleNum * maxIndex / len(scales)))
+    lastIndex = int(math.floor((scaleNum + 1) * maxIndex / len(scales)))
 else:
     firstIndex = 0
     lastIndex = maxIndex
@@ -109,10 +113,10 @@ for atomIndex in range(firstIndex, lastIndex):
     temp = squareMat[atomIndex, :]
 
     refframeInd = int(
-        np.floor(2 * (atomIndex - blockInd * L) / dico[blockInd]))
-    refRealTimePos = refframeInd * dico[blockInd] / 2
+        np.floor(2 * (atomIndex - blockInd * L) / scales[blockInd]))
+    refRealTimePos = refframeInd * scales[blockInd] / 2
     refRealFreq = (atomIndex - (
-        blockInd * L) - refframeInd * dico[blockInd] / 2) * fs / dico[blockInd]
+        blockInd * L) - refframeInd * scales[blockInd] / 2) * fs / scales[blockInd]
 #    print atomIndex, atomWeight , refframeInd , refRealFreq
 
     coTriggeredAtomIndexes = temp.nonzero()
@@ -142,7 +146,7 @@ for atomIndex in range(firstIndex, lastIndex):
     # atomInd = int(block*self.length +  frame*float(atom.length /2) +
     # atom.frequencyBin)
         blockInd = int(np.floor(atomInd / L))
-        atomScale = dico[blockInd]
+        atomScale = scales[blockInd]
         # retrieve time position
         frameInd = int(np.floor(2 * (atomInd - blockInd * L) / atomScale))
         # retrieve frequency index
@@ -163,7 +167,7 @@ target_path = '%s_MolCooc_Scale%d_Prun_%1.1f_%dfiles_M_%d_I_%d_nbAtom_%d_%dx%s' 
                                                                                    scaleNum, coocTr,
                                                                                    len(filenames),
                                                                                    M, I, NbAtom,
-                                                                                   len(dico), dicotype)
+                                                                                   len(scales), dicotype)
 
 
 plt.figure()

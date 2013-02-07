@@ -52,10 +52,10 @@ class SketchTest(unittest.TestCase):
             sk.sparsify(1000)
             
             print " plot the sparsified representation"
-            sk.represent_sparse()
+            sk.represent(sparse=True)
             
             print " and synthesize the sketch"
-            synth_sig = sk.synthesize()
+            synth_sig = sk.synthesize(sparse=True)
             
             plt.figure()
             plt.subplot(211)
