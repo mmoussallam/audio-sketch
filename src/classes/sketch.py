@@ -6,6 +6,7 @@ Created on Jan 30, 2013
 import numpy as np
 from PyMP import Signal
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from tools import cochleo_tools
 
 class AudioSketch(object):
@@ -114,13 +115,26 @@ class STFTPeaksSketch(AudioSketch):
         else:
             rep = self.rep        
         
+        x_tick_vec = (np.linspace(0, rep.shape[2], 10)).astype(int)
+        x_label_vec = (x_tick_vec*float(self.params['step']))/float(self.orig_signal.fs)
+        
+        y_tick_vec = (np.linspace(0, rep.shape[1], 6)).astype(int)
+        y_label_vec = (y_tick_vec/float(self.params['scale']))*float(self.orig_signal.fs)
+        
+        
+        
         plt.figure()
         for chanIdx in range(rep.shape[0]):
             plt.subplot(rep.shape[0],1,chanIdx+1)
             plt.imshow(10*np.log10(np.abs(rep[chanIdx,:,:])),
                aspect='auto',
                interpolation='nearest',
-               origin='lower')
+               origin='lower',
+               cmap = cm.copper_r)
+            plt.xlabel('Time (s)')
+            plt.xticks(x_tick_vec, ["%1.1f"%a for a in x_label_vec])
+            plt.ylabel('Frequency')
+            plt.yticks(y_tick_vec, ["%d"%int(a) for a in y_label_vec])
     
     def sparsify(self, sparsity, **kwargs):
         ''' sparsity is here achieved through Peak-Picking in the 
@@ -183,13 +197,40 @@ class STFTPeaksSketch(AudioSketch):
             return Signal(stft.istft(self.sp_rep,
                                             self.params['step'],
                                             self.orig_signal.length),
-                                 self.orig_signal.fs)
+                                 self.orig_signal.fs, mono=True)
         else:
             return Signal(stft.istft(self.rep,
                                             self.params['step'],
                                             self.orig_signal.length),
-                                 self.orig_signal.fs)
+                                 self.orig_signal.fs, mono=True)
 
+class STFTDumbPeaksSketch(STFTPeaksSketch):
+    ''' only changes the sparsifying method '''
+    
+    def __init__(self, original_sig=None, **kwargs):        
+        # add all the parameters that you want
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        
+        if original_sig is not None:
+            self.orig_signal = original_sig
+            self.recompute()
+     
+    def sparsify(self, sparsity):
+        ''' sparsify using the peaks with no spearding on the TF plane '''
+        if self.rep is None:
+            raise ValueError("STFT not computed yet")
+        
+                
+        self.sp_rep = np.zeros_like(self.rep.ravel())
+#        print self.sp_rep.shape
+        # peak picking
+        max_indexes = np.argsort(self.rep.ravel())
+        self.sp_rep[max_indexes[-sparsity:]] = self.rep.ravel()[max_indexes[-sparsity:]]
+        
+        self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
+    
 
 class XMDCTSparseSketch(AudioSketch):
     ''' A sketching based on MP with a union of MDCT basis '''
@@ -316,7 +357,7 @@ class CochleoPeaksSketch(AudioSketch):
         # initialize invert
         init_vec =  self.cochleogram.init_inverse(v5)
         # then do 20 iteration (TODO pass as a parameter)
-        return Signal(self.cochleogram.invert(v5, init_vec, nb_iter=10),
+        return Signal(self.cochleogram.invert(v5, init_vec, nb_iter=10, display=False),
                       self.orig_signal.fs)
     
     def represent(self, fig=None, sparse=False):

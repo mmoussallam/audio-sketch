@@ -34,7 +34,8 @@ class SketchTest(unittest.TestCase):
         
         sketches_to_test = [sketch.CochleoPeaksSketch(),
                             sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
-                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),                            
+                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
+                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
                             ]
         
         # for all sketches, we performe the same testing
