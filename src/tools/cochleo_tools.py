@@ -413,7 +413,7 @@ class cochleogram(object):
         ax.imshow(aud_spec,
                    aspect='auto',
                    origin='lower',
-                   cmap=cm.copper_r,
+                   cmap=cm.bone_r,
                    interpolation='bilinear')
 #        plt.colorbar(ax)
         N = aud_spec.shape[0]
@@ -512,7 +512,7 @@ def plot_auditory(aud_spec, duration, freqs=[110., 2 * 4435.]):
 
     plt.figure()
     plt.imshow(aud_spec[0, :, :].T, aspect='auto',
-               cmap=cm.jet,
+               cmap=cm.bone_r,
                origin='lower')
     plt.yticks(np.flipud(y), f_vec)
     plt.xticks(t_vec * aud_spec.shape[1] / t_vec.max(), t_vec)

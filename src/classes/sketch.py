@@ -109,9 +109,10 @@ class STFTPeaksSketch(AudioSketch):
                              self.params['scale'],
                              self.params['step'])
 
-    def represent(self, sparse=False):
+    def represent(self, sparse=False, **kwargs):
         if sparse:
-            rep = self.sp_rep
+            rep = np.zeros_like(self.sp_rep)
+            rep[np.nonzero(self.sp_rep)] = 1.
         else:
             rep = self.rep        
         
@@ -119,9 +120,7 @@ class STFTPeaksSketch(AudioSketch):
         x_label_vec = (x_tick_vec*float(self.params['step']))/float(self.orig_signal.fs)
         
         y_tick_vec = (np.linspace(0, rep.shape[1], 6)).astype(int)
-        y_label_vec = (y_tick_vec/float(self.params['scale']))*float(self.orig_signal.fs)
-        
-        
+        y_label_vec = (y_tick_vec/float(self.params['scale']))*float(self.orig_signal.fs)            
         
         plt.figure()
         for chanIdx in range(rep.shape[0]):
@@ -130,7 +129,7 @@ class STFTPeaksSketch(AudioSketch):
                aspect='auto',
                interpolation='nearest',
                origin='lower',
-               cmap = cm.copper_r)
+               cmap = cm.binary_r)
             plt.xlabel('Time (s)')
             plt.xticks(x_tick_vec, ["%1.1f"%a for a in x_label_vec])
             plt.ylabel('Frequency')
@@ -172,7 +171,8 @@ class STFTPeaksSketch(AudioSketch):
 #                    print f_index, t_index
 #                    print y_ind, x_ind, rect_data
                     # add the peak to the sparse rep
-                    self.sp_rep[0, y_ind + f_index, x_ind + t_index] = rect_data[f_index, t_index]
+                    self.sp_rep[0, y_ind + f_index, x_ind + t_index] = rect_data[f_index,
+                                                                                 t_index]
         
         self.nnz = np.count_nonzero(self.sp_rep)
         print "Sparse rep of %d element computed" % self.nnz
