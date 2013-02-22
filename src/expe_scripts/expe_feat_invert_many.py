@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.filters import median_filter
 from PyMP import Signal
 import itertools
+import sys
 sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
@@ -23,9 +24,14 @@ audiosave_path ='/home/manu/workspace/audio-sketch/src/expe_scripts/audio/feat_i
 def RMSE(x,y):
     return 10.0*np.log10(np.sum((y**2))/np.sum((x - y)**2))
 
-def test_feat_configuration(featlist, cov_fun, K=1, medfilt_width=10,
-                            display=True, ngliter=5,saveAudio=True,
-                            win_size=512, step_size=128, method='median'):
+def test_feat_configuration(featlist, 
+                            cov_fun,
+                            reg_fun,
+                            K=1, medfilt_width=10,
+                            display=True, ngliter=5,
+                            saveAudio=True,
+                            win_size=512, step_size=128,
+                            method='median'):
     """ run a feature inversion test on the desired configuration """
     
     YaafeDict = features.get_yaafe_dict(win_size, step_size)
@@ -54,7 +60,7 @@ def test_feat_configuration(featlist, cov_fun, K=1, medfilt_width=10,
     Y = np.abs(transforms.get_stft(test_audiofilepath, win_size,step_size, sigma = 0.001))
     
     # Now use a regression technique 
-    Y_hat, Ktest_dev = regression.nadaraya_watson(Xdev,Ydev,X,Y,
+    Y_hat, Ktest_dev = reg_fun(Xdev,Ydev,X,Y,
                                    cov_fun,
                                    display=False,
                                    K = K,
@@ -74,8 +80,9 @@ def test_feat_configuration(featlist, cov_fun, K=1, medfilt_width=10,
         plt.imshow(np.log(Y_hat),
                    origin='lower')
         plt.colorbar()
-        plt.title('Estimation from Nadaraya-Watson - %s %d features'%(cov_fun.__name__,
-                                                                      Xdev.shape[0]))
+        plt.title('Estimation from %s - %s %d features'%(reg_fun.__name__,
+                                                         cov_fun.__name__,
+                                                        Xdev.shape[0]))
         
         
     sig_orig = Signal(test_audiofilepath,  normalize=True, mono=True)
@@ -88,7 +95,8 @@ def test_feat_configuration(featlist, cov_fun, K=1, medfilt_width=10,
     
     if saveAudio:
         sig.write(op.join(audiosave_path,
-                          'recons_%s_%d%s_%dfeats_.wav'%(cov_fun.__name__,
+                          'recons_%s_%s_%d%s_%dfeats_.wav'%(cov_fun.__name__,
+                                                            reg_fun.__name__,
                                                         K,method,
                                                         Xdev.shape[0])))
     
@@ -99,11 +107,16 @@ def test_feat_configuration(featlist, cov_fun, K=1, medfilt_width=10,
         
 ###########################################
 # listons les parameters
-all_features = ['mfcc','lpc-4','loudness','OnsetDet']
+all_features = ['mfcc_d1','lpc-4','loudness','OnsetDet','mfcc']
+#all_features = ['mfcc_d1','mfcc']
 all_corr_func = {'cov':regression.corrcoeff_correl, 
                  'proj':regression.innerprod_correl}
+all_reg_fun ={'gp':regression.nadaraya_watson,
+             'odl':regression.online_learning}
 
 cov_fun = all_corr_func['cov']
+reg_fun = all_reg_fun['odl']
+
 
 # Now we want all possible combinations of features:
 from itertools import chain, combinations
@@ -112,20 +125,28 @@ combis =  chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 results = [];
 
+combis = [all_features,]
+
 for feat_combi in combis:
     if len(feat_combi)==0:
         continue
     print feat_combi
     try:
-        rmse, n_feats = test_feat_configuration(feat_combi, cov_fun, K=3,
+        rmse, n_feats = test_feat_configuration(feat_combi,
+                                                cov_fun,
+                                                reg_fun,
+                                                K=3,
                                                 medfilt_width=10,
-                                    display=True, ngliter=5, saveAudio=True, 
-                                    win_size=512, step_size=128,
-                                    method='mean')
+                                                display=True,
+                                                ngliter=5,
+                                                saveAudio=True, 
+                                                win_size=512, step_size=128,
+                                                method='median')
         
         results.append({'features':feat_combi,
                         'n_features':n_feats,
                         'cov_fun':cov_fun.__name__,
+                        'reg_fun':reg_fun.__name__,
                         'Score':rmse})
         print rmse
     except:
@@ -135,4 +156,4 @@ max_index = np.argmax(np.array([i['Score'] for i in results]))
 
 max_res = results[max_index]
 print "Best score of %1.2f obtained for %s"%(max_res['Score'],list(max_res['features']))
-    
+plt.show()

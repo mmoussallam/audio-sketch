@@ -22,7 +22,10 @@ def get_yaafe_dict(win_size,step_size):
                             'params':'blockSize=%d stepSize=%d'%(win_size,step_size)},
                'magspec':{'name':'magspec',
                             'featName':'MagnitudeSpectrum',
-                            'params':'blockSize=%d stepSize=%d'%(win_size,step_size)}
+                            'params':'blockSize=%d stepSize=%d'%(win_size,step_size)},
+               'mfcc_d1':{'name':'mfcc_d1',
+                            'featName':'MFCC',
+                            'params':'blockSize=%d stepSize=%d > Derivate DOrder=1'%(win_size,step_size)}                            
                }
     return YaafeDict
 

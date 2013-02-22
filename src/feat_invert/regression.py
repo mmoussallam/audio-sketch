@@ -4,6 +4,7 @@ feat_invert.regression  -  Created on Feb 21, 2013
 '''
 import numpy as np
 import matplotlib.pyplot as plt
+import spams
 
 def innerprod_correl(X1,X2):
     
@@ -98,4 +99,52 @@ def nadaraya_watson(Xdev,Ydev,X,Y,covar,display=False,
 
     return Y_hat, Ktest_dev
 
+def online_learning(Xdev,Ydev,X,Y,
+                    covar,
+                    display=False,
+                    K = 1,
+                    method='mean'):
+    """ uses online dictionary learning on the dev matrices
+        to build and estimate Y_hat from the given X """
+        
+    X_init = np.array(Xdev,dtype=np.float64,order="FORTRAN")
+    Y_init = np.array(Ydev,dtype=np.float64,order="FORTRAN")
+    
+    # f here is the number of features 
+    # F is the magnitude spectrum frequency number
+    (f,T) = X_init.shape
+    (F,T) = Y_init.shape
+        
+    # Learning a rank-f  model 
+    # initialize the model ?
+    A = np.array(np.eye(F),dtype=np.float64,order="FORTRAN")
+    B = np.array(X_init,dtype=np.float64,order="FORTRAN")
+    prev_model = {'A':A, 'B':B,'iter':T} 
+    # or not
+    #model = None 
+    
+    
+    (D,model) = spams.trainDL(Y_init,
+                              return_model = True,
+                              model=prev_model,                              
+                              iter=40,                              
+                              lambda1=1,                              
+                              posAlpha=False, 
+                              K=f)
+    
+    print D.shape, X.shape, model['A'].shape
+    Y_hat = np.dot(D, np.dot(model['A'],X))
+    print Y_hat.shape
+    if display:
+        plt.figure()
+        plt.subplot(121)
+        plt.imshow(np.log(Y))
+        plt.title('Reponse originale')
+        plt.colorbar()
+        plt.subplot(122)
+        plt.imshow(np.log(Y_hat))
+        plt.colorbar()
+        plt.title('Reponse predite')
+        plt.show()
 
+    return Y_hat, D
