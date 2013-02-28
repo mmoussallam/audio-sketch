@@ -32,6 +32,28 @@ def corrcoeff_correl(X1,X2):
     correls = correls[0:T1,T1:]
     
     return correls;
+
+def weighted_l1_reg(Xdev,Ydev,X,Y, covar):
+    """ use the weighted median as the estimator instead of the mean """
+    if not (Xdev.shape[0] == X.shape[0]):
+        raise ValueError("Xdev and X should have same 1rst dimension") 
+    
+    N = Ydev.shape[0]
+    Tdev = Xdev.shape[1]
+    T = X.shape[1]
+    
+    # initalize output
+    Y_hat = np.zeros((N,T))
+    
+    # Forward test: TODO
+    Ktest_dev = covar(X,Xdev);    
+    Ktest_dev[np.isnan(Ktest_dev)] = 0    
+    weights = Ktest_dev * np.sum(Ktest_dev,1)[...,None]
+    
+    # 
+    cumsum_weights = np.cumsum(weights,1)
+    
+    order = np.argsort(weights,1)
     
 def load_correl(X1,X2):
     """ hack to load a preexisting matrix"""
