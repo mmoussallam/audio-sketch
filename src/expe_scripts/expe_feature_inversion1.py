@@ -12,34 +12,17 @@ sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
 sys.path.append('/usr/local/lib')
-#sys.path.append('/usr/local/python_packages')
 
 from yaafelib import *
 from scipy.ndimage.filters import median_filter
 
-win_size = 512;
-step_size = 128;
+win_size = 512
+step_size = 128
 
 # Learning phase
 learn_audiofilepath = '/sons/sqam/voicemale.wav'
 test_audiofilepath = '/sons/sqam/voicefemale.wav'
-#featuresList = [
-##                {'name':'mfcc',
-##                 'featName':'MFCC',
-##                 'params':'blockSize=%d stepSize=%d'%(win_size,step_size)},
-#                {'name':'zcr',
-#                 'featName':'ZCR',
-#                 'params':'blockSize=%d stepSize=%d'%(win_size,step_size)},
-#                {'name':'Loudness',
-#                 'featName':'Loudness',
-#                 'params':'blockSize=%d stepSize=%d'%(win_size,step_size)},
-#                {'name':'lpc',
-#                 'featName':'LPC',
-#                 'params':'LPCNbCoeffs=8 blockSize=%d stepSize=%d'%(win_size,step_size)},
-#                {'name':'ComplexDomainOnsetDetection',
-#                 'featName':'ComplexDomainOnsetDetection',
-#                 'params':'blockSize=%d stepSize=%d'%(win_size,step_size)}
-#                ]
+
 yaafe_dict = features.get_yaafe_dict(win_size,step_size)
 all_feat_name_list = ['zcr','OnsetDet','energy','specstats','specflux','mfcc','magspec']
 featuresList = []
