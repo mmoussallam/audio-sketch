@@ -14,6 +14,15 @@ def innerprod_correl(X1,X2):
     correls = np.abs(np.dot(X1.T , X2)) 
     return correls
 
+def l2_distance(X1,X2):
+    """ euclidian distance between all frames """
+    N = X1.shape[0]
+    kern = np.zeros((X1.shape[1], X2.shape[1]))
+    for t1 in range(X1.shape[1]):
+        kern[t1,:] =  np.sum((X2 - (X1[:,t1].reshape((N,1))))**2,0)
+    
+    return kern
+
 def corrcoeff_correl(X1,X2):
     """ correlation function based on the covariance matrix """
     
@@ -61,7 +70,7 @@ def load_correl(X1,X2):
     Kdict = loadmat('/home/manu/workspace/toolboxes/Matlab_code/GriffinLim/kdev.mat');
     return Kdict['Kdev_test']
 
-def nadaraya_watson(Xdev,Ydev,X,Y,covar,display=False,
+def knn(Xdev,Ydev,X,Y,covar,display=False,
                     K = 1, method='mean'):
     """ implementing regression with a Kernel defined by the covariance 
         handle given"""
@@ -120,6 +129,28 @@ def nadaraya_watson(Xdev,Ydev,X,Y,covar,display=False,
         plt.title('Reponse predite')
 
     return Y_hat, Ktest_dev
+
+def ann(Xdev,Ydev,X,Y,display=False, K = 1):
+    """ same as home made knn but using scikits.learn instead """
+    N = Ydev.shape[0]
+    Tdev = Xdev.shape[1]
+    T = X.shape[1]
+    
+    # initalize output
+    Y_hat = np.zeros((N,T))
+    
+    from sklearn.neighbors import NearestNeighbors
+    neigh = NearestNeighbors(K)
+    neigh.fit(Xdev.T)
+    
+    kneighs = neigh.kneighbors(X.T, return_distance=False)
+    if display:
+        plt.figure()
+        plt.imshow(kneighs) 
+    for t in range(T):
+        Y_hat[:,t] = np.median(Ydev[:,kneighs[t,:]],1)
+
+    return Y_hat
 
 def online_learning(Xdev,Ydev,X,Y,
                     covar,

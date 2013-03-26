@@ -1,4 +1,4 @@
-function [ Features, Spectrums, n_frames_reached, Data, used_files] = load_data( params )
+function [ Features, Spectrums, n_frames_reached, Data, used_files] = load_yaafedata( params )
 %LOAD_DATA load feature and magnitude spectrum matrices from the given
 %location with specified parameters
 %   Detailed explanation goes here
@@ -33,10 +33,10 @@ while n_frames_reached < n_frames
     n_files_used = n_files_used+1;
     % if 
     if get_data
-        [loc_magSTFT, loc_Feats, locDatas] = load_data_one_file(filepath, sr, sigma_noise, params);
+        [loc_magSTFT, loc_Feats, locDatas] = load_data_one_file_melspec(filepath, sr, sigma_noise, params);
         Data = [Data , locDatas'];
     else
-        [loc_magSTFT, loc_Feats, ~] = load_data_one_file(filepath, sr, sigma_noise, params);
+        [loc_magSTFT, loc_Feats, ~] = load_data_one_file_melspec(filepath, sr, sigma_noise, params);
     end
     Spectrums = [Spectrums , loc_magSTFT];
     Features = [Features , loc_Feats];

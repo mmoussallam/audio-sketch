@@ -12,7 +12,8 @@ x_rec = init_vec;
 sig = Signal(x_rec,fs);
 sig.fs = fs;
 sig.overlapRatio = 1-hopsize/winsize;
-sig.nfft = 2^(ceil(log2(winsize)));
+% sig.nfft = 2^(ceil(log2(winsize)));
+sig.nfft = size(magspec,1);
 
 % sig.windowLength = winsize;
 

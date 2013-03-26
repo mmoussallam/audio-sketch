@@ -8,8 +8,12 @@ sigma = std(Xdev, [], 2);
 
 machin = @(x)bsxfun(@times, bsxfun(@minus,x,mu), 1./sigma);
 
-Ktest_dev = covar(machin(X),machin(Xdev), method);
-%Ktest_dev = covar(X, Xdev, method);
+if method < 5
+    Ktest_dev = covar(machin(X),machin(Xdev), method);
+else
+    Ktest_dev = weight_covariance(X, Xdev, mahalanobis_estimate(nan,Ydev,Xdev,display));
+end
+%Ktest_dev_orig = covar(X, Xdev, method);
 %Forward test
 weights = bsxfun(@times,Ktest_dev,1./sum(Ktest_dev,2));
 [~,order] = sort(weights,2,'descend');
@@ -20,7 +24,7 @@ end
 
 %Y_hat = (weights*Ydev.').';
 E_forward = Y - Y_hat;
-mean_forward_error = mean(20*log10(max(1E-15,abs(E_forward))./abs(Y)),2);
+mean_forward_error = mean(20*log10(max(1E-15,(norm(abs(E_forward))))./norm(abs(Y))),2);
 mean_forward = mean(mean_forward_error(:));
 
 
