@@ -51,18 +51,18 @@ def gl_recons(magspec, init_vec, niter=10, wsize=512, tstep=256, display=False):
         % must be initialized with a random vector or anything closer
         to the original target"""
 
-    # initialize signal
+    # initialize signal        
     x_rec = init_vec
     (K, P) = magspec.shape
 
     for n in range(niter):
 
         # compute stft of candidate
-        S = get_stft(x_rec, wsize, tstep)
+        S = get_stft(x_rec, wsize, tstep)        
 
         # estimate error        
         err = np.sum((np.abs(S[:]) - magspec[:]) ** 2) / np.sum(magspec[:] ** 2)
-        print "Iteration %d: error of %1.1f " % (n, err)
+        print "Iteration %d: error of %1.6f " % (n, err)
 
         P_min = min(S.shape[1], P)
 

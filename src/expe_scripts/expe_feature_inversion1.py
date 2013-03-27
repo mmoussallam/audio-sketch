@@ -63,6 +63,11 @@ Y_hat, Ktest_dev = regression.knn(Xdev,Ydev,X,Y,
 print "Took ", time.time() - t , " secs"
 
 t = time.time()
+print Xdev.shape
+print Ydev.shape
+print X.shape
+print Y.shape
+
 Y_hat = regression.ann(Xdev, Ydev, X, Y, K=5)
 print "Took ", time.time() - t , " secs"
 #plt.figure();plt.imshow(Ktest_dev); 
