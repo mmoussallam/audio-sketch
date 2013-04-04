@@ -23,6 +23,12 @@ def get_yaafe_dict(win_size, step_size):
                  'OnsetDet': {'name': 'OnsetDet',
                               'featName': 'ComplexDomainOnsetDetection',
                               'params': 'blockSize=%d stepSize=%d' % (win_size, step_size)},
+                 'OnsetDetF': {'name': 'OnsetDetF',
+                              'featName': 'OnsetDetectionFunction',
+                              'params': 'FFTLength=0  FFTWindow=Hanning  NMANbFrames=5000  blockSize=%d  stepSize=%d' % (win_size, step_size)},
+                 'cqt': {'name': 'cqt',
+                             'featName': 'CQT',
+                             'params': 'CQTAlign=c  CQTBinsPerOctave=36  CQTMinFreq=73.42  CQTNbOctaves=3  stepSize=%d' % ( step_size)},
                  'magspec': {'name': 'magspec',
                              'featName': 'MagnitudeSpectrum',
                              'params': 'blockSize=%d stepSize=%d' % (win_size, step_size)},
@@ -41,6 +47,14 @@ def get_yaafe_dict(win_size, step_size):
                  'specstats': {'name': 'specstats',
                                'featName': 'SpectralShapeStatistics',
                                'params': 'FFTLength=0 FFTWindow=Hanning blockSize=%d stepSize=%d' % (win_size, step_size)},
+                 'chroma': {'name': 'chroma',
+                               'featName': 'Chroma',
+                               'params': 'CQTAlign=l  CQTBinsPerOctave=36  CQTMinFreq=73.42  CQTNbOctaves=3  CTInitDuration=15  ChromaSmoothing=0.75s  stepSize=%d' % ( step_size)},
+                 'pcp': {'name': 'pcp',
+                               'featName': 'Chroma2',
+                               'params': 'CQTAlign=r  CQTBinsPerOctave=48  CQTMinFreq=27.5  CQTNbOctaves=7  CZBinsPerSemitone=3  CZNbCQTBinsAggregatedToPCPBin=-1  CZTuning=440  stepSize=%d' % ( step_size)},
+
+ 
                  }
     return YaafeDict
 
@@ -109,7 +123,7 @@ def load_data_one_audio_file(filepath, fs, sigma_noise=0,
 
     x = sigx.data
     fs = sigx.fs
-
+    print wintime * fs, steptime * fs
     yaafe_dict = get_yaafe_dict(int(wintime * fs), int(steptime * fs))
 
     featureList = []
@@ -122,9 +136,14 @@ def load_data_one_audio_file(filepath, fs, sigma_noise=0,
 
     Feats = np.array([])
     featseq = []
-
+    
+    n_frames = feats['magspec'].shape[0]
+    
     for feature in features:
         if feature in feats:
+            print feature, feats[feature].shape
+            if feats[feature].shape[0] > n_frames:
+                feats[feature] = feats[feature][0:n_frames,:]
             featseq.append(feats[feature])
         else:
             print 'Warning, feature ', feature, ' not found'
@@ -176,7 +195,7 @@ def get_filepaths(audio_path, random_seed=None, forbid_list=[]):
 
 def load_yaafedata(params,                   
                    n_learn_frames=2000,
-                   use_custom_stft=True):
+                   use_custom_stft=False):
 
     """%LOAD_DATA load feature and magnitude spectrum matrices from the given
     %location with specified parameters
@@ -193,7 +212,7 @@ def load_yaafedata(params,
     steptime = getoptions(params, 'steptime', 0.008)
     startpoint = getoptions(params, 'startpoint', 0)
     forbid_list = getoptions(params, 'forbidden_names', [])
-    
+    mfnpf = getoptions(params, 'frame_num_per_file', 3000)
 #    wintime = float(win_size)/float(sr)
 #    steptime = float(step_size)/float(sr)
     
@@ -222,6 +241,7 @@ def load_yaafedata(params,
                                                 filepath, sr,
                                                 wintime=wintime,
                                                 steptime=steptime,
+                                                max_frame_num_per_file=mfnpf,
                                                 sigma_noise=sigma_noise,
                                                 startpoint = startpoint,
                                                 features=features)
@@ -235,15 +255,18 @@ def load_yaafedata(params,
             specseq.append(loc_magSTFT)
         else:
             specseq.append(np.abs(get_stft(locDatas,
-                                          win_size,
-                                          step_size,
+                                          wsize=win_size,
+                                          tstep=step_size,
                                           sigma = sigma_noise)).T)
-            
+#        print wintime, steptime, win_size, step_size
+#        print loc_magSTFT.shape
+#        print specseq[-1].shape
+#        print locDatas.shape
         featseq.append(loc_Feats)
         dataseq.append(locDatas)
         
         n_frames_reached += min(loc_magSTFT.shape[0], loc_Feats.shape[0])
-        
+        print n_frames_reached
     
     Spectrums = np.vstack(specseq)
     Features = np.vstack(featseq)

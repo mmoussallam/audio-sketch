@@ -24,31 +24,29 @@ from scipy.ndimage.filters import median_filter
 
 display = True
 
-win_size = 512
-step_size = 128
-
-
 # for all combinations of these parameters
-nb_learns = [1000000,]
-nb_medians = [5,]
-nb_features = [20,]
+nb_learns = [100000,]
+nb_medians = [1,10]
+nb_features = [10,20,40,60]
 nb_trials = 1
 method = 1
 
 # evaluate using these parameters
 nb_iter_gl = 5
-nb_test = 1000
+nb_test = 10000
 l_medfilt = 3
 
 
-#learn_directory = '/sons/voxforge/main/Learn'
-#test_directory = '/sons/voxforge/main/Test'
-#learn_seed = 13
+learn_directory = '/sons/voxforge/main/Learn'
+test_directory = '/sons/voxforge/main/Test'
+startpoint = 0
+learn_seed = 13
 
-learn_directory = '/sons/rwc/Learn'
-test_directory = '/sons/rwc/Test'
-startpoint = 25 # in seconds
-learn_seed = 78
+#learn_directory = '/sons/rwc/Learn'
+#test_directory = '/sons/rwc/Test'
+#startpoint = 0 # in seconds
+#learn_seed = 78
+force_recompute = False
 
 params = {}
 params['n_frames'] = max(nb_learns)
@@ -58,14 +56,15 @@ params['shuffle'] = learn_seed
 params['wintime'] = 0.032
 params['steptime'] = 0.008
 params['sr'] = 16000
-params['features'] = ['zcr','OnsetDet','energy','specstats','mfcc']
+params['frame_num_per_file'] = 2000
+params['features'] = ['zcr','OnsetDet','energy','specstats','mfcc','chroma','pcp']
 params['location'] = learn_directory
 
 full_path = '/home/manu/workspace/audio-sketch/matlab/'
 output_path = '/home/manu/workspace/audio-sketch/src/results/'
 savematname = 'learnbase_allfeats_%d_seed_%d.mat'%(params['n_frames'], params['shuffle'])
 
-if not os.path.exists(full_path + savematname):
+if not os.path.exists(full_path + savematname) or force_recompute:
     from scipy.io import savemat
     [learn_feats_all, learn_magspecs_all,
         n_f_learn, ref_learn_data, learn_files] = features.load_yaafedata(params)
@@ -89,7 +88,7 @@ for trialIdx in range(nb_trials):
         # get the test data
         params['n_frames'] = nb_test
         params['sigma'] = 0.0
-        params['shuffle'] =  int(np.random.rand(1)*1000)
+        params['shuffle'] =  321
         params['startpoint'] = startpoint
         # very important: need to look for test that is not in learn                        
         params['location'] = test_directory
@@ -137,6 +136,7 @@ for trialIdx in range(nb_trials):
                 # also save the audio
                 res_sig = Signal(res_array[1], params['sr'], mono=True, normalize=True)
                 res_sig.write(output_path+'audio/'+save_res_name+'.wav')
+                
                 
                 if display:
                     plt.figure()

@@ -159,7 +159,7 @@ def ann(Xdev, Ydev, X, Y, display=False, K=1):
     for t in range(T):
         Y_hat[:, t] = np.median(Ydev[:, kneighs[t, :]], 1)
 
-    return Y_hat
+    return Y_hat, kneighs
 
 
 def eval_knn(learn_feats, learn_magspecs, test_feats,
@@ -169,7 +169,7 @@ def eval_knn(learn_feats, learn_magspecs, test_feats,
     """"EVAL_NW Summary of this function goes here
     %   Detailed explanation goes here """
     
-    estimated_spectrum = ann(learn_feats.T, learn_magspecs.T,
+    estimated_spectrum, neighbors = ann(learn_feats.T, learn_magspecs.T,
                              test_feats.T, test_magspecs.T,
                              K=nb_medians)
 
@@ -183,10 +183,10 @@ def eval_knn(learn_feats, learn_magspecs, test_feats,
     
     #init_vec = np.random.randn(step_size*Y_hat.shape[1])
     init_vec = np.random.randn(step_size*estimated_spectrum.shape[1])
-    x_recon = gl_recons(estimated_spectrum, init_vec, 20,
+    x_recon = gl_recons(estimated_spectrum, init_vec, nb_iter_gl,
                                    win_size, step_size, display=False)
 
-    return [estimated_spectrum, x_recon]
+    return [estimated_spectrum, x_recon, neighbors]
 
 
 def online_learning(Xdev, Ydev, X, Y,

@@ -83,3 +83,11 @@ def gl_recons(magspec, init_vec, niter=10, wsize=512, tstep=256, display=False):
                    interpolation='nearest')
 
     return x_rec
+
+
+def gl_recons_vary_size(estimated_spectrum, n_segments_start,
+                        iter, win_size, step_size, display=False):
+    """ reconstruct from magnitude spectrogram for varying sizes of segments """
+    
+    
+    

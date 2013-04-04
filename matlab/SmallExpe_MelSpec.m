@@ -45,7 +45,7 @@ test_feats = test_feats(:,1:n_frames_test);
 methods_to_try = [1];
 
 res_struct = {};
-nb_medians = 10;
+nb_medians = 5;
 display = 1;
 for methodix=1:length(methods_to_try)
     tic
