@@ -8,12 +8,14 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import cProfile
 from PyMP import Signal
+from PyMP.signals import LongSignal
 import sys
 import os.path as op
 import os
 import cv
 import cv2
 import stft
+from math import pi
 sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
@@ -85,9 +87,88 @@ def gl_recons(magspec, init_vec, niter=10, wsize=512, tstep=256, display=False):
     return x_rec
 
 
-def gl_recons_vary_size(estimated_spectrum, n_segments_start,
-                        iter, win_size, step_size, display=False):
-    """ reconstruct from magnitude spectrogram for varying sizes of segments """
+def spec_morph(learn_specs, target_length, neighb_segments, l_seg_bounds):
+    """ given a spectrogram and :
+        - l_segments : list of (start, end) pairs of indices
+        - neighb_segments :  list of (segment index, segment lengths)        
+        do a morphing and build a candidate spectrogram """
+    # total size of new spectrogram
+    tstep = (learn_specs.shape[1]-1)    # Assume 50% overlap
+    n_t_segments = len(neighb_segments)    
+    # initialize new spectrogram
+    morphed_spectro = (1e-5)*np.ones((target_length/tstep, learn_specs.shape[1]))
+    cur_target_idx = 0  # current frame idx
+    for segI in range(n_t_segments):
+        ref_seg_idx = neighb_segments[segI][0]
+        target_seg_length = neighb_segments[segI][1]
+        # get indices of template frames
+        ref_idx = range(l_seg_bounds[ref_seg_idx][0], l_seg_bounds[ref_seg_idx][1])      
+        # get indices of target frames  
+        target_idx = range(cur_target_idx, min(cur_target_idx + target_seg_length/tstep,  morphed_spectro.shape[0]))
+        
+        # now we need to compute the ratio of morphing        
+        ratio = float(len(ref_idx))/float(len(target_idx))        
+        # then 
+        if ratio < 1:
+            # case where we need to elongate the signal: use resize: duplicate end elements
+            # TODO : maybe some other interpolation scheme would be better
+            morphed_spectro[target_idx,:] = np.resize(np.abs(learn_specs[ref_idx,:]), (len(target_idx), learn_specs.shape[1]))
+        else:
+            # case where we need to compress the signal: build a redundant comb 
+            morphed_spectro[target_idx,:] = np.abs(learn_specs[[ref_idx[int(j*ratio)] for j in range(len(target_idx))],:])             
+        cur_target_idx += target_seg_length/tstep    
+    return morphed_spectro
     
+def time_stretch(signalin, tscale, wsize=512, tstep=128):
+    """ take the time serie, perform a highly overlapped STFT
+        and change the hop size at reconstruction while adapting 
+        the phase accordingly """
     
+    # read input and get the timescale factor    
+    L = signalin.shape[0]    
     
+    # signal blocks for processing and output
+    phi  = np.zeros(wsize)
+    out = np.zeros(wsize, dtype=complex)
+    sigout = np.zeros(L/tscale+wsize)
+    
+    # max input amp, window
+    amp = signalin.max()
+    win = np.hanning(wsize)
+    p = 0  # position in the original (increment by tstep*tscale)
+    pp = 0 # position in the target   (increment by tstep)
+    
+    # TODO change this: the algorithm is stopping too soon: many zeroes on the edges
+    while p < L-(wsize+tstep):    
+        # take the spectra of two consecutive windows
+        p1 = int(p)
+        spec1 =  np.fft.fft(win*signalin[p1:p1+wsize])
+        spec2 =  np.fft.fft(win*signalin[p1+tstep:p1+wsize+tstep])
+        # take their phase difference and integrate
+        phi += (np.angle(spec2) - np.angle(spec1))
+        # bring the phase back to between pi and -pi
+        for phiI in range(len(phi)):
+            while phi[phiI] < -pi: phi[phiI] += 2*pi
+            while phi[phiI] >= pi: phi[phiI] -= 2*pi
+        out.real, out.imag = np.cos(phi), np.sin(phi)
+        # inverse FFT and overlap-add
+        sigout[pp:pp+wsize] += win*np.fft.ifft(np.abs(spec2)*out)
+        pp += tstep
+        p += tstep*tscale
+    
+    return sigout
+
+def get_audio(filepath, seg_start, seg_duration):
+    """ for use only with wav files from rwc database """
+    import wave
+    wavfile = wave.open(filepath, 'r')
+    fs = wavfile.getframerate()
+    bFrame = int(seg_start*fs)
+    nFrames = int(seg_duration*fs)    
+    wavfile.setpos(bFrame)
+#        print "Reading ",bFrame, nFrames, wavfile._framesize
+    str_bytestream = wavfile.readframes(nFrames)
+    audiodata = np.fromstring(str_bytestream, 'h')
+    wavfile.close()
+    return audiodata, fs
+

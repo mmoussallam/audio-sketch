@@ -9,7 +9,11 @@ from scipy.io import savemat, loadmat
 import os.path as op
 from PyMP import signals, mp
 from PyMP.mdct import Dico, LODico
-
+import sys
+import os
+sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')    
+import hdf5_utils as HDF5
+import hdf5_getters    
 
 from tempfile import mkdtemp
 cachedir = mkdtemp()
@@ -151,3 +155,84 @@ def load_cooc_mat(files_path, output_root_path, group_name,
     Fs = D['fs'][0, 0]
 #    approx = app.read_from_mat_struct(D['approx'])
     return spmat, pyDico, l, Fs
+
+
+def find_indexes(startIdx, array, stopvalue):
+    """ get the indexes in the (sorted) array such that
+    elements are smaller than value """
+    idxset =[]
+    idx = startIdx
+    while idx <= array.shape[0]-1 and array[idx] < stopvalue:
+        idxset.append(idx)
+        idx +=1
+#        print idx, array[idx]
+    return idxset
+
+
+def get_filepaths(audio_path, random_seed=None, forbid_list=[],ext='.wav'):
+    """function [file_paths] = get_filepaths(audio_path, random_seed)
+    % retrieves all the wav file names and relative path given the directory
+    % if random_seed is specified: it applies a random suffling of the files
+    % paths"""
+
+    import os
+    import os.path as op
+    file_paths = []
+    # root
+    dir_list = os.listdir(audio_path)
+    
+    # recursive search
+    for dir_ind in range(len(dir_list)):
+
+        if op.isdir(op.join(audio_path, dir_list[dir_ind])):
+
+            sub_files = get_filepaths(op.join(audio_path,
+                                              dir_list[dir_ind]),
+                                      forbid_list=forbid_list)
+            file_paths.extend(sub_files)
+        else:
+            if ext in dir_list[dir_ind]:
+                if not dir_list[dir_ind] in forbid_list:                                
+                    file_paths.append(op.join(audio_path, dir_list[dir_ind]))
+
+    if random_seed is not None:
+        # use the random_seed to initialize random state
+        np.random.seed(random_seed)
+        file_paths = np.random.permutation(file_paths)
+
+    return file_paths
+
+def get_track_info(h5file):
+    h5 = hdf5_getters.open_h5_file_read(h5file)
+    title = hdf5_getters.get_title(h5)
+    artist = hdf5_getters.get_artist_name(h5)
+    return title, artist
+    
+def get_ten_features_from_file(feats_all, segments_all, confidence_all, h5file):
+    h5 = hdf5_getters.open_h5_file_read(h5file)
+    timbre = hdf5_getters.get_segments_timbre(h5)
+    loudness_start = hdf5_getters.get_segments_loudness_start(h5)
+    loudness_max = hdf5_getters.get_segments_loudness_max(h5)
+    loudness_max_time = hdf5_getters.get_segments_loudness_max_time(h5)
+    C = hdf5_getters.get_segments_pitches(h5)
+    
+    confidence_all.append(hdf5_getters.get_segments_confidence(h5))
+    
+    segments_all.append(np.array([hdf5_getters.get_segments_start(h5), os.path.splitext(os.path.split(h5file)[-1])[0]]))
+    
+    feats_all.append(np.hstack((timbre, loudness_start.reshape((loudness_start.shape[0], 1)), loudness_max.reshape((loudness_max.shape[0], 1)), loudness_max_time.reshape((loudness_max_time.shape[0], 1)), C)))
+    h5.close()
+
+def get_ten_features(h5_dir):
+    
+    # load the Echo Nest features
+    feats_all = []
+    segments_all = []
+    conf_all = []
+    for h5file in get_filepaths(h5_dir, ext='.h5'):
+        get_ten_features_from_file(feats_all, segments_all, conf_all, h5file)
+        
+    feats = np.concatenate(feats_all, axis=0)
+    segments = np.vstack(segments_all)    
+    confidence = np.concatenate(conf_all)
+    return feats, segments, confidence

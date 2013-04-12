@@ -19,27 +19,31 @@ import hdf5_utils as HDF5
 import hdf5_getters
 import pyechonest
 from pyechonest import config
+from pyechonest import track
 config.ECHO_NEST_API_KEY="5TSYCVEZEIQ9R3HEO"
 #os.environ['ECHONEST_API_KEY'] = config.ECHO_NEST_API_KEY
 
 # the goal is to get the feature information for the learn subbase of rwc audio samples
-input_dir = '/sons/rwc/Learn/'
-output_dir = '/sons/rwc/Learn/hdf5/'
+input_dir = '/sons/rwc/Cordes/'
+output_dir = '/sons/rwc/Cordes/hdf5/'
 
 # Single file is working, now loop on all files from the learning directory
 #from pyechonest import track
-for audiofile in features.get_filepaths(input_dir, None):
+for audiofile in features.get_filepaths(input_dir, ext='.WAV'):
+    print "Starting work on ", audiofile    
     output = output_dir + os.path.splitext(os.path.split(audiofile)[-1])[0] + '.h5'
+    if os.path.exists(output):
+        continue
     file_object = open(audiofile)
-    track = track.track_from_file(file_object, 'wav', force_upload=True)
+    curtrack = track.track_from_file(file_object, 'wav', force_upload=True)
 #
     HDF5.create_song_file(output,force=False)
     h5 = HDF5.open_h5_file_append(output)
     # HACK we need to fill missing values
-    track.__setattr__('foreign_id','')
-    track.__setattr__('foreign_release_id','')
-    track.__setattr__('audio_md5','')
-    HDF5.fill_hdf5_from_track(h5,track)
+    curtrack.__setattr__('foreign_id','')
+    curtrack.__setattr__('foreign_release_id','')
+    curtrack.__setattr__('audio_md5','')
+    HDF5.fill_hdf5_from_track(h5,curtrack)
     h5.close()
     del h5
     

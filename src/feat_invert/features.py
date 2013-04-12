@@ -159,7 +159,7 @@ def getoptions(paramsdict, optioname, default_value):
         return default_value
 
 
-def get_filepaths(audio_path, random_seed=None, forbid_list=[]):
+def get_filepaths(audio_path, random_seed=None, forbid_list=[],ext='.wav'):
     """function [file_paths] = get_filepaths(audio_path, random_seed)
     % retrieves all the wav file names and relative path given the directory
     % if random_seed is specified: it applies a random suffling of the files
@@ -181,7 +181,7 @@ def get_filepaths(audio_path, random_seed=None, forbid_list=[]):
                                       forbid_list=forbid_list)
             file_paths.extend(sub_files)
         else:
-            if '.wav' in dir_list[dir_ind]:
+            if ext in dir_list[dir_ind]:
                 if not dir_list[dir_ind] in forbid_list:                                
                     file_paths.append(op.join(audio_path, dir_list[dir_ind]))
 

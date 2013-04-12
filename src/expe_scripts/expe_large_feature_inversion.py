@@ -25,9 +25,9 @@ from scipy.ndimage.filters import median_filter
 display = True
 
 # for all combinations of these parameters
-nb_learns = [100000,]
+nb_learns = [2000000,]
 nb_medians = [1,10]
-nb_features = [10,20,40,60]
+nb_features = [20]
 nb_trials = 1
 method = 1
 
