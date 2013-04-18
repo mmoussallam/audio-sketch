@@ -420,7 +420,7 @@ class CochleoPeaksSketch(CochleoDumbPeaksSketch):
     """ A slightly less stupid way to select the coefficients : by spreading them
         in the TF plane 
         
-        only need to rewrite sparsify
+        only need to rewrite sparsify @TODO
         """
     def __init__(self, original_sig=None, **kwargs):        
         # add all the parameters that you want
@@ -428,10 +428,9 @@ class CochleoPeaksSketch(CochleoDumbPeaksSketch):
      
     def sparsify(self, sparsity):
         ''' sparsify using the peaks with spreading on the TF plane '''
-        if self.rep is None:
+        if self.cochleogram is None:
             raise ValueError("STFT not computed yet")
-        
-                
+        v5 = self.cochleogram    
         self.sp_rep = np.zeros_like(self.rep.ravel())
 #        print self.sp_rep.shape
         # peak picking
