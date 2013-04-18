@@ -12,7 +12,7 @@ sys.path.append('/home/manu/workspace/meeg_denoise')
 from classes import sketch
 import matplotlib.pyplot as plt
 plt.switch_backend('Agg')
-audio_test_file = '/sons/tests/Bach_prelude_4s.wav'
+audio_test_file = '/sons/jingles/panzani.wav'
 
 class SketchTest(unittest.TestCase):
 
@@ -32,7 +32,9 @@ class SketchTest(unittest.TestCase):
 #        kwargs = {'dico':[64,512,2048], 'n_atoms':100}
 #        xmdctmpsketch = sketch.XMDCTSparseSketch()
         
-        sketches_to_test = [sketch.CochleoPeaksSketch(),
+        sketches_to_test = [sketch.SWSSketch(),
+#                            sketch.CochleoPeaksSketch(),
+                            sketch.CochleoDumbPeaksSketch(),
                             sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
                             sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
                             sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              

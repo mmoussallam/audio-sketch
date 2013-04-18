@@ -4,6 +4,7 @@ Created on Jan 30, 2013
 @author: manu
 '''
 import numpy as np
+import os
 from PyMP import Signal
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -116,10 +117,10 @@ class STFTPeaksSketch(AudioSketch):
         else:
             rep = self.rep        
         
-        x_tick_vec = (np.linspace(0, rep.shape[2], 10)).astype(int)
+        x_tick_vec = np.linspace(0, rep.shape[2], 10).astype(int)
         x_label_vec = (x_tick_vec*float(self.params['step']))/float(self.orig_signal.fs)
         
-        y_tick_vec = (np.linspace(0, rep.shape[1], 6)).astype(int)
+        y_tick_vec = np.linspace(0, rep.shape[1], 6).astype(int)
         y_label_vec = (y_tick_vec/float(self.params['scale']))*float(self.orig_signal.fs)            
         
         plt.figure()
@@ -143,36 +144,32 @@ class STFTPeaksSketch(AudioSketch):
         
         for key in kwargs:
             self.params[key] = kwargs[key]
-        else:
+            
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")            
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= np.sum(self.rep.shape)
+#        else:
             # otherwise the sparsity argument take over and we divide in 
             # the desired number of regions (preserving the bin/frame ratio)
 #            print self.rep.shape[1:]
-            self.params['f_width'] = int(self.rep.shape[1]/np.sqrt(sparsity))
-            self.params['t_width'] = int(self.rep.shape[2]/np.sqrt(sparsity))
+        self.params['f_width'] = int(self.rep.shape[1]/np.sqrt(sparsity))
+        self.params['t_width'] = int(self.rep.shape[2]/np.sqrt(sparsity))
 #            print self.params['f_width'], self.params['t_width']
             
-        self.sp_rep = np.zeros_like(self.rep)
-        
+        self.sp_rep = np.zeros_like(self.rep)        
         # naive implementation: cut in non-overlapping zone and get the max
-        (n_bins, n_frames) = self.rep.shape[1:]
-        
-        
+        (n_bins, n_frames) = self.rep.shape[1:]            
         (f,t) = (self.params['f_width'], self.params['t_width'])
-        
-        
-        
         for x_ind in range(0, (n_frames/t)*t, t):
             for y_ind in range(0, (n_bins/f)*f, f):
-#                print y_ind, x_ind
                 rect_data = self.rep[0,y_ind:y_ind+f,x_ind:x_ind+t]
                 
                 if len(rect_data)>0 and (np.sum(rect_data**2) > 0):
                     f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
-#                    print f_index, t_index
-#                    print y_ind, x_ind, rect_data
                     # add the peak to the sparse rep
-                    self.sp_rep[0, y_ind + f_index, x_ind + t_index] = rect_data[f_index,
-                                                                                 t_index]
+                    self.sp_rep[0, y_ind + f_index, x_ind + t_index] = rect_data[f_index, t_index]
         
         self.nnz = np.count_nonzero(self.sp_rep)
         print "Sparse rep of %d element computed" % self.nnz
@@ -297,6 +294,12 @@ class XMDCTSparseSketch(AudioSketch):
         if sparsity > current number of atoms: pursue the decomposition
         else return the desired number of atoms as sp_rep'''
 
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")            
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= self.rep.recomposed_signal.length
+
         if self.rep is None:
             self.params['n_atoms'] = sparsity
             self.recompute(**kwargs)
@@ -329,7 +332,7 @@ class XMDCTSparseSketch(AudioSketch):
             return self.sp_rep.recomposed_signal
         
 
-class CochleoPeaksSketch(AudioSketch):
+class CochleoDumbPeaksSketch(AudioSketch):
     ''' Sketch based on a cochleogram and pairs of peaks as a sparsifier '''
     
     # parameters
@@ -401,10 +404,123 @@ class CochleoPeaksSketch(AudioSketch):
         self.sp_rep = np.zeros_like(v5.ravel())
 #        print self.sp_rep.shape
         # peak picking
+        
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")            
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= np.sum(self.sp_rep.shape)
+                
         max_indexes = np.argsort(v5.ravel())
         self.sp_rep[max_indexes[-sparsity:]] = v5.ravel()[max_indexes[-sparsity:]]
         
         self.sp_rep = np.reshape(self.sp_rep, v5.shape)
-    
-                
+
+class CochleoPeaksSketch(CochleoDumbPeaksSketch):
+    """ A slightly less stupid way to select the coefficients : by spreading them
+        in the TF plane 
         
+        only need to rewrite sparsify
+        """
+    def __init__(self, original_sig=None, **kwargs):        
+        # add all the parameters that you want
+        super(CochleoPeaksSketch, self).__init__(original_sig=original_sig, **kwargs)
+     
+    def sparsify(self, sparsity):
+        ''' sparsify using the peaks with spreading on the TF plane '''
+        if self.rep is None:
+            raise ValueError("STFT not computed yet")
+        
+                
+        self.sp_rep = np.zeros_like(self.rep.ravel())
+#        print self.sp_rep.shape
+        # peak picking
+        max_indexes = np.argsort(self.rep.ravel())
+        self.sp_rep[max_indexes[-sparsity:]] = self.rep.ravel()[max_indexes[-sparsity:]]
+        
+        self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
+        
+    
+class SWSSketch(AudioSketch):
+    """ Sine Wave Speech """     
+    params = {'n_formants':5,
+              'time_step':0.01,
+              'windowSize':0.025,
+              'preEmphasis':50,
+              'script_path':'/home/manu/workspace/audio-sketch/src/tools'}
+    formants = None
+               
+    def __init__(self, orig_sig = None, **kwargs):
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        self.call_str = 'praat %s/getsinewavespeech.praat'%self.params['script_path']
+        if orig_sig is not None:
+            self.recompute(orig_sig, **kwargs )
+            
+    
+    def synthesize(self, sparse=False):    
+        if not sparse:
+            return self.rep
+        else:
+            return self.sp_rep
+    
+    def represent(self, fig=None, sparse=False):
+        """ plotting the sinewave speech magnitude spectrogram"""
+        if fig is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)            
+        else:
+            ax = plt.gca()
+        if not sparse:
+            self.rep.spectrogram(2**int(np.log2(self.params['windowSize']*self.rep.fs)),
+                              2**int(np.log2(self.params['time_step']*self.rep.fs)),
+                            order=1, log=True, ax=ax)
+        else:
+            self.sp_rep.spectrogram(2**int(np.log2(self.params['windowSize']*self.rep.fs)),
+                              2**int(np.log2(self.params['time_step']*self.rep.fs)),
+                            order=1, log=True, ax=ax)
+
+    def fgpt(self):
+        raise NotImplementedError("NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+    
+
+    def _extract_sws(self, signal, kwargs):
+        """ internal routine to extract the sws"""
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        if signal is None or not os.path.exists(signal):
+            raise ValueError("A valid path to a wave file must be provided")
+        self.current_sig = signal
+        os.system('%s %s %1.3f %d %1.3f %d' % (self.call_str, signal, self.params['time_step'], self.params['n_formants'], self.params['windowSize'], self.params['preEmphasis']))
+    # Now retrieve the coefficients and the resulting audio
+        self.formants = []
+        for forIdx in range(1, 4):
+            formant_file = signal[:-4] + '_formant' + str(forIdx) + '.mtxt'
+            fid = open(formant_file, 'rU')
+            vals = fid.readlines()
+            fid.close() # remove first 3 lines and convert to numpy
+            self.formants.append(np.array(vals[3:], dtype='float'))
+
+    def recompute(self, signal = None, **kwargs):                 
+        self._extract_sws(signal, kwargs)
+        
+        # save as the original signal if it's not already set
+        if self.orig_signal is None:
+            self.orig_signal = Signal(signal, normalize=True)
+        # and the audio we said
+        self.rep = Signal(signal[:-4] + '_sws.wav', normalize=True) 
+    
+    def sparsify(self, sparsity):
+        """ It has already been sparsified """
+        # @TODO use sparsity to determine the number of formants and window size/steps
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")            
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= self.rep.length
+        
+        new_tstep = float(int(sparsity)/self.params['n_formants'])/float(self.rep.fs)
+        print "New time step of %1.3f seconds"%new_tstep
+        self._extract_sws(self.current_sig, {'time_step': new_tstep})
+        self.sp_rep = Signal(self.current_sig[:-4] + '_sws.wav', normalize=True) 

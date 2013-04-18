@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from PyMP import Signal
 # import dear
+from joblib import Parallel, delayed
 from dear import spectrum
 from dear.spectrum import cqt, dft, auditory, SpectrogramFile
 from dear.spectrogram import plot_spectrogram
@@ -300,31 +301,26 @@ class cochleogram(object):
 
             # All other channels
             NORM = self.coeffs[0, -1].imag
+            
+            # CANNOT Parallelize because each result is used by the next computation
             for ch in range(v5.shape[0] - 1, 0, -1):
-                # filtering
-                
+                # filtering                
                 y2, y3, vx = self._process_chan(x0, ch, beta, y2_h, alph, L_frm, n_frames)
 #                print v5_new.shape, vx.shape, ch
                 v5_new[ch, :] = vx
-
 #                s = self._process_mask(n_frames, vx, vt, ch, L_frm)
 #                print "repeating s :", s.shape
-
 #                if (fac == -2):            # linear hair cell
 #                    print y3.shape, s.shape
 #                dy = y3
                 y1 = self._process_mask(n_frames, vx, vt, ch, L_frm, y3)
-
 #                else:                # nonlinear hair cell
 #                    ind = (y3 >= 0)
 #                    y1[ind] = y3[ind] * s[ind]
 #                    maxy1p = y1[ind].max()
 #                    ind = (y3 < 0)
 #                    y1[ind] = y3[ind] / np.abs(y3[ind].min()) * maxy1p
-
-#                y1_h = y1
                 y2_h = y2
-
                 # inverse wavelet transform
                 y_cum += np.flipud(coch_filt(np.flipud( y1), self.coeffs, ch)) / NORM
 
@@ -423,7 +419,7 @@ class cochleogram(object):
         y = np.linspace(0, N, f_vec.shape[0])
         
         if duration is not None:
-            t_vec = np.arange(0, duration, 0.1)
+            t_vec = np.arange(0, duration, duration/10)
             x = np.linspace(0, aud_spec.shape[1], t_vec.shape[0])
             plt.xticks(x, ["%1.1f"%t for t in t_vec])
             ax.set_xlabel('Time (s)')

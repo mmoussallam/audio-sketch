@@ -41,14 +41,14 @@ gram.build_aud()
 
 #t = time.clock()
 init_rec_data = gram.init_inverse()
-rec_data = gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)
+#rec_data = gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)
 #print "Elapsed :", time.clock() -t
 
-#cProfile.runctx('gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)',
-#                globals(), locals())
+cProfile.runctx('gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)',
+                globals(), locals())
 
-rec_sig = Signal(rec_data, sig.fs)
-rec_sig.write('/sons/resynth_aud_python_10.wav')
+#rec_sig = Signal(rec_data, sig.fs)
+#rec_sig.write('/sons/resynth_aud_python_10.wav')
 #plt.figure()
 #plt.plot(rec_data)
 #plt.show()

@@ -443,14 +443,14 @@ if __name__ == "__main__":
 
     suite = unittest.TestSuite()
 
-#    suite.addTest(CreateAndDestroyBaseTest())
-#    suite.addTest(HandlingMultipleKeyTest())
-#    suite.addTest(DifferentFormattingTest())
-#    suite.addTest(PPBSDHandlerTest())
-#    suite.addTest(PopulateMPAtomsTest())
-#    suite.addTest(PersistentBaseCreationTest())
-#    suite.addTest(DatabaseConstructionTest())
-#    suite.addTest(FileRecognitionTest())
+    suite.addTest(CreateAndDestroyBaseTest())
+    suite.addTest(HandlingMultipleKeyTest())
+    suite.addTest(DifferentFormattingTest())
+    suite.addTest(PPBSDHandlerTest())
+    suite.addTest(PopulateMPAtomsTest())
+    suite.addTest(PersistentBaseCreationTest())
+    suite.addTest(DatabaseConstructionTest())
+    suite.addTest(FileRecognitionTest())
     suite.addTest(OffsetDetectionTest())
 
     unittest.TextTestRunner(verbosity=2).run(suite)
