@@ -25,7 +25,7 @@ from scipy.ndimage.filters import median_filter
 display = True
 
 # for all combinations of these parameters
-nb_learns = [2000000,]
+nb_learns = [100000,]
 nb_medians = [1,]
 nb_features = [68,]
 nb_trials = 1
@@ -42,10 +42,10 @@ l_medfilt = 3
 #startpoint = 0
 #learn_seed = 13
 
-learn_directory = '/sons/rwc/Learn'
+learn_directory = '/sons/rwc/Piano'
 test_directory = '/sons/rwc/Test'
 startpoint = 0 # in seconds
-learn_seed = 78
+learn_seed = 87
 force_recompute = False
 
 params = {}

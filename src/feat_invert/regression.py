@@ -144,7 +144,7 @@ def ann(Xdev, Ydev, X, Y, display=False, K=1):
     N = Ydev.shape[0]
     Tdev = Xdev.shape[1]
     T = X.shape[1]
-
+    print Xdev.shape, Ydev.shape, X.shape
     # initalize output
     Y_hat = np.zeros((N, T))
 
