@@ -87,14 +87,15 @@ class STFTPeaksSketch(AudioSketch):
     ''' Sketch based on a single STFT with peak-picking as a
     sparsifying method '''
 
-    # baseline parameters: default rectangle is 10 frames by 10 bins large
-    params = {'scale': 1024,
+    # TODO this is same as superclass
+    def __init__(self, original_sig=None, **kwargs):
+        
+        # baseline parameters: default rectangle is 10 frames by 10 bins large        
+        self.params = {'scale': 1024,
               'step': 512,
               'f_width': 10,
               't_width': 10}
-
-    # TODO this is same as superclass
-    def __init__(self, original_sig=None, **kwargs):
+        
         # add all the parameters that you want
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -149,7 +150,7 @@ class STFTPeaksSketch(AudioSketch):
                        aspect='auto',
                        interpolation='nearest',
                        origin='lower',
-                       cmap=cm.binary_r)
+                       cmap=cm.coolwarm)
             plt.xlabel('Time (s)')
             plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
             plt.ylabel('Frequency')

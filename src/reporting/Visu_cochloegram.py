@@ -14,18 +14,23 @@ sys.path.append('/home/manu/workspace/meeg_denoise')
 from tools import cochleo_tools
 #from classes import sketch
 import matplotlib.pyplot as plt
+import matplotlib.colors as cc
+import matplotlib.cm as cm
 from PyMP import Signal
 import stft
 from scipy.signal import lfilter, hann
 plt.switch_backend('Agg')
 audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Hand-made Toolbox/forAngelique/61_sadness.wav'
-
+audio_test_file = '/sons/jingles/panzani.wav'
 figure_output_path = '/home/manu/workspace/audio-sketch/src/reporting/figures/'
 
 sig = Signal(audio_test_file, mono=True, normalize=True)
 sig.downsample(16000)
 scale = 512
-step=128
+step=32
+
+sig.spectrogram(scale,step, order=1, log=False, cmap=cm.coolwarm)
+
 
 def plot_spectrogram(sig_stft, scale=512, step=128):
     plt.figure()
@@ -47,28 +52,28 @@ def plot_spectrogram(sig_stft, scale=512, step=128):
     plt.yticks(y_tick_vec, ["%d"%int(a) for a in y_label_vec])
 
 # do the stft of the signal
-sig_stft = stft.stft(sig.data, scale, step);
-plot_spectrogram(sig_stft)
-plt.savefig(op.join(figure_output_path, 'exemple_stft.pdf'))
-
-
-# do the auditory spectrogram of the signal
-gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
-gram.build_aud()
-
-gram.plot_aud(duration = float(sig.length)/float(sig.fs))
-
-plt.savefig(op.join(figure_output_path, 'exemple_cochleogram.pdf'))
-plt.xlabel('Time (s)')
-plt.ylabel('Frequency (Hz)')
-
-
-init_vec = gram.init_inverse()
-inv_data = gram.invert(init_vec=init_vec, nb_iter=15);
-
-rec_stft = stft.stft(inv_data, scale, step);
-plot_spectrogram(rec_stft)
-plt.savefig(op.join(figure_output_path, 'exemple_stft_inv_cochleogram.pdf'))
+#sig_stft = stft.stft(sig.data, scale, step);
+#plot_spectrogram(sig_stft)
+#plt.savefig(op.join(figure_output_path, 'exemple_stft.pdf'))
+#
+#
+## do the auditory spectrogram of the signal
+#gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+#gram.build_aud()
+#
+#gram.plot_aud(duration = float(sig.length)/float(sig.fs))
+#
+#plt.savefig(op.join(figure_output_path, 'exemple_cochleogram.pdf'))
+#plt.xlabel('Time (s)')
+#plt.ylabel('Frequency (Hz)')
+#
+#
+#init_vec = gram.init_inverse()
+#inv_data = gram.invert(init_vec=init_vec, nb_iter=15);
+#
+#rec_stft = stft.stft(inv_data, scale, step);
+#plot_spectrogram(rec_stft)
+#plt.savefig(op.join(figure_output_path, 'exemple_stft_inv_cochleogram.pdf'))
 
 plt.show()
 
