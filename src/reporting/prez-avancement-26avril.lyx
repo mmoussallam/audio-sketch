@@ -4,11 +4,13 @@
 \begin_header
 \textclass beamer
 \begin_preamble
-\usetheme{Warsaw}
+\usetheme{Darmstadt}
 % or ...
 
 \setbeamercovered{transparent}
 % or whatever (possibly just delete it)
+
+\usecolortheme{dolphin}
 \end_preamble
 \use_default_options false
 \maintain_unincluded_children false
@@ -852,11 +854,42 @@ Analyse temps-fréquence
 \end_layout
 
 \begin_layout BeginFrame
-Invariants, Structures
+Représentations de scènes sonores
+\end_layout
+
+\begin_layout FrameSubtitle
+\begin_inset Quotes fld
+\end_inset
+
+He saw only the effects in a general, sketchy way
+\begin_inset Quotes frd
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Intervalles, rythmes, mettre des exemples
+\align center
+\begin_inset Graphics
+	filename figures/voice_0_spectro.pdf
+	lyxscale 50
+	width 6cm
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/voice_1_spectro.pdf
+	lyxscale 50
+	width 6cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
 \end_layout
 
 \begin_layout Subsection
@@ -874,7 +907,7 @@ Caractérisation de la similarités de scènes sonores à partir de l'étude
 
 \begin_layout Itemize
 Comment créer une esquisse d'une scène sonore, qui ne conserve que les traits
- caractéristiques
+ caractéristiques ?
 \end_layout
 
 \begin_layout Section
@@ -890,7 +923,7 @@ Exemples
 \end_layout
 
 \begin_layout Standard
-Ici moult exemples
+Moult exemple
 \end_layout
 
 \begin_layout Subsection
@@ -1085,10 +1118,6 @@ Analyse de motifs de co-occurrence
 
 \begin_layout Itemize
 Apprentissage par réseaux de neurones
-\end_layout
-
-\begin_layout Section*
-Résumé
 \end_layout
 
 \begin_layout BeginFrame
