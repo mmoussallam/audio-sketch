@@ -18,7 +18,7 @@ from PyMP import Signal
 import stft
 from scipy.signal import lfilter, hann
 #audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Hand-made Toolbox/forAngelique/61_sadness.wav'
-audio_test_file = '/sons/jingles/panzani.wav'
+audio_test_file = '/sons/jingles/surprise.wav'
 from classes import sketch
 figure_output_path = '/home/manu/workspace/audio-sketch/src/reporting/figures/'
 audio_output_path = '/home/manu/workspace/audio-sketch/src/reporting/audio/'
@@ -37,9 +37,20 @@ sketches_to_test = [sketch.SWSSketch(),
                             ]
 
 for sk in sketches_to_test:
+    audio_name = op.split(audio_test_file)[1][:-4]
+    # also save the complete STFT
+    sig = Signal(audio_test_file, normalize=True, mono=True)
+    sig.resample(11025)
+    plt.figure(figsize=(10,5))    
+    sig.spectrogram(1024,64, order=0.5, log=False,
+                          cmap=cm.hot, cbar=False)
+        
+    plt.savefig(op.join(figure_output_path, 'original_%s.pdf'%(audio_name)))    
+    sig.write(op.join(audio_output_path, 'original_%s.wav'%(audio_name)))
+    
     print " compute full representation"
     sk.recompute(audio_test_file)
-        
+    
 #    print " plot the computed full representation" 
 #    sk.represent()
     
@@ -57,13 +68,15 @@ for sk in sketches_to_test:
     snr = 10*np.log10(synth_sig.energy/np.sum((synth_sig.data- sk.orig_signal.data[:synth_sig.length])**2))
     
     synth_sig.resample(11025)
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(10,5))    
     synth_sig.spectrogram(1024,64, order=0.5, log=False,
                           cmap=cm.hot, cbar=False)
     
     plt.title('SNR of %2.2f dB'%snr)
-    plt.savefig(op.join(figure_output_path, 'sketchified_%s.pdf'%sk.__class__.__name__))    
+    plt.savefig(op.join(figure_output_path, 'sketchified_%s_%s.pdf'%(audio_name,
+                                                                     sk.__class__.__name__)))    
 
-    synth_sig.write(op.join(audio_output_path, 'sketchified_%s.wav'%sk.__class__.__name__))
+    synth_sig.write(op.join(audio_output_path, 'sketchified_%s_%s.wav'%(audio_name,
+                                                                        sk.__class__.__name__)))
 
 plt.show()
