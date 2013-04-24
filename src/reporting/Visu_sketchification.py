@@ -59,9 +59,8 @@ for sk in sketches_to_test:
     
 #    print " plot the sparsified representation"    
 #    sk.represent(sparse=True)
-    
-    
-    synth_sig = sk.synthesize(sparse=True)
+        
+    synth_sig = sk.synthesize(sparse=True)              
     
 #    print synth_sig.data.shape
     

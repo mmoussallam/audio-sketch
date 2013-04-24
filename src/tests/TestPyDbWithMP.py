@@ -15,7 +15,7 @@ from math import floor, ceil, log
 import struct
 import os
 import os.path as op
-from classes.pydb import ppBDB
+from classes.pydb import XMDCTBDB
 
 from PyMP import signals, mp
 from PyMP.mdct import Dico, LODico
@@ -91,7 +91,7 @@ class PPBSDHandlerTest(unittest.TestCase):
         print 'Creating a hash table using Berkeley DB'
         dbName = 'dummy.db'
 
-        ppbdb = ppBDB(dbName, load=False, persistent=False)
+        ppbdb = XMDCTBDB(dbName, load=False, persistent=False)
         ppbdb.keyformat = None
         print 'populating with a key from MP'
         F = 128
@@ -136,7 +136,7 @@ class PopulateMPAtomsTest(unittest.TestCase):
 
         approx, decay = mp.mp(pySig, pyDico, 20, nbAtom, pad=True, debug=0)
 
-        ppdb = ppBDB('MPdb.db', load=False)
+        ppdb = XMDCTBDB('MPdb.db', load=False)
 #        ppdb.keyformat = None
         ppdb.populate(approx, fileIndex)
 
@@ -176,18 +176,18 @@ class PersistentBaseCreationTest(unittest.TestCase):
     def runTest(self):
         print "------------------ Test4  DB persistence ---------"
 
-        ppdb = ppBDB('NonPersistentMPdb.db', persistent=False)
+        ppdb = XMDCTBDB('NonPersistentMPdb.db', persistent=False)
         self.assertTrue(os.path.exists('./NonPersistentMPdb.db'))
         del ppdb
         self.assertFalse(os.path.exists('./NonPersistentMPdb.db'))
 
-        ppdb = ppBDB('PersistentMPdb.db', persistent=True)
+        ppdb = XMDCTBDB('PersistentMPdb.db', persistent=True)
         self.assertTrue(os.path.exists('./PersistentMPdb.db'))
         del ppdb
         self.assertTrue(os.path.exists('./PersistentMPdb.db'))
 
         # now add something in the base
-        ppdb = ppBDB('./PersistentMPdb.db', load=True)
+        ppdb = XMDCTBDB('./PersistentMPdb.db', load=True)
         ppdb.keyformat = None
         self.assertTrue(ppdb.persistent)
         ppdb.add(zip((440,), (1.45,)), 4)
@@ -195,7 +195,7 @@ class PersistentBaseCreationTest(unittest.TestCase):
         # delete the base and reload it
         del ppdb
 
-        ppdb = ppBDB('./PersistentMPdb.db', load=True)
+        ppdb = XMDCTBDB('./PersistentMPdb.db', load=True)
         ppdb.keyformat = None
         T, fi = ppdb.get(440)
         self.assertTrue(abs(T[0] - 1.45) < 0.01)
@@ -212,7 +212,7 @@ class DatabaseConstructionTest(unittest.TestCase):
             plausible '''
         print "------------------ Test5  DB construction ---------"
 #        # create the base : persistent
-        ppdb = ppBDB('LargeMPdb.db', load=False, time_res=0.2)
+        ppdb = XMDCTBDB('LargeMPdb.db', load=False, time_res=0.2)
         print ppdb
         padZ = 2 * sizes[-1]
         # BUGFIX: pour le cas MP classique: certains atome reviennent : pas
@@ -263,7 +263,7 @@ class OffsetDetectionTest(unittest.TestCase):
     ''' create a database from a single file, then try to recover the correct offset '''
     
     def runTest(self):
-        ppdb = ppBDB('tempdb.db', load=False, persistent=True, maxOffset=500.0)        
+        ppdb = XMDCTBDB('tempdb.db', load=False, persistent=True, maxOffset=500.0)        
         
         pySig = signals.LongSignal(
                 op.join(audio_files_path, file_names[0]),
@@ -328,7 +328,7 @@ class FileRecognitionTest(unittest.TestCase):
         print "------------------ Test6  recognition ---------"
 
         nbCandidates = 8
-        ppdb = ppBDB('LargeMPdb.db', load=True)
+        ppdb = XMDCTBDB('LargeMPdb.db', load=True)
 
         print 'Large Db of ' + str(ppdb.get_stats()['nkeys']) + ' and ' + str(ppdb.get_stats()['ndata'])
         # Now take a song, decompose it and try to retrieve it
@@ -408,7 +408,7 @@ class HandlingMultipleKeyTest(unittest.TestCase):
         a list of possible songs
         '''
         print "------------------ Test 7  handling uniqueness ---------"
-        dummyDb = ppBDB('dummyDb.db', load=False, persistent=False)
+        dummyDb = XMDCTBDB('dummyDb.db', load=False, persistent=False)
         dummyDb.keyformat = None
         dummyDb.add(zip((440, 128, 440), (12.0, 16.0, 45.0)), 1)
         dummyDb.add(zip((512, 320, 440), (54.0, 16.0, 11.0)), 2)
@@ -425,8 +425,8 @@ class DifferentFormattingTest(unittest.TestCase):
 
     def runTest(self):
         print "------------------ Test 8  different formattings ---------"
-        dbFormat1 = ppBDB('format1.db', load=False, persistent=False)
-        dbFormat0 = ppBDB('format2.db', load=False, persistent=False)
+        dbFormat1 = XMDCTBDB('format1.db', load=False, persistent=False)
+        dbFormat0 = XMDCTBDB('format2.db', load=False, persistent=False)
         dbFormat1.keyformat = None
         key1 = [0, 12]
         data = 13.0

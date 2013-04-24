@@ -5,7 +5,7 @@ Tools for fgpt experiments
 
 @author: moussall
 '''
-import pydb
+from classes import pydb
 import time
 import os
 from PyMP import signals, mp
@@ -38,7 +38,7 @@ def fgpt_expe(file_names, n_atoms, scales,
                                                            scales.nature)
 
     # load or create the base
-    ppdb = pydb.ppBDB(db_name, load=(not create_base), persistent=True)
+    ppdb = pydb.XMDCTBDB(db_name, load=(not create_base), persistent=True)
 
     if create_base:
         print 'Reconstructing The base'
@@ -88,7 +88,7 @@ def db_creation(ppdb, file_names, n_atoms, scales,
     if files_path is None:
         files_path = audio_files_path
     
-    if not isinstance(ppdb, pydb.ppBDB):
+    if not isinstance(ppdb, pydb.XMDCTBDB):
         
         if db_name is None:
             db_name = '../data/MPdb_%dfiles_%datoms_%dxMDCT_%s.db' %( 
@@ -98,7 +98,7 @@ def db_creation(ppdb, file_names, n_atoms, scales,
                                                            scales.nature)
 
         # create the base
-        ppdb = pydb.ppBDB(db_name, load=False)
+        ppdb = pydb.XMDCTBDB(db_name, load=False)
         ppdb.keyformat = 0
 
     if padZ is None:
@@ -265,7 +265,8 @@ def db_hierarchical_test(ppdb,
                          nbFiles,
                        testNatom=None, testFiles=None, seg_duration=5,
                        step=2.5, threshold=0.4, nbAtomPerIter=10, debug=True):
-    ''' Same as db_test, except that the search is hierarchically pruned if distance between best candidate
+    ''' Same as db_test, except that the search is hierarchically pruned if 
+    distance between best candidate
     and second best one is above a pre-defined threshold
     '''
     sizes = scales.sizes

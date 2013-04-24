@@ -221,6 +221,13 @@ class STFTPeaksSketch(AudioSketch):
                           self.orig_signal.fs, mono=True)
 
 
+    def fgpt(self, sparse=False):
+        """ This only has a meaning if the peaks have been selected """
+        if self.sp_rep is None:
+            print "WARNING : default peak-picking of 100"
+            self.sparsify(100)        
+        return self.sp_rep
+
 class STFTDumbPeaksSketch(STFTPeaksSketch):
     ''' only changes the sparsifying method '''
 
@@ -382,6 +389,9 @@ class XMDCTSparseSketch(AudioSketch):
         else:
             return self.sp_rep.recomposed_signal
 
+    def fgpt(self, sparse=False):
+        """ In this case it is quite simple : just return the approx objects """
+        return self.sp_rep if sparse else self.rep
 
 class WaveletSparseSketch(XMDCTSparseSketch):
     """ Same as Above but using a wavelet dictionary """
