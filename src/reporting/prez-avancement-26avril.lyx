@@ -13,11 +13,11 @@
 \usecolortheme{dolphin}
 \usepackage{movie15}
 
-\title{Esquisses Sonores}
-\author{M.~Moussallam}
-\institute{ \includegraphics[height=1cm]{figures/logo_charpak.jpeg} \includegraphics[width=5cm]{figures/logo_LOA.pdf} \\   Fond Charpak - Institut Langevin - ESPCI ParisTech }
-
-\logo{\includegraphics[height=1cm]{figures/logo_charpak.jpeg}}
+\title{Esquisses et Empreintes Sonores}
+\author{Manuel ~Moussallam}
+\institute{ Institut Langevin }
+\date{26 avril 2013}
+%\logo{\includegraphics[height=1cm]{figures/logo_charpak.jpeg}}
 \end_preamble
 \use_default_options false
 \maintain_unincluded_children false
@@ -519,7 +519,7 @@ LatexCommand tableofcontents
 
 \begin_layout Standard
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Structurer l'exposé est une tâche difficile et la structure suivante pourrait
@@ -664,6 +664,32 @@ dépend du contexte
 
 \begin_layout Standard
 \align center
+
+\size giant
+\color black
+?
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size giant
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Graphics
 	filename figures/sketch_pressnitzer.png
 	width 3cm
@@ -671,31 +697,6 @@ dépend du contexte
 \end_inset
 
 
-\end_layout
-
-\begin_layout Column
-3cm
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size giant
-\begin_inset Formula $\rightarrow$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Column
-3cm
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size giant
-?
 \end_layout
 
 \end_deeper
@@ -781,7 +782,7 @@ status open
 
 \end_inset
 
-Traits statiques
+Traits généraux
 \begin_inset ERT
 status open
 
@@ -808,7 +809,7 @@ Réverbérations, condition d'enregistrement
 \begin_layout Standard
 Information 
 \color red
-contextuelle
+extraite du contexte
 \end_layout
 
 \end_deeper
@@ -828,7 +829,7 @@ status open
 
 \end_inset
 
-Traits dynamiques
+Traits particuliers
 \begin_inset ERT
 status open
 
@@ -851,7 +852,7 @@ Phonèmes, Rythmes, Intervalles : variation temps-fréquence
 \begin_layout Standard
 Information 
 \color red
-intrinsèque
+extraite du signal
 \end_layout
 
 \end_deeper
@@ -865,7 +866,7 @@ Représentations de scènes sonores
 \end_layout
 
 \begin_layout FrameSubtitle
-Analyse temps-fréquence
+Atomes temps-fréquence
 \end_layout
 
 \begin_layout Standard
@@ -999,22 +1000,11 @@ end{figure}
 \end_layout
 
 \begin_layout Subsection
-Problématiques
+Problématique
 \end_layout
 
 \begin_layout BeginFrame
-Problématiques
-\end_layout
-
-\begin_layout Itemize
-Caractérisation de la similarités de scènes sonores à partir de l'étude
- des 
-\series bold
-invariants
-\series default
- et des 
-\series bold
-structures
+Problématique
 \end_layout
 
 \begin_layout Itemize
@@ -1022,6 +1012,30 @@ Comment créer une esquisse de scène sonore, qui ne conserve que les traits
  caractéristiques ?
 \end_layout
 
+\begin_deeper
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Itemize
+Étude des techniques d'esquisse
+\end_layout
+
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Itemize
+Identification des 
+\series bold
+structures
+\series default
+ et des 
+\series bold
+invariants
+\end_layout
+
+\end_deeper
 \begin_layout Section
 Esquisses sonores
 \end_layout
@@ -1328,48 +1342,6 @@ includemovie[poster,text={
 \backslash
 includegraphics[width=10cm]{figures/sketchified_panzani_SWSSketch.pdf}},mouse=tru
 e,controls=true]{10cm}{5cm}{audio/sketchified_panzani_SWSSketch.wav} 
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{figure}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout BeginFrame
-Exemples
-\end_layout
-
-\begin_layout FrameSubtitle
-Descripteurs spectraux (synthèse par plus proche voisins)
-\end_layout
-
-\begin_layout Standard
-\align center
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{figure}[ht] 
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-includemovie[poster,text={
-\backslash
-includegraphics[width=10cm]{figures/sketchified_panzani_KNNSketch.pdf}},mouse=tru
-e,controls=true]{10cm}{5cm}{audio/sketchified_panzani_KNNSketch.wav} 
 \end_layout
 
 \begin_layout Plain Layout
@@ -1692,7 +1664,7 @@ Calcul des empreintes
 \begin_layout Standard
 \align center
 \begin_inset Graphics
-	filename figures/SparseRep2AudioFingerprint.pdf
+	filename figures/SparseRep2AudioFingerprint.eps
 	width 10cm
 
 \end_inset
@@ -1758,19 +1730,18 @@ Mise au jour des structures
 \end_layout
 
 \begin_layout BeginFrame
-Outil d'analyse structurés
+Analyse Moléculaire?
 \end_layout
 
-\begin_layout Itemize
-Parcimonie structurée
-\end_layout
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/spectro_structures.pdf
+	width 10cm
 
-\begin_layout Itemize
-Modélisation probabiliste
-\end_layout
+\end_inset
 
-\begin_layout Itemize
-Réinjection dans la boucle de comparaison
+
 \end_layout
 
 \begin_layout Subsection
@@ -1822,7 +1793,7 @@ Protocole de comparaisons d'esquisse
 \end_layout
 
 \begin_layout BeginFrame
-Cadre unifié de comparaison
+Architecture logicielle
 \end_layout
 
 \begin_layout Standard
@@ -1838,6 +1809,90 @@ Cadre unifié de comparaison
 \end_layout
 
 \begin_layout BeginFrame
+Paramètres des Esquisses
+\end_layout
+
+\begin_layout ColumnsCenterAligned
+
+\end_layout
+
+\begin_deeper
+\begin_layout Column
+5cm
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=5cm]{figures/STFTPeaks_voice_256.pdf}},mouse=true,controls=
+true]{5cm}{5cm}{audio/STFTPeaks_voice_256.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+5cm
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=5cm]{figures/STFTPeaks_voice_4096.pdf}},mouse=true,controls
+=true]{5cm}{5cm}{audio/STFTPeaks_voice_4096.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout BeginFrame
 Ordres de grandeurs
 \end_layout
 
@@ -1846,7 +1901,7 @@ Taille des bases de données : de 1000 à 1.000.000 éléments (
 \begin_inset Formula $\sim$
 \end_inset
 
-1 minute)
+1 minute par élément)
 \end_layout
 
 \begin_layout Itemize
@@ -1862,19 +1917,95 @@ Nombre d'esquisses considérées
 \end_layout
 
 \begin_layout Itemize
-Paramètres des esquisses : jusqu'à 100
+Paramètres des esquisses : 
+\begin_inset Formula $\sim$
+\end_inset
+
+10
 \end_layout
 
 \begin_layout Itemize
-Type de signature (Hâchage simple ou LSH)
+Type de signature (Hachage simple ou LSH)
 \end_layout
 
-\begin_layout Itemize
-Référent : Méthode Shazam : 100% correct sur 10.000 éléments.
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Référent : Méthode Shazam : 100% correct sur 10.000 éléments 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ Pas notre but
 \end_layout
 
 \begin_layout Subsection
 Synthèse concaténative
+\end_layout
+
+\begin_layout BeginFrame
+Synthèse par plus proches voisins
+\end_layout
+
+\begin_layout Itemize
+Base de données d'apprentissage
+\end_layout
+
+\begin_layout Itemize
+Grande réduction de dimension 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ ensemble de 
+\series bold
+descripteurs non inversibles
+\end_layout
+
+\begin_layout Itemize
+Reconstruction par synthèse concaténative
+\end_layout
+
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Intérêt: descripteurs = information compacte 
+\begin_inset Formula $\simeq$
+\end_inset
+
+Empreinte
+\end_layout
+
+\begin_layout BeginFrame
+Du signal vers l'empreinte
+\end_layout
+
+\begin_layout FrameSubtitle
+sans passer par l'esquisse
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sig2fgpt_nosketch.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Mais on peut recréer une esquisse à partir de l'empreinte!
 \end_layout
 
 \begin_layout BeginFrame
@@ -1901,6 +2032,48 @@ Travail en commun avec A.
 Publication de conférence ACM Multimedia 
 \end_layout
 
+\begin_layout BeginFrame
+Exemples
+\end_layout
+
+\begin_layout FrameSubtitle
+Descripteurs spectraux (synthèse par plus proche voisins)
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_panzani_KNNSketch.pdf}},mouse=tru
+e,controls=true]{10cm}{5cm}{audio/sketchified_panzani_KNNSketch.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Modèles de parcimonie structurée
 \end_layout
@@ -1909,14 +2082,53 @@ Modèles de parcimonie structurée
 Modèles de parcimonie structurée
 \end_layout
 
-\begin_layout Itemize
+\begin_layout ColumnsTopAligned
+
+\end_layout
+
+\begin_deeper
+\begin_layout Column
+5cm
+\end_layout
+
+\begin_layout Standard
+\align center
 Analyse de motifs de co-occurrence
 \end_layout
 
-\begin_layout Itemize
-Apprentissage par réseaux de neurones
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/VirginRadio_MolCooc_Scale2_Prun_0.13_100_M_40960_I_200_NbAtom_100_3xMDCT.pdf
+	lyxscale 50
+	height 4cm
+
+\end_inset
+
+
 \end_layout
 
+\begin_layout Column
+5cm
+\end_layout
+
+\begin_layout Standard
+\align center
+Apprentissage par réseaux profond
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/DBN.jpeg
+	height 4cm
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \begin_layout BeginFrame
 Résumé
 \end_layout
@@ -1932,6 +2144,43 @@ Identification de marqueurs, d'invariants
 
 \begin_layout Itemize
 But: meilleur choix pour une tâche de priming
+\end_layout
+
+\begin_layout BeginFrame
+Rappel enigme..
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_SWSSketch.pdf}},mouse=tr
+ue,controls=true]{10cm}{5cm}{audio/sketchified_surprise_SWSSketch.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout BeginFrame
