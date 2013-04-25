@@ -19,7 +19,7 @@ import struct
 import os
 import os.path as op
 from classes.pydb import STFTPeaksBDB 
-
+from PyMP import Signal 
 
 audio_files_path = '/sons/rwc/rwc-p-m07'
 file_names = os.listdir(audio_files_path)
@@ -130,64 +130,90 @@ class PPBSDHandlerTest(unittest.TestCase):
 #
 
 
-#class PopulatePeakPairTest(unittest.TestCase):
+class PopulatePeakPairTest(unittest.TestCase):
+
+    def runTest(self):
+        print "------------------ Test3  Populate from a true pair of peaks ---------"
+        fileIndex = 2
+        RandomAudioFilePath = file_names[fileIndex]
+        print 'Working on %s' % RandomAudioFilePath
+        sizes = [2 ** j for j in range(7, 15)]
+        segDuration = 5
+        nbAtom = 20
+        
+        pySig = Signal(op.join(audio_files_path, RandomAudioFilePath),
+                               mono=True, normalize=True)
+        
+        segmentLength = ((segDuration * pySig.fs) / sizes[-1]) * sizes[-1]
+        nbSeg = floor(pySig.length / segmentLength)
+        # cropping
+        pySig.crop(0, segmentLength)
+        
+        # create the sparsified matrix of peaks
+        # the easiest is to use the existing PeakPicking in sketch
+        from classes import sketch
+        sk = sketch.STFTPeaksSketch()
+        sk.recompute(pySig)
+        sk.sparsify(100)
+        fgpt = sk.fgpt(sparse=True)
+        ppdb = STFTPeaksBDB('STFTPeaksdb.db', load=False)
+#        ppdb.keyformat = None
+
+        # compute the pairs of peaks
+        peak_indexes = np.nonzero(fgpt[0, : , :])
+        # Take one peak
+        peak_ind = (peak_indexes[0][2],peak_indexes[1][2]) 
+        f_target_width = 2*sk.params['f_width']
+        t_target_width = 2*sk.params['t_width']
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.imshow(np.log(np.abs(fgpt[0,
+                peak_ind[0]: peak_ind[0]+f_target_width,
+                peak_ind[1]: peak_ind[1]+t_target_width])))
+        
+        
+        target_points_i, target_points_j = np.nonzero(fgpt[0,
+                                                        peak_ind[0]: peak_ind[0]+f_target_width,
+                                                        peak_ind[1]: peak_ind[1]+t_target_width])
+        # now we can build a pair of peaks , and thus a key
+        f1 = (float(peak_ind[0]) / sk.params['scale'])*pySig.fs
+        f2 = (float(peak_ind[0]+target_points_i[1]) / sk.params['scale'])*pySig.fs
+        delta_t = float(target_points_j[1] * sk.params['step'])/float(pySig.fs)
+        
+        key = (f1, f2, delta_t)
+        
+        ppdb.populate(sk.fgpt(), fileIndex,
+                      freq_step = float(pySig.fs)/float(sk.params['scale']),
+                      time_step = float(sk.params['step'])/float(pySig.fs))
+
+        nKeys = ppdb.get_stats()['ndata']
+        # compare the number of keys in the base to the number of atoms
+
+        print ppdb.get_stats()
+        self.assertEqual(nKeys, 23)
+
+        # now try to recover the fileIndex knowing one key
+        T, fileI = ppdb.get(key)
+        
+        
+        self.assertEqual(fileI[0], fileIndex)
+        Tpy = np.array(T)
+        self.assertTrue((np.abs(Tpy - Treal)).min() < 0.1)
+
+        # last check: what does a request for non-existing atom in base return?
+        T, fileI = ppdb.get((11, 120.0))
+        self.assertEqual(T, [])
+        self.assertEqual(fileI, [])
+
+        # now let's just retrieve the atoms from the base and see if they are
+        # the same
+        histograms = ppdb.retrieve(approx, offset=0)
+#        plt.figure()
+#        plt.imshow(histograms[0:10,:])
+#        plt.show()
+        del ppdb
 #
-#    def runTest(self):
-#        print "------------------ Test3  Populate from a true pair of peaks ---------"
-#        fileIndex = 2
-#        RandomAudioFilePath = file_names[fileIndex]
-#        print 'Working on %s' % RandomAudioFilePath
-#        sizes = [2 ** j for j in range(7, 15)]
-#        segDuration = 5
-#        nbAtom = 20
-#
-#        pySig = signals.Signal(op.join(audio_files_path, RandomAudioFilePath),
-#                               mono=True, normalize=True)
-#
-#        segmentLength = ((segDuration * pySig.fs) / sizes[-1]) * sizes[-1]
-#        nbSeg = floor(pySig.length / segmentLength)
-#        # cropping
-#        pySig.crop(0, segmentLength)
-#
-#        # create dictionary
-#        pyDico = Dico(sizes)
-#
-#        approx, decay = mp.mp(pySig, pyDico, 20, nbAtom, pad=True, debug=0)
-#
-#        ppdb = XMDCTBDB('MPdb.db', load=False)
-##        ppdb.keyformat = None
-#        ppdb.populate(approx, fileIndex)
-#
-#        nKeys = ppdb.get_stats()['ndata']
-#        # compare the number of keys in the base to the number of atoms
-#
-#        print ppdb.get_stats()
-#        self.assertEqual(nKeys, approx.atom_number)
-#
-#        # now try to recover the fileIndex knowing one of the atoms
-#        Key = [log(approx.atoms[0].length, 2), approx.atoms[0]
-#               .reduced_frequency * pySig.fs]
-#        T, fileI = ppdb.get(Key)
-#        Treal = (float(approx.atoms[0].time_position) / float(pySig.fs))
-#        print T, Treal
-#        self.assertEqual(fileI[0], fileIndex)
-#        Tpy = np.array(T)
-#        self.assertTrue((np.abs(Tpy - Treal)).min() < 0.1)
-#
-#        # last check: what does a request for non-existing atom in base return?
-#        T, fileI = ppdb.get((11, 120.0))
-#        self.assertEqual(T, [])
-#        self.assertEqual(fileI, [])
-#
-#        # now let's just retrieve the atoms from the base and see if they are
-#        # the same
-#        histograms = ppdb.retrieve(approx, offset=0)
-##        plt.figure()
-##        plt.imshow(histograms[0:10,:])
-##        plt.show()
-#        del ppdb
-##
-#
+
 #
 #class PersistentBaseCreationTest(unittest.TestCase):
 #
@@ -465,7 +491,7 @@ if __name__ == "__main__":
 #    suite.addTest(HandlingMultipleKeyTest())
 #    suite.addTest(DifferentFormattingTest())
     suite.addTest(PPBSDHandlerTest())
-#    suite.addTest(PopulateMPAtomsTest())
+    suite.addTest(PopulatePeakPairTest())
 #    suite.addTest(PersistentBaseCreationTest())
 #    suite.addTest(DatabaseConstructionTest())
 #    suite.addTest(FileRecognitionTest())

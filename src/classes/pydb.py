@@ -205,10 +205,34 @@ class STFTPeaksBDB(FgptHandle):
 
         return estTime, fileIdx
     
-    def populate(self, sparse_stft, file_index):
+    def populate(self, sparse_stft, file_index,
+                 freq_step = None, time_step = None,
+                 f_target_width = 50,
+                 t_target_width=50):
         """ populate by creating pairs of peaks """
-        pass
-    
+        # get all non zero elements
+        peak_indexes = np.nonzero(sparse_stft[0,:,:])
+        keys = []
+        values = []
+        
+        # then for each of them look in the target zone for other
+        for pIdx in range(len(peak_indexes[0])):
+            peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
+            target_points_i, target_points_j = np.nonzero(sparse_stft[0,
+                                                        peak_ind[0]: peak_ind[0]+f_target_width,
+                                                        peak_ind[1]: peak_ind[1]+t_target_width])
+            # now we can build a pair of peaks , and thus a key
+            for i in range(1,len(target_points_i)):
+                f1 = float(peak_ind[0]) *freq_step
+                f2 = float(peak_ind[0]+target_points_i[i]) * freq_step
+                t1 = float(peak_ind[1]) *time_step
+                delta_t = float(target_points_j[i]) *time_step
+                print (f1, f2, delta_t) , t1
+                keys.append((f1, f2, delta_t))
+                values.append(t1)
+        
+        Set = set(zip(keys, values))
+        self.add(list(Set), file_index)
 
 class XMDCTBDB(FgptHandle):
     '''
