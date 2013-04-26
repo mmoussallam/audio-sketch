@@ -20,7 +20,8 @@ import os
 import os.path as op
 from classes.pydb import STFTPeaksBDB 
 from PyMP import Signal 
-
+from PyMP.signals import LongSignal
+from classes import sketch
 audio_files_path = '/sons/rwc/rwc-p-m07'
 file_names = os.listdir(audio_files_path)
 sizes = [128, 1024, 8192]
@@ -179,18 +180,16 @@ class PopulatePeakPairTest(unittest.TestCase):
         f1 = (float(peak_ind[0]) / sk.params['scale'])*pySig.fs
         f2 = (float(peak_ind[0]+target_points_i[1]) / sk.params['scale'])*pySig.fs
         delta_t = float(target_points_j[1] * sk.params['step'])/float(pySig.fs)
-        
+        t1 = float(peak_ind[1] * sk.params['step'])/float(pySig.fs)
         key = (f1, f2, delta_t)
-        
-        ppdb.populate(sk.fgpt(), fileIndex,
-                      freq_step = float(pySig.fs)/float(sk.params['scale']),
-                      time_step = float(sk.params['step'])/float(pySig.fs))
+        print key, t1
+        ppdb.populate(sk.fgpt(), sk.params, fileIndex)
 
         nKeys = ppdb.get_stats()['ndata']
         # compare the number of keys in the base to the number of atoms
 
-        print ppdb.get_stats()
-        self.assertEqual(nKeys, 23)
+#        print ppdb.get_stats()
+        self.assertEqual(nKeys, 116)
 
         # now try to recover the fileIndex knowing one key
         T, fileI = ppdb.get(key)
@@ -198,16 +197,17 @@ class PopulatePeakPairTest(unittest.TestCase):
         
         self.assertEqual(fileI[0], fileIndex)
         Tpy = np.array(T)
-        self.assertTrue((np.abs(Tpy - Treal)).min() < 0.1)
+        print Tpy
+        self.assertTrue((np.abs(Tpy - t1)).min() < 0.5)
 
         # last check: what does a request for non-existing atom in base return?
-        T, fileI = ppdb.get((11, 120.0))
+        T, fileI = ppdb.get((11, 120.0, 0.87))
         self.assertEqual(T, [])
         self.assertEqual(fileI, [])
 
         # now let's just retrieve the atoms from the base and see if they are
         # the same
-        histograms = ppdb.retrieve(approx, offset=0)
+        histograms = ppdb.retrieve(fgpt, sk.params)
 #        plt.figure()
 #        plt.imshow(histograms[0:10,:])
 #        plt.show()
@@ -215,234 +215,202 @@ class PopulatePeakPairTest(unittest.TestCase):
 #
 
 #
-#class PersistentBaseCreationTest(unittest.TestCase):
 #
-#    def runTest(self):
-#        print "------------------ Test4  DB persistence ---------"
-#
-#        ppdb = XMDCTBDB('NonPersistentMPdb.db', persistent=False)
-#        self.assertTrue(os.path.exists('./NonPersistentMPdb.db'))
-#        del ppdb
-#        self.assertFalse(os.path.exists('./NonPersistentMPdb.db'))
-#
-#        ppdb = XMDCTBDB('PersistentMPdb.db', persistent=True)
-#        self.assertTrue(os.path.exists('./PersistentMPdb.db'))
-#        del ppdb
-#        self.assertTrue(os.path.exists('./PersistentMPdb.db'))
-#
-#        # now add something in the base
-#        ppdb = XMDCTBDB('./PersistentMPdb.db', load=True)
-#        ppdb.keyformat = None
-#        self.assertTrue(ppdb.persistent)
-#        ppdb.add(zip((440,), (1.45,)), 4)
-#
-#        # delete the base and reload it
-#        del ppdb
-#
-#        ppdb = XMDCTBDB('./PersistentMPdb.db', load=True)
-#        ppdb.keyformat = None
-#        T, fi = ppdb.get(440)
-#        self.assertTrue(abs(T[0] - 1.45) < 0.01)
-#        self.assertEqual(fi[0], 4)
-##
-##
-#
-#
-#class DatabaseConstructionTest(unittest.TestCase):
-#
-#    def runTest(self):
-#        ''' time to test the fingerprinting scheme, create a base with 10 atoms for 8 songs, then
-#            Construct the histograms and retrieve the fileIndex and time offset that is the most
-#            plausible '''
-#        print "------------------ Test5  DB construction ---------"
-##        # create the base : persistent
-#        ppdb = XMDCTBDB('LargeMPdb.db', load=False, time_res=0.2)
-#        print ppdb
-#        padZ = 2 * sizes[-1]
-#        # BUGFIX: pour le cas MP classique: certains atome reviennent : pas
-#        # cool car paire key/data existe deja!
-#        pyDico = LODico(sizes)
-#        segDuration = 5
-#        nbAtom = 50
-#        sig = signals.LongSignal(op.join(audio_files_path, file_names[0]),
-#                                 frame_size=sizes[-1], mono=False, Noverlap=0)
-#
-#        segmentLength = ((segDuration * sig.fs) / sizes[-1]) * sizes[-1]
-#        max_seg_num = 5
-##        " run MP on a number of files"
-#        nbFiles = 8
-#        keycount = 0
-#        for fileIndex in range(nbFiles):
-#            RandomAudioFilePath = file_names[fileIndex]
-#            print fileIndex, RandomAudioFilePath
-#            if not (RandomAudioFilePath[-3:] == 'wav'):
-#                continue
-#
-#            pySig = signals.LongSignal(
-#                op.join(audio_files_path, RandomAudioFilePath),
-#                frame_size=segmentLength, mono=False, Noverlap=0)
-#
-#            nbSeg = int(pySig.n_seg)
-#            print 'Working on ' + str(RandomAudioFilePath) + ' with ' + str(nbSeg) + ' segments'
-#            for segIdx in range(min(nbSeg, max_seg_num)):
-#                pySigLocal = pySig.get_sub_signal(
-#                    segIdx, 1, True, True, channel=0, pad=padZ)
-#                print "MP on segment %d" % segIdx
-#                # run the decomposition
-#                approx, decay = mp.mp(
-#                    pySigLocal, pyDico, 40, nbAtom, pad=False)
-#
-#                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
-#                ppdb.populate(
-#                    approx, fileIndex, offset=(segIdx * segmentLength) - padZ)
-#
+class DatabaseConstructionTest(unittest.TestCase):
+
+    def runTest(self):
+        ''' time to test the fingerprinting scheme, create a base with 200 atoms for 8 songs, then
+            Construct the histograms and retrieve the fileIndex and time offset that is the most
+            plausible '''
+        print "------------------ Test5  DB construction ---------"
+#        # create the base : persistent
+        ppdb = STFTPeaksBDB('LargeSTFTPeaksdb.db', load=False, time_res=0.2)
+        print ppdb
+        
+        segDuration = 5        
+        
+        sig = LongSignal(op.join(audio_files_path, file_names[0]),
+                                 frame_duration=segDuration, mono=False, Noverlap=0)
+
+        segmentLength = sig.segment_size
+        max_seg_num = 5
+#        " run sketchifier on a number of files"
+        nbFiles = 8
+        keycount = 0
+        for fileIndex in range(nbFiles):
+            RandomAudioFilePath = file_names[fileIndex]
+            print fileIndex, RandomAudioFilePath
+            if not (RandomAudioFilePath[-3:] == 'wav'):
+                continue
+
+            pySig = LongSignal(
+                op.join(audio_files_path, RandomAudioFilePath),
+                frame_size=segmentLength, mono=False, Noverlap=0)
+            sk = sketch.STFTPeaksSketch(**{'scale':512,'step':128})
+            nbSeg = int(pySig.n_seg)
+            print 'Working on ' + str(RandomAudioFilePath) + ' with ' + str(nbSeg) + ' segments'
+            for segIdx in range(min(nbSeg, max_seg_num)):
+                pySigLocal = pySig.get_sub_signal(
+                    segIdx, 1, True, True, channel=0, pad=0)
+                print "sketchify the segment %d" % segIdx
+                # run the decomposition
+                
+                
+                sk.recompute(pySigLocal)
+                sk.sparsify(200)
+                fgpt = sk.fgpt()
+                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
+                ppdb.populate(fgpt, sk.params, fileIndex)
+
 #                keycount += approx.atom_number
-#
-#        print ppdb.get_stats()
-##        self.assertEqual(keycount, ppdb.get_stats()['ndata'])
+
+        print ppdb.get_stats()
+#        self.assertEqual(keycount, ppdb.get_stats()['ndata'])
 #
 ##
 #
-#class OffsetDetectionTest(unittest.TestCase):
-#    ''' create a database from a single file, then try to recover the correct offset '''
-#    
-#    def runTest(self):
-#        ppdb = XMDCTBDB('tempdb.db', load=False, persistent=True, maxOffset=500.0)        
-#        
-#        pySig = signals.LongSignal(
-#                op.join(audio_files_path, file_names[0]),
-#                frame_duration=5, mono=False, Noverlap=0)
-#
-#        self.assertEqual(pySig.segment_size, 5.0*pySig.fs)
-#        
-#        max_nb_seg = 10;
-#        nb_atoms = 150;
-#        
-#        scales = SpreadDico([8192], penalty=0.1, mask_time=2, mask_freq=20)
-#        
-##        scales = Dico([8192])
-#        for segIdx in range(min(max_nb_seg,pySig.n_seg)):
-#            pySigLocal = pySig.get_sub_signal(
-#                segIdx, 1, mono=True, normalize=False, channel=0, pad=scales.get_pad())
+class OffsetDetectionTest(unittest.TestCase):
+    ''' create a database from a single file, then try to recover the correct offset '''
+    
+    def runTest(self):
+        ppdb = STFTPeaksBDB('tempdb.db', load=False, persistent=True, time_max=500.0)        
+        
+
+        pySig = LongSignal(
+                op.join(audio_files_path, file_names[0]),
+                frame_duration=5, mono=False, Noverlap=0)
+
+        self.assertEqual(pySig.segment_size, 5.0*pySig.fs)
+        
+        max_nb_seg = 10
+        nb_atoms = 400
+        sk = sketch.STFTPeaksSketch(**{'scale':512,'step':128})
+        for segIdx in range(min(max_nb_seg,pySig.n_seg)):
+            pySigLocal = pySig.get_sub_signal(
+                segIdx, 1, mono=True, normalize=False, channel=0, pad=0)
+            print "sketchify segment %d" % segIdx
+            # run the decomposition
+            
+            
+            sk.recompute(pySigLocal)
+            sk.sparsify(nb_atoms)
+            fgpt = sk.fgpt()
+
+            print "Populating database with offset " + str(segIdx * pySig.segment_size / pySig.fs)
+            ppdb.populate(fgpt, sk.params, 0,
+                      offset = segIdx * pySig.segment_size / pySig.fs)
+    
+
+        # ok we have a DB with only 1 file and different segments, now 
+        nb_test_seg = 15
+        long_sig_test = LongSignal(
+                op.join(audio_files_path, file_names[0]),
+                frame_duration=5, mono=False, Noverlap=0.5)
+        count = 0
+        for segIdx in range(min(nb_test_seg,long_sig_test.n_seg)):
+            pySigLocal = long_sig_test.get_sub_signal(
+                segIdx, 1, mono=True, normalize=False, channel=0, pad=0)
 #            print "MP on segment %d" % segIdx
-#            # run the decomposition
-#            approx, decay = mp.mp(
-#                pySigLocal, scales, 2, nb_atoms, pad=False)
-#
-#            print "Populating database with offset " + str(segIdx * pySig.segment_size / pySig.fs)
-#            ppdb.populate(
-#                approx, 0, offset=(segIdx * pySig.segment_size) - scales.get_pad())
-#    
-#
-#        # ok we have a DB with only 1 file and different segments, now 
-#        nb_test_seg = 15
-#        long_sig_test = signals.LongSignal(
-#                op.join(audio_files_path, file_names[0]),
-#                frame_duration=5, mono=False, Noverlap=0.5)
-#        count = 0
-#        for segIdx in range(min(nb_test_seg,long_sig_test.n_seg)):
-#            pySigLocal = long_sig_test.get_sub_signal(
-#                segIdx, 1, mono=True, normalize=False, channel=0, pad=scales.get_pad())
-##            print "MP on segment %d" % segIdx
-#            # run the decomposition
-#            approx, decay = mp.mp(
-#                pySigLocal, scales, 2, nb_atoms, pad=False)
-#            print approx.atom_number
+            # run the decomposition
+            sk.recompute(pySigLocal)
+            sk.sparsify(nb_atoms)
+            fgpt = sk.fgpt()
+            
+            histograms = ppdb.retrieve(fgpt, sk.params,
+                      offset=0, nbCandidates=1)
+            maxI = np.argmax(histograms[:])
+            OffsetI = maxI / 1
+            estFileI = maxI % 1
+            
+            oracle_value = segIdx * long_sig_test.segment_size * (1 - long_sig_test.overlap) / long_sig_test.fs 
+            print "Seg %d Oracle: %1.1f - found %1.1f"%(segIdx, oracle_value, OffsetI )
+            if abs(OffsetI - oracle_value) < 5:
+                count +=1 
+
+                
+        glob = float(count)/float(min(nb_test_seg,long_sig_test.n_seg))
+        print "Global Score of %1.3f"%glob
+        self.assertGreater(glob, 0.8)
 #            
-#            histograms = ppdb.retrieve(approx, nbCandidates=1)
-#            maxI = np.argmax(histograms[:])
-#            OffsetI = maxI / 1
-#            estFileI = maxI % 1
-#            
-#            oracle_value = segIdx * long_sig_test.segment_size * (1 - long_sig_test.overlap) / long_sig_test.fs 
-#            print "Seg %d Oracle: %1.1f - found %1.1f"%(segIdx, oracle_value, OffsetI )
-#            if abs(OffsetI - oracle_value) < 5:
-#                count +=1 
+class FileRecognitionTest(unittest.TestCase):
+
+    def runTest(self):
+        ''' take the base previously constructed and retrieve the song index based on 200 atoms/seconds
+        '''
+        print "------------------ Test6  recognition ---------"
+
+        nbCandidates = 8
+        ppdb = STFTPeaksBDB('LargeSTFTdb.db', load=True)
+
+        print 'Large Db of ' + str(ppdb.get_stats()['nkeys']) + ' and ' + str(ppdb.get_stats()['ndata'])
+        # Now take a song, decompose it and try to retrieve it
+        fileIndex = 6
+        RandomAudioFilePath = file_names[fileIndex]
+        print 'Working on ' + str(RandomAudioFilePath)
+        pySig = Signal(op.join(audio_files_path, RandomAudioFilePath),
+                               mono=True)
+
+        pyDico = LODico(sizes)
+        segDuration = 5
+        offsetDuration = 7
+        offset = offsetDuration * pySig.fs
+        nbAtom = 50
+        segmentLength = ((segDuration * pySig.fs) / sizes[-1]) * sizes[-1]
+        pySig.crop(offset, offset + segmentLength)
+
+        approx, decay = mp.mp(pySig, pyDico, 40, nbAtom, pad=True)
+
+#        plt.figure()
+#        approx.plotTF()
+#        plt.show()
+        res = map(ppdb.get , map(ppdb.kform, approx.atoms), [(a.time_position - pyDico.get_pad())  / approx.fs for a in approx.atoms])
 #
-#                
-#        glob = float(count)/float(min(nb_test_seg,long_sig_test.n_seg))
-#        print "Global Score of %1.3f"%glob
-#        self.assertGreater(glob, 0.8)
-#            
-#class FileRecognitionTest(unittest.TestCase):
-#
-#    def runTest(self):
-#        ''' take the base previously constructed and retrieve the song index based on 10 atoms
-#        '''
-#        print "------------------ Test6  recognition ---------"
-#
-#        nbCandidates = 8
-#        ppdb = XMDCTBDB('LargeMPdb.db', load=True)
-#
-#        print 'Large Db of ' + str(ppdb.get_stats()['nkeys']) + ' and ' + str(ppdb.get_stats()['ndata'])
-#        # Now take a song, decompose it and try to retrieve it
-#        fileIndex = 6
-#        RandomAudioFilePath = file_names[fileIndex]
-#        print 'Working on ' + str(RandomAudioFilePath)
-#        pySig = signals.Signal(op.join(audio_files_path, RandomAudioFilePath),
-#                               mono=True)
-#
-#        pyDico = LODico(sizes)
-#        segDuration = 5
-#        offsetDuration = 7
-#        offset = offsetDuration * pySig.fs
-#        nbAtom = 50
-#        segmentLength = ((segDuration * pySig.fs) / sizes[-1]) * sizes[-1]
-#        pySig.crop(offset, offset + segmentLength)
-#
-#        approx, decay = mp.mp(pySig, pyDico, 40, nbAtom, pad=True)
-#
-##        plt.figure()
-##        approx.plotTF()
-##        plt.show()
-#        res = map(ppdb.get , map(ppdb.kform, approx.atoms), [(a.time_position - pyDico.get_pad())  / approx.fs for a in approx.atoms])
-##
-#        #res = map(bdb.get, map(bdb.kform, approx.atoms))
-#        
-#        histogram = np.zeros((600, nbCandidates))
-#        
-#        for i in range(approx.atom_number):
-#            print res[i]
-#            histogram[res[i]] +=1
-#        
-#        max1 = np.argmax(histogram[:])
-#        Offset1 = max1 / nbCandidates
-#        estFile1 = max1 % nbCandidates
-##        candidates , offsets = ppdb.retrieve(approx);
-##        print approx.atom_number
-#        histograms = ppdb.retrieve(approx, offset=0, nbCandidates=8)
-## print histograms , np.max(histograms) , np.argmax(histograms, axis=0) ,
-## np.argmax(histograms, axis=1)
-#
-##        plt.figure()
-##        plt.imshow(histograms[0:20,:],interpolation='nearest')
-##        plt.show()
-#
-#        maxI = np.argmax(histograms[:])
-#        OffsetI = maxI / nbCandidates
-#        estFileI = maxI % nbCandidates
-#
-#        print fileIndex, offsetDuration, estFileI,  OffsetI, estFile1,  Offset1, max1, maxI
-#        import matplotlib.pyplot as plt
-##        plt.figure(figsize=(12,6))
-##        plt.subplot(121)
+        #res = map(bdb.get, map(bdb.kform, approx.atoms))
+        
+        histogram = np.zeros((600, nbCandidates))
+        
+        for i in range(approx.atom_number):
+            print res[i]
+            histogram[res[i]] +=1
+        
+        max1 = np.argmax(histogram[:])
+        Offset1 = max1 / nbCandidates
+        estFile1 = max1 % nbCandidates
+#        candidates , offsets = ppdb.retrieve(approx);
+#        print approx.atom_number
+        histograms = ppdb.retrieve(approx, offset=0, nbCandidates=8)
+# print histograms , np.max(histograms) , np.argmax(histograms, axis=0) ,
+# np.argmax(histograms, axis=1)
+
+#        plt.figure()
+#        plt.imshow(histograms[0:20,:],interpolation='nearest')
+#        plt.show()
+
+        maxI = np.argmax(histograms[:])
+        OffsetI = maxI / nbCandidates
+        estFileI = maxI % nbCandidates
+
+        print fileIndex, offsetDuration, estFileI,  OffsetI, estFile1,  Offset1, max1, maxI
+        import matplotlib.pyplot as plt
+#        plt.figure(figsize=(12,6))
+#        plt.subplot(121)
+#        plt.imshow(histograms,aspect='auto',interpolation='nearest')
+#        plt.subplot(122)
+#        plt.imshow(histogram,aspect='auto',interpolation='nearest')
 ##        plt.imshow(histograms,aspect='auto',interpolation='nearest')
-##        plt.subplot(122)
-##        plt.imshow(histogram,aspect='auto',interpolation='nearest')
-###        plt.imshow(histograms,aspect='auto',interpolation='nearest')
-###        plt.colorbar()
-##        plt.show()
+##        plt.colorbar()
+#        plt.show()
+
+        print maxI, OffsetI, estFileI
+        self.assertEqual(histograms[OffsetI, estFileI], np.max(histograms))
+        
+        
+        self.assertEqual(fileIndex, estFileI)
+        self.assertTrue(abs(offsetDuration - OffsetI) <= 2.5)
+#        estOffset = OffsetI;
+#        print estOffset , estFileI
+        
 #
-#        print maxI, OffsetI, estFileI
-#        self.assertEqual(histograms[OffsetI, estFileI], np.max(histograms))
-#        
-#        
-#        self.assertEqual(fileIndex, estFileI)
-#        self.assertTrue(abs(offsetDuration - OffsetI) <= 2.5)
-##        estOffset = OffsetI;
-##        print estOffset , estFileI
-#        
-##
 #
 #
 #class HandlingMultipleKeyTest(unittest.TestCase):
@@ -493,8 +461,8 @@ if __name__ == "__main__":
     suite.addTest(PPBSDHandlerTest())
     suite.addTest(PopulatePeakPairTest())
 #    suite.addTest(PersistentBaseCreationTest())
-#    suite.addTest(DatabaseConstructionTest())
+    suite.addTest(DatabaseConstructionTest())
 #    suite.addTest(FileRecognitionTest())
-#    suite.addTest(OffsetDetectionTest())
+    suite.addTest(OffsetDetectionTest())
 
     unittest.TextTestRunner(verbosity=2).run(suite)

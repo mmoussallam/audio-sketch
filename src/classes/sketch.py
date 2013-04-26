@@ -122,7 +122,7 @@ class STFTPeaksSketch(AudioSketch):
 
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
-
+        self.params['fs'] = self.orig_signal.fs
         import stft
         self.rep = stft.stft(self.orig_signal.data,
                              self.params['scale'],
@@ -318,7 +318,7 @@ class XMDCTSparseSketch(AudioSketch):
 
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
-
+        self.params['fs'] = self.orig_signal.fs
         mdct_dico = self._get_dico()
 
         from PyMP import mp

@@ -138,7 +138,7 @@ class PopulateMPAtomsTest(unittest.TestCase):
 
         ppdb = XMDCTBDB('MPdb.db', load=False)
 #        ppdb.keyformat = None
-        ppdb.populate(approx, fileIndex)
+        ppdb.populate(approx, None, fileIndex)
 
         nKeys = ppdb.get_stats()['ndata']
         # compare the number of keys in the base to the number of atoms
@@ -163,7 +163,7 @@ class PopulateMPAtomsTest(unittest.TestCase):
 
         # now let's just retrieve the atoms from the base and see if they are
         # the same
-        histograms = ppdb.retrieve(approx, offset=0)
+        histograms = ppdb.retrieve(approx, None, offset=0)
 #        plt.figure()
 #        plt.imshow(histograms[0:10,:])
 #        plt.show()
@@ -250,7 +250,7 @@ class DatabaseConstructionTest(unittest.TestCase):
 
                 print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 ppdb.populate(
-                    approx, fileIndex, offset=(segIdx * segmentLength) - padZ)
+                    approx, None, fileIndex, offset=(segIdx * segmentLength) - padZ)
 
                 keycount += approx.atom_number
 
@@ -263,7 +263,7 @@ class OffsetDetectionTest(unittest.TestCase):
     ''' create a database from a single file, then try to recover the correct offset '''
     
     def runTest(self):
-        ppdb = XMDCTBDB('tempdb.db', load=False, persistent=True, maxOffset=500.0)        
+        ppdb = XMDCTBDB('tempdb.db', load=False, persistent=True, time_max=500.0)        
         
         pySig = signals.LongSignal(
                 op.join(audio_files_path, file_names[0]),
@@ -287,7 +287,7 @@ class OffsetDetectionTest(unittest.TestCase):
 
             print "Populating database with offset " + str(segIdx * pySig.segment_size / pySig.fs)
             ppdb.populate(
-                approx, 0, offset=(segIdx * pySig.segment_size) - scales.get_pad())
+                approx,None, 0, offset=(segIdx * pySig.segment_size) - scales.get_pad())
     
 
         # ok we have a DB with only 1 file and different segments, now 
@@ -305,7 +305,7 @@ class OffsetDetectionTest(unittest.TestCase):
                 pySigLocal, scales, 2, nb_atoms, pad=False)
             print approx.atom_number
             
-            histograms = ppdb.retrieve(approx, nbCandidates=1)
+            histograms = ppdb.retrieve(approx, None, nbCandidates=1)
             maxI = np.argmax(histograms[:])
             OffsetI = maxI / 1
             estFileI = maxI % 1
@@ -366,7 +366,7 @@ class FileRecognitionTest(unittest.TestCase):
         estFile1 = max1 % nbCandidates
 #        candidates , offsets = ppdb.retrieve(approx);
 #        print approx.atom_number
-        histograms = ppdb.retrieve(approx, offset=0, nbCandidates=8)
+        histograms = ppdb.retrieve(approx, None, offset=0, nbCandidates=8)
 # print histograms , np.max(histograms) , np.argmax(histograms, axis=0) ,
 # np.argmax(histograms, axis=1)
 

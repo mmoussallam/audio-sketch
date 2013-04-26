@@ -85,18 +85,37 @@ class FgptHandle(object):
         '''
         return self.dbObj.stat()
     
-    def add(self):
+    def add(self, Pairs, fileIndex):
+        ''' add all key/value pairs to base '''
         raise NotImplementedError("Not Implemented")
     
-    def get(self):
+    def get(self, key):
+        ''' retrieve all values associated with key '''
         raise NotImplementedError("Not Implemented")
 
-    def populate(self):
+    def populate(self, fgpt, params, fileIndex, offset=0):
+        ''' Populate the database using the given fingerprint and parameters '''
         raise NotImplementedError("Not Implemented")
 
-    def retrieve(self):
+    def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0):
         raise NotImplementedError("Not Implemented")
     
+    def get_candidate(self, fgpt, params, nbCandidates=10, smooth=1):
+        """ make a guess from the given approximant object 
+        
+        All subclasses should use the same architecture so this method should not
+        need be overridden : just a wrapper for a single guess
+        """        
+        histograms = self.retrieve(fgpt, params, nbCandidates= nbCandidates)
+        
+        if smooth>1:
+            from scipy.ndimage.filters import median_filter
+            histograms = median_filter(histograms, (smooth, 1 ))
+        
+        maxI = np.argmax(histograms[:])
+        OffsetI = maxI / nbCandidates
+        estFileI = maxI % nbCandidates
+        return estFileI, OffsetI
 
 class STFTPeaksBDB(FgptHandle):
     ''' handling the fingerprints based on a pairing of STFT peaks 
@@ -158,8 +177,8 @@ class STFTPeaksBDB(FgptHandle):
             # @TODO this is SHAZAM's format : parameterize            
             t1 = value                                                
             
-            Bin_value = self.format_value(fileIndex, t1)
-            Bin_key = self.format_key(key)
+            Bin_value = int(self.format_value(fileIndex, t1))
+            Bin_key = int(self.format_key(key))
             
             # To retrieve each element
             Bbin = struct.pack('<I4', Bin_value)
@@ -168,12 +187,12 @@ class STFTPeaksBDB(FgptHandle):
             try:
                 self.dbObj.put(Kbin, Bbin)
             except db.DBKeyExistError:
-                print "Warning existing Key/Value pair " + str(key) + ' ' + str(value)
+                print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
     
     
     def get(self, key):
         '''
-        Retrieve the values in the database
+        Retrieve the values in the database associated with this key
         '''
         Bin_key = self.format_key(key)
         Kbin = struct.pack('<I4', Bin_key)
@@ -183,20 +202,15 @@ class STFTPeaksBDB(FgptHandle):
         if self.cursor is None:
             self.cursor = self.dbObj.cursor()
         Bbin = self.cursor.get(Kbin, flags=db.DB_SET)
-#        print Bbin
-#        print self.dbObj.get(Kbin);
-#        nbrep = 
         estTime = []
         fileIdx = []
 
         if Bbin is None:
             return estTime, fileIdx
-        print Bbin
         # iterating and populating candidates 
         for _ in range(self.cursor.count()):            
             B = struct.unpack('<I4', Bbin[1])
             # translate to file index and time of occurence
-            print B
             f , t = self.read_value(B[0])            
             fileIdx.append(f)
             estTime.append(t)
@@ -205,16 +219,17 @@ class STFTPeaksBDB(FgptHandle):
 
         return estTime, fileIdx
     
-    def populate(self, sparse_stft, file_index,
-                 freq_step = None, time_step = None,
-                 f_target_width = 50,
-                 t_target_width=50):
-        """ populate by creating pairs of peaks """
-        # get all non zero elements
-        peak_indexes = np.nonzero(sparse_stft[0,:,:])
+    def _build_pairs(self, sparse_stft, params, offset=0):
+        ''' internal routine to build key/value pairs from sparse STFT
+        given the parameters '''
         keys = []
         values = []
-        
+        peak_indexes = np.nonzero(sparse_stft[0,:,:])
+        f_target_width = 3*params['f_width']
+        t_target_width = 3*params['t_width']
+        freq_step = float(params['fs'])/float(params['scale'])
+        time_step = float(params['step'])/float(params['fs'])
+#        print "Params : ",f_target_width,t_target_width,freq_step,time_step
         # then for each of them look in the target zone for other
         for pIdx in range(len(peak_indexes[0])):
             peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
@@ -227,12 +242,45 @@ class STFTPeaksBDB(FgptHandle):
                 f2 = float(peak_ind[0]+target_points_i[i]) * freq_step
                 t1 = float(peak_ind[1]) *time_step
                 delta_t = float(target_points_j[i]) *time_step
-                print (f1, f2, delta_t) , t1
+#                print (f1, f2, delta_t) , t1
                 keys.append((f1, f2, delta_t))
-                values.append(t1)
+                values.append(t1 + offset)
+        return keys, values
+    
+    def populate(self, fgpt, params, file_index, offset=0):
+        """ populate by creating pairs of peaks """
+        # get all non zero elements            
+        keys, values = self._build_pairs(fgpt, params, offset)
         
         Set = set(zip(keys, values))
         self.add(list(Set), file_index)
+        
+    def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0):
+        '''
+        Retrieve in base the candidates based on the sparse rep and return best candidate
+        '''
+        if not isinstance(fgpt, np.ndarray):
+            raise TypeError('Given fingerprint is not a Numpy Array')
+                
+        # refactoring : 2D histogram: col = offset, line = songIndex
+        # implemented as a double dictionary : key = songIndex , value =
+        # {offset : nbCount}
+        histogram = np.zeros((floor(self.params['time_max'] / precision), nbCandidates))                       
+        
+        keys, values = self._build_pairs(fgpt, params, offset)
+        # results is a list of histogram coordinates, for each element, we need to increment
+        # the corresponding value in histogram by one.
+        results = map(self.get , keys)
+        # or maybe we can just sum all the values in the desired dimension?
+        
+#        print results
+        for keyIdx in range(len(keys)):
+            histogram[results[keyIdx]] +=1            
+
+        # voting for best candidate
+        return histogram
+    
+
 
 class XMDCTBDB(FgptHandle):
     '''
@@ -242,11 +290,8 @@ class XMDCTBDB(FgptHandle):
         # closing the db for now ?
 #        self.dbObj.close();
 
-    def __init__(self, dbName, load=False,
-                 fmax=None, F_N=None,
-                 persistent=True, 
-                 maxOffset=None,
-                 time_res = None):
+    def __init__(self, dbName, load=False,                
+                 persistent=True, **kwargs):
         '''
         Constructor
         '''
@@ -254,36 +299,19 @@ class XMDCTBDB(FgptHandle):
         super(XMDCTBDB, self).__init__(dbName, load=load, persistent=persistent)
                     
         # DEFAULT VALUES
-        # total number of bits allowed for storing the key in base
-        self.total_n_bits = 2 ** 16
-        self.fmax = 5500.0
-        # max frequency: plain quantization
-        self.freq_n_bits = 14
-        # for quantization
-        self.beta = 0
-        self.max_time_offset = 600.0
-        # 10 minutes is the biggest allowed time interval
+        self.params = {'total_n_bits':16, # total number of bits allowed for storing the key in base
+                       'fmax': 8000.0,
+                       'freq_n_bits':14,
+                       'time_max':600.0, # 10 minutes is the biggest allowed time interval
+                       'time_res':1.0}
         
-        self.time_res = 1.0
-        # in seconds
-        
-
-        
-
         # populating optional parameters
-        if fmax is not None:
-            self.fmax = fmax
-        if F_N is not None:
-            self.freq_n_bits = F_N
-        if maxOffset is not None:
-            self.max_time_offset = maxOffset
+        for karg in kwargs:
+            self.params[karg] = kwargs[karg]
+            
         # define quantization parameters
-        self.beta = ceil((self.fmax) / (2.0 ** self.freq_n_bits - 1.0))        
-
-        if time_res is not None:
-            self.time_res = time_res
-
-        self.t_ratio = (self.total_n_bits - 1) / (self.max_time_offset) 
+        self.beta = ceil((self.params['fmax']) / (2.0 ** self.params['freq_n_bits'] - 1.0))        
+        self.t_ratio = (2.0 ** self.params['total_n_bits'] - 1) / (self.params['time_max']) 
 
 
     def __repr__(self):
@@ -291,7 +319,8 @@ class XMDCTBDB(FgptHandle):
 %s handler (based on Berkeley DB): %s
 Key in %d bits,
 Resolution: Time: %1.3f (s) %2.2f Hz 
-""" % (self.__class__.__name__, self.db_name, self.total_n_bits, self.time_res, self.beta)
+""" % (self.__class__.__name__, self.db_name,
+       self.params['total_n_bits'],self.params['time_res'], self.beta)
     
 
 #    def add(self, Keys , Values, fileIndex):
@@ -302,7 +331,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         
         for key, value in Pairs:
 
-            if value > self.max_time_offset:
+            if value > self.params['time_max']:
 #                print value
                 print 'Warning: Tried to add a value bigger than maximum'
                 continue
@@ -310,9 +339,9 @@ Resolution: Time: %1.3f (s) %2.2f Hz
             Tbin = floor(value * self.t_ratio)
             # Coding over 16bits, max time offset = 10min
             
-            B = int(fileIndex * self.total_n_bits + Tbin)
+            B = int(fileIndex * (2**self.params['total_n_bits']) + Tbin)
 
-# K = int(floor(key)*2**(self.freq_n_bits)+floor(float(key)/float(self.beta)));
+# K = int(floor(key)*2**(self.params['freq_n_bits'])+floor(float(key)/float(self.beta)));
             K = self.format(key)
             Bbin = struct.pack('<I4', B)
             Kbin = struct.pack('<I4', K)
@@ -332,7 +361,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         @TODO refactor so that all add and get use the same formalism
         Retrieve the values in the database
         '''
-#        K = int(floor(Key)*2**(self.freq_n_bits)+floor(float(Key)/float(self.beta)));
+#        K = int(floor(Key)*2**(self.params['freq_n_bits'])+floor(float(Key)/float(self.beta)));
         K = self.format(Key)
         Kbin = struct.pack('<I4', K)
 
@@ -357,7 +386,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 #            print B , self.total_n_bits
 #            estTimeI = B[0] % self.total_n_bits
             
-            f , t = divmod(B[0], self.total_n_bits)
+            f , t = divmod(B[0], 2**self.params['total_n_bits'])
             
             fileIdx.append(f)
             estTime.append((t / self.t_ratio))
@@ -368,24 +397,27 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 
 
 
-    def populate(self, app, fileIndex, offset=0, largebases=False):
+    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False):
+        ''' Populate the database using the given fingerprint and parameters
+        
+        Here the fingerprint object is the PyMP.approx class
+        parameters can all be infered directly from the object
         '''
-        Populate the database using the given MP approximation
-        '''
-        if not isinstance(app, Approx):
+        if not isinstance(fgpt, Approx):
             raise TypeError(
-                'Given argument is not a valid py_pursuit_Approx Object')
+                'Given argument is not a valid PyMP.Approx Object')
 
+        
 #        " else : take all atoms and feed the database"
         F = []
         T = []
         S = []
-        for atom in app.atoms:
+        for atom in fgpt.atoms:
             if largebases and (log(atom.length, 2) < 13):
                 continue
             S.append(log(atom.length, 2))
-            F.append(atom.reduced_frequency * app.fs)
-            T.append((float(offset + atom.time_position) / float(app.fs)))
+            F.append(atom.reduced_frequency * fgpt.fs)
+            T.append((float(offset + atom.time_position) / float(fgpt.fs)))
 
         # look for duplicates and removes them: construct a set of zipped elements
 #        print zip(F , T)
@@ -408,28 +440,26 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 return [log(atom.length, 2), atom.reduced_frequency * atom.fs]
         
 
-    def retrieve(self, app, offset=0, nbCandidates=10, precision=1.0):
+    def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0):
         '''
         Retrieve in base the candidates based on the atoms from the app and return best candidate
         '''
-        if not isinstance(app, Approx):
+        if not isinstance(fgpt, Approx):
             raise TypeError(
                 'Given argument is not a valid py_pursuit_Approx Object')
-#        Candidates = {};
-#        Offsets = {};
         # refactoring : 2D histogram: col = offset, line = songIndex
         # implemented as a double dictionary : key = songIndex , value =
         # {offset : nbCount}
-        histogram = np.zeros((floor(self.max_time_offset / precision), nbCandidates))                       
+        histogram = np.zeros((floor(self.params['time_max'] / precision), nbCandidates))                       
         
         # results is a list of histogram coordinates, for each element, we need to increment
         # the corresponding valu in histogram by one.
-        results = map(self.get , map(self.kform, app.atoms),
-                      [a.time_position  / app.fs for a in app.atoms])
+        results = map(self.get , map(self.kform, fgpt.atoms),
+                      [a.time_position  / fgpt.fs for a in fgpt.atoms])
         # or maybe we can just sum all the values in the desired dimension?
         
 #        print results
-        for atomIdx in range(app.atom_number):
+        for atomIdx in range(fgpt.atom_number):
             histogram[results[atomIdx]] +=1            
 
         # voting for best candidate
@@ -440,20 +470,12 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         ''' In thi function format the key according to the predefined template
         '''        
         if self.keyformat == 0:
-            return int(floor(key[0]) * 2 ** (self.freq_n_bits) + floor(float(key[1]) / float(self.beta)))
+            return int(floor(key[0]) * 2 ** (self.params['freq_n_bits']) + floor(float(key[1]) / float(self.beta)))
         # defaut case
-        return int(floor(key) * 2 ** (self.freq_n_bits) + floor(float(key) / float(self.beta)))
+        return int(floor(key) * 2 ** (self.params['freq_n_bits']) + floor(float(key) / float(self.beta)))
 
 
-    def get_candidate(self, app, nbCandidates=10, **kwargs):
-        """ make a guess from the given approximant object """
-        
-        histograms = self.retrieve(app, nbCandidates= nbCandidates, **kwargs)
-        
-        maxI = np.argmax(histograms[:])
-        OffsetI = maxI / nbCandidates
-        estFileI = maxI % nbCandidates
-        return estFileI, OffsetI
+
 
 # class ppBDBSegment(XMDCTBDB):
 #    ''' Subclass to encode signature segments by segments
@@ -467,16 +489,16 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 #        '''
 #        for key,value in Pairs:
 #
-#            if value > self.max_time_offset:
+#            if value > self.params['time_max']]:
 ##                print value
 #                print 'Warning: Tried to add a value bigger than maximum'
 #                continue
 #
-#            Tbin = floor(value/(self.max_time_offset)*(self.total_n_bits-1));  #Coding over 16bits, max time offset = 10min
+#            Tbin = floor(value/(self.params['time_max']])*(self.total_n_bits-1));  #Coding over 16bits, max time offset = 10min
 #
 #            B = int(segIndex*self.total_n_bits+Tbin);
 #
-##            K = int(floor(key)*2**(self.freq_n_bits)+floor(float(key)/float(self.beta)));
+##            K = int(floor(key)*2**(self.params['freq_n_bits'])+floor(float(key)/float(self.beta)));
 #            K = self.format(key)
 #            Bbin = struct.pack('<I4',B);
 #            Kbin = struct.pack('<I4',K);
