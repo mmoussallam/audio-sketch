@@ -12,7 +12,7 @@ from PyMP.mdct import Dico, LODico
 import sys
 import os
 sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')    
-import hdf5_utils as HDF5
+#import hdf5_utils as HDF5
 import hdf5_getters    
 
 from tempfile import mkdtemp
@@ -236,3 +236,98 @@ def get_ten_features(h5_dir):
     segments = np.vstack(segments_all)    
     confidence = np.concatenate(conf_all)
     return feats, segments, confidence
+
+
+#def save_audio_full_ref(learntype, test_file, n_feat, rescale_str, sigout, fs, norm_segments=False):
+#    """ do not cut the sounds """
+#    # first pass for total length
+#    max_idx = int(sigout[-1][1] + len(sigout[-1][0])) + 4*fs
+#    print "total length of ",max_idx
+#    sig_data = np.zeros((max_idx,))
+##    seg_energy = np.sum(sigout[-1][0]**2)
+#    for (sig, startidx) in sigout:
+##        print sig.shape, sig_data[int(startidx):int(startidx)+sig.shape[0]].shape
+#        sig_data[int(startidx):int(startidx)+sig.shape[0]] += sig#*seg_energy/np.sum(sig**2)
+#    from PyMP import Signal
+#    rec_sig = Signal(sig_data, fs, normalize=True)
+#    rec_sig.write('%s/%s_with%s_%dfeats_%s%s.wav' % (outputpath,
+#                                                   os.path.split(test_file)[-1],
+#                                                   learntype, n_feat,
+#                                                   rescale_str,
+#                                                   'full_ref'))
+#    
+#    
+
+def resynth(ref_indexes, start_times, dur_times, 
+            learn_segs, learn_feats, ref_audio_dir, ext,
+            dotime_stretch=False, max_synth_idx=None, normalize=False):
+    """ Resynthesize using the reference files """
+    (n_seg, n_feats) = learn_feats.shape
+    ref_seg_indices = np.zeros(n_seg,int)
+    l_seg_duration = np.zeros(n_seg)
+    l_seg_start = np.zeros(n_seg)
+    c_idx = 0
+    for segI in range(learn_segs.shape[0]):
+        n_ub_seg = len(learn_segs[segI,0])
+        ref_seg_indices[c_idx:c_idx+n_ub_seg] = segI
+        l_seg_start[c_idx:c_idx+n_ub_seg] = learn_segs[segI,0]
+        l_seg_duration[c_idx:c_idx+n_ub_seg-1] = learn_segs[segI,0][1:] - learn_segs[segI,0][0:-1]
+        c_idx += n_ub_seg
+
+    from feat_invert.transforms import get_audio, time_stretch
+    if max_synth_idx is None:
+        max_synth_idx = len(ref_indexes)
+    total_target_duration = 0
+    sigout = []
+    for seg_idx in range(max_synth_idx):
+        print "----- %d/%d ----"%(seg_idx, max_synth_idx)
+        target_audio_duration = dur_times[seg_idx]  
+        total_target_duration += target_audio_duration 
+                
+        # Recover info from the reference
+        ref_seg_idx = ref_indexes[seg_idx]
+        ref_audio_path = learn_segs[ref_seg_indices[ref_seg_idx],1]
+        ref_audio_start = l_seg_start[ref_seg_idx]
+        ref_audio_duration = l_seg_duration[ref_seg_idx]    
+    
+        length_ratios = float(ref_audio_duration)/float(target_audio_duration)
+    
+        # Load the reference audio
+        filepath = ref_audio_dir + ref_audio_path + ext
+        print "Loading %s  "%( filepath)
+        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration)
+#        if normalize:
+#            signalin = signalin.astype(float)
+#            signalin /= np.max(np.abs(signalin))
+        target_length = target_audio_duration*fs
+        print "Loaded %s length of %d "%( filepath, len(signalin))
+        if dotime_stretch:
+            print "Stretching to %2.2f"%length_ratios
+            sigout.append(time_stretch(signalin, length_ratios, wsize=1024, tstep=128)[128:-1024])
+        else:
+            sigout.append(signalin)
+
+    if normalize:
+        for sig in sigout:
+            print np.max(np.abs(sig))
+            sig /= np.max(np.abs(sig))
+            sig = sig.astype(float)
+            print np.max(np.abs(sig))
+        
+    return sigout                
+#    save_audio_full_ref(learntype,  test_file, n_feat, '_full_ref_', sigout, fs, norm_segments=False)
+
+
+def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
+    """ saving output vector to an audio wav"""
+    norm_str = ''
+    if norm_segments:
+        norm_str = 'normed'
+        mean_energy = np.mean([np.sum(sig**2)/float(len(sig)) for sig in sigout])
+        print mean_energy
+        for sig in sigout:
+            sig /= np.sum(sig**2)/float(len(sig))
+            sig *= mean_energy        
+    rec_sig = signals.Signal(np.concatenate(sigout), fs, normalize=True)
+    rec_sig.write('%s/%s.wav' % (outputpath,aud_str))
+    return rec_sig

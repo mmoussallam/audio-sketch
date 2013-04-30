@@ -43,7 +43,25 @@ def save_audio(learntype, np, test_file, n_feat, rescale_str, sigout,  fs, norm_
                                                    rescale_str,
                                                    norm_str))
     
-
+def save_audio_full_ref(learntype, test_file, n_feat, rescale_str, sigout, fs, norm_segments=False):
+    """ do not cut the sounds """
+    # first pass for total length
+    max_idx = int(sigout[-1][1] + len(sigout[-1][0])) + 4*fs
+    print "total length of ",max_idx
+    sig_data = np.zeros((max_idx,))
+#    seg_energy = np.sum(sigout[-1][0]**2)
+    for (sig, startidx) in sigout:
+#        print sig.shape, sig_data[int(startidx):int(startidx)+sig.shape[0]].shape
+        sig_data[int(startidx):int(startidx)+sig.shape[0]] += sig#*seg_energy/np.sum(sig**2)
+        
+    rec_sig = Signal(sig_data, fs, normalize=True)
+    rec_sig.write('%s/%s_with%s_%dfeats_%s%s.wav' % (outputpath,
+                                                   os.path.split(test_file)[-1],
+                                                   learntype, n_feat,
+                                                   rescale_str,
+                                                   'full_ref'))
+    
+    
 ################# EXPE 1 ###########################
 learntype = 'Piano'
 ext = '.WAV'
@@ -66,7 +84,13 @@ for segI in range(learn_segs.shape[0]):
 
 # now let us take an example from the test dataset (or any file in the MSDataSet)
 #test_file = '/sons/rwc/Learn/hdf5/rwc-g-m01_1.h5'
+
+# Beethoven n7 - Karayan
+#test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/R/V/TRARVJE128F93127EF.h5'
+
+# Rolling Stones Angie
 test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/A/D/TRAADLN128F14832E9.h5'
+
 #test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/R/A/TRARAAG128F42437FB.h5'
 #test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/Z/W/TRAZWGK128F93141E3.h5'
 #test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/D/D/TRADDXS12903CEDB38.h5'
@@ -88,12 +112,12 @@ print title, artist
 t_seg_duration = np.diff(test_segs)
 
 # Do the nearest neighbor search : limit to 5 best?
-n_neighbs = 10
+n_neighbs = 1
 from sklearn.neighbors import NearestNeighbors
 neigh = NearestNeighbors(n_neighbs)
 
 # fit on the learning data
-n_feat = 12
+n_feat = 24
 if n_feat == 13:
     neigh.fit(learn_feats[:,0:12])
     neighb_segments_idx = neigh.kneighbors(test_feats[:,0:12], return_distance=False)
@@ -112,19 +136,16 @@ else:
 from feat_invert.transforms import get_audio, time_stretch
 
 max_synth_idx = len(neighb_segments_idx)-5
-max_synth_idx = 50
+max_synth_idx = 10
 rescale = True
 rescale_str = ''
 
 # FIRST OF ALL: FORCE COHERENCE OF SEGMENT LENGTHS
 sigout = []
-sigout_filtered = []
-sigout_filtered2 = []
 
 # We set an arbitrary penalty cost as half the standard deviation of the distances
 # between first and second candidates
 # so if best candidate is highly more representative, penalty will not be sufficient
-
 
 total_target_duration = 0
 for test_seg_idx in range(max_synth_idx):
@@ -132,7 +153,6 @@ for test_seg_idx in range(max_synth_idx):
     target_audio_duration = t_seg_duration[test_seg_idx]  
     total_target_duration += target_audio_duration 
     
-    lambda_fact = np.std(distance[test_seg_idx,:])
     
     length_ratios = np.zeros(n_neighbs)
     ref_seg_idx = []
@@ -154,41 +174,21 @@ for test_seg_idx in range(max_synth_idx):
     target_length = target_audio_duration*fs
     print "Loaded %s length of %d "%( filepath, len(signalin))
     print "Stretching to %2.2f"%length_ratios[0]
-    sigout.append(time_stretch(signalin, length_ratios[0], wsize=1024, tstep=128)[128:-1024])
+    if length_ratios[0]<1.0:
+        sigout.append((signalin, test_segs[test_seg_idx]*fs))
+    else:
+        sigout.append((time_stretch(signalin, length_ratios[0], wsize=1024, tstep=128)[128:-1024], test_segs[test_seg_idx]*fs))
         
-    # Now choose the one that has best temporal correlation
-    btIdx = np.argmin(distance[test_seg_idx]*np.exp(length_ratios)/length_ratios)
-    filepath = ref_audio_dir + ref_audio_path[btIdx] + ext
-    signalin, fs = get_audio(filepath, ref_audio_start[btIdx], ref_audio_duration[btIdx])
-    target_length = target_audio_duration*fs
-    print "Loaded %d - %s length of %d "%(btIdx, filepath, len(signalin))
-    print "Stretching to %2.2f"%length_ratios[btIdx]
-    sigout_filtered.append(time_stretch(signalin, length_ratios[btIdx], wsize=1024, tstep=128)[128:-1024])
+save_audio_full_ref(learntype,  test_file, n_feat, '_full_ref_', sigout, fs, norm_segments=False)
+'''
+expe_scripts.resynth_ten_full_ref_sample  -  Created on Apr 29, 2013
+@author: M. Moussallam
+'''
 
-    # Last possibility: penalize the selection by the distance with previously selected indexes 
-    # Complex Version: Viterbi Algorithm
-    # Simple Version: penalize changing the reference file (by a constant factor?)
-    if test_seg_idx == 0:
-        p = -1
-        btIdx = 0
-        previous = ref_seg_indices[neighb_segments_idx[0][0]]
-    else:     
-        p = previous   
-        changes = np.array([lambda_fact*(not i==p) for i in ref_seg_indices[neighb_segments_idx[test_seg_idx]]])
-        btIdx = np.argmin(distance[test_seg_idx]+ changes)
-        previous = ref_seg_indices[neighb_segments_idx[test_seg_idx][btIdx]]
-    filepath = ref_audio_dir + ref_audio_path[btIdx] + ext
-    signalin, fs = get_audio(filepath, ref_audio_start[btIdx], ref_audio_duration[btIdx])
-    target_length = target_audio_duration*fs
-    print "Candidates : ",ref_seg_indices[neighb_segments_idx[test_seg_idx]]
-    print "Loaded %d previous was %d- %s length of %d "%(ref_seg_indices[neighb_segments_idx[test_seg_idx][btIdx]],
-                                                         p,
-                                                         filepath,
-                                                         len(signalin))
-    print "Stretching to %2.2f"%length_ratios[btIdx]
-    sigout_filtered2.append(time_stretch(signalin, length_ratios[btIdx], wsize=1024, tstep=128)[128:-1024]) 
-
-save_audio(learntype, np, test_file, n_feat, '_best_', sigout, fs, norm_segments=False)
-save_audio(learntype, np, test_file, n_feat, '_timefit_', sigout_filtered, fs,norm_segments=False)
-save_audio(learntype, np, test_file, n_feat, '_penchanges_', sigout_filtered2, fs,norm_segments=False)
-
+## segments and durations
+#plt.figure()
+#for segIdx in range(10):
+#    print test_segs[segIdx], t_seg_duration[segIdx]
+#    plt.axvspan(test_segs[segIdx], test_segs[segIdx]+ t_seg_duration[segIdx], 0, 1,facecolor='g', alpha=0.5)
+#    
+#plt.show()

@@ -145,6 +145,7 @@ for segI in range(learn_segs.shape[0]):
 
 # now let us take an example from the test dataset (or any file in the MSDataSet)
 #test_file = '/sons/rwc/Learn/hdf5/rwc-g-m01_1.h5'
+#test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/B/E/TRABEMC128F148EF2D.h5'
 test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/A/D/TRAADLN128F14832E9.h5'
 #test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/R/A/TRARAAG128F42437FB.h5'
 #test_file ='/home/manu/workspace/databases/MillionSongSubset/data/A/Z/W/TRAZWGK128F93141E3.h5'
@@ -165,7 +166,7 @@ print title, artist
 t_seg_duration = np.diff(test_segs)
 
 # Do the nearest neighbor search
-n_neighbs = 2
+n_neighbs = 1
 from sklearn.neighbors import NearestNeighbors
 neigh = NearestNeighbors(n_neighbs)
 
@@ -189,7 +190,7 @@ else:
 from feat_invert.transforms import get_audio, time_stretch
 
 max_synth_idx = len(neighb_segments_idx)-5
-max_synth_idx = 400
+max_synth_idx = 200
 rescale = True
 rescale_str = ''
 #plt.figure()
