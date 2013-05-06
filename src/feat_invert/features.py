@@ -123,7 +123,7 @@ def load_data_one_audio_file(filepath, fs, sigma_noise=0,
 
     x = sigx.data
     fs = sigx.fs
-    print wintime * fs, steptime * fs
+#    print wintime * fs, steptime * fs
     yaafe_dict = get_yaafe_dict(int(wintime * fs), int(steptime * fs))
 
     featureList = []
@@ -141,7 +141,7 @@ def load_data_one_audio_file(filepath, fs, sigma_noise=0,
     
     for feature in features:
         if feature in feats:
-            print feature, feats[feature].shape
+#            print feature, feats[feature].shape
             if feats[feature].shape[0] > n_frames:
                 feats[feature] = feats[feature][0:n_frames,:]
             featseq.append(feats[feature])
@@ -218,7 +218,7 @@ def load_yaafedata(params,
     
     win_size = int(wintime*sr)
     step_size = int(steptime*sr)
-    print wintime, steptime, win_size, step_size
+#    print wintime, steptime, win_size, step_size
     # apply sub_routine to all the files until a condition is met
     n_frames_reached = 0
 

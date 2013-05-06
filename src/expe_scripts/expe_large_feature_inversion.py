@@ -25,14 +25,14 @@ from scipy.ndimage.filters import median_filter
 display = True
 
 # for all combinations of these parameters
-nb_learns = [2000000,]
+nb_learns = [1000000,]
 nb_medians = [1,10]
-nb_features = [20]
+nb_features = [7,20,68]
 nb_trials = 1
 method = 1
 
 # evaluate using these parameters
-nb_iter_gl = 5
+nb_iter_gl = 50
 nb_test = 10000
 l_medfilt = 3
 

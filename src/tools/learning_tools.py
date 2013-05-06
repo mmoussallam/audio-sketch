@@ -258,10 +258,7 @@ def get_ten_features(h5_dir):
 #    
 #    
 
-def resynth(ref_indexes, start_times, dur_times, 
-            learn_segs, learn_feats, ref_audio_dir, ext,
-            dotime_stretch=False, max_synth_idx=None, normalize=False):
-    """ Resynthesize using the reference files """
+def _get_seg_slicing(learn_feats, learn_segs):
     (n_seg, n_feats) = learn_feats.shape
     ref_seg_indices = np.zeros(n_seg,int)
     l_seg_duration = np.zeros(n_seg)
@@ -273,6 +270,15 @@ def resynth(ref_indexes, start_times, dur_times,
         l_seg_start[c_idx:c_idx+n_ub_seg] = learn_segs[segI,0]
         l_seg_duration[c_idx:c_idx+n_ub_seg-1] = learn_segs[segI,0][1:] - learn_segs[segI,0][0:-1]
         c_idx += n_ub_seg
+    return l_seg_start, l_seg_duration, ref_seg_indices
+    
+
+def resynth(ref_indexes, start_times, dur_times, 
+            learn_segs, learn_feats, ref_audio_dir, ext,
+            dotime_stretch=False, max_synth_idx=None, normalize=False):
+    """ Resynthesize using the reference files """
+
+    l_seg_start, l_seg_duration , ref_seg_indices= _get_seg_slicing(learn_feats, learn_segs)
 
     from feat_invert.transforms import get_audio, time_stretch
     if max_synth_idx is None:
@@ -281,16 +287,20 @@ def resynth(ref_indexes, start_times, dur_times,
     sigout = []
     for seg_idx in range(max_synth_idx):
         print "----- %d/%d ----"%(seg_idx, max_synth_idx)
+        
         target_audio_duration = dur_times[seg_idx]  
         total_target_duration += target_audio_duration 
                 
         # Recover info from the reference
         ref_seg_idx = ref_indexes[seg_idx]
+        print ref_seg_idx, ref_seg_indices[ref_seg_idx]
         ref_audio_path = learn_segs[ref_seg_indices[ref_seg_idx],1]
         ref_audio_start = l_seg_start[ref_seg_idx]
         ref_audio_duration = l_seg_duration[ref_seg_idx]    
     
         length_ratios = float(ref_audio_duration)/float(target_audio_duration)
+        if length_ratios <= 0:
+            continue
     
         # Load the reference audio
         filepath = ref_audio_dir + ref_audio_path + ext
@@ -309,14 +319,67 @@ def resynth(ref_indexes, start_times, dur_times,
 
     if normalize:
         for sig in sigout:
-            print np.max(np.abs(sig))
+#            print np.max(np.abs(sig))
             sig /= np.max(np.abs(sig))
             sig = sig.astype(float)
-            print np.max(np.abs(sig))
+#            print np.max(np.abs(sig))
         
     return sigout                
 #    save_audio_full_ref(learntype,  test_file, n_feat, '_full_ref_', sigout, fs, norm_segments=False)
 
+def resynth_sequence(ref_indexes, start_times, dur_times, 
+            learn_segs, learn_feats, ref_audio_dir, ext, fs,
+            dotime_stretch=False, max_synth_idx=None, normalize=False):
+    """ Resynthesize the target object """
+    
+    l_seg_start, l_seg_duration, ref_seg_indices = _get_seg_slicing(learn_feats, learn_segs)
+    total_target_duration = np.sum(dur_times)
+    # initialize array
+    resynth_data = np.zeros(total_target_duration*fs)
+    from feat_invert.transforms import get_audio, time_stretch
+    if max_synth_idx is None:
+        max_synth_idx = len(ref_indexes)
+    # LOOP on segments
+    for seg_idx in range(max_synth_idx):
+        print "----- %d/%d ----"%(seg_idx, max_synth_idx)
+        
+        target_audio_start = int(start_times[seg_idx]*fs)
+        target_audio_duration = dur_times[seg_idx]          
+                
+        # Recover info from the reference
+        ref_seg_idx = ref_indexes[seg_idx]        
+        ref_audio_path = learn_segs[ref_seg_indices[ref_seg_idx],1]
+        ref_audio_start = l_seg_start[ref_seg_idx]
+        ref_audio_duration = l_seg_duration[ref_seg_idx]    
+    
+        stretch_ratio = float(ref_audio_duration)/float(target_audio_duration)
+        if stretch_ratio <= 0:
+            continue    
+        # Load the reference audio
+        filepath = ref_audio_dir + ref_audio_path + ext
+        print "Loading %s  "%( filepath)
+        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration)        
+            
+        # now add it to the signal, with or without time stretching
+        if dotime_stretch:
+            print "Stretching to %2.2f"%stretch_ratio
+            if stretch_ratio < 1.0:
+                stretched = time_stretch(signalin, stretch_ratio, wsize=1024, tstep=128)
+            else:
+                stretched = signalin.astype(float)
+            if normalize:
+                stretched /= 1.5*float(np.max(np.abs(stretched)))
+                stretched = stretched.astype(float)
+            
+            resynth_data[target_audio_start:target_audio_start+stretched.shape[0]] += stretched                    
+        else:            
+            if normalize:
+                signalin = signalin.astype(float)
+                signalin /= 1.5*float(np.max(np.abs(signalin)))
+                
+            resynth_data[target_audio_start:target_audio_start+len(signalin)] += signalin.astype(float)
+        
+    return resynth_data
 
 def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
     """ saving output vector to an audio wav"""
@@ -331,3 +394,27 @@ def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
     rec_sig = signals.Signal(np.concatenate(sigout), fs, normalize=True)
     rec_sig.write('%s/%s.wav' % (outputpath,aud_str))
     return rec_sig
+
+def Viterbi(neighbs, distance, trans_penalty, c_value=5):
+    # can we perform viterbi decoding ?
+    n_candidates = neighbs.shape[1]
+    n_states = neighbs.shape[0]
+    transition_cost = np.ones((n_candidates,))
+    cum_scores = np.zeros((n_candidates,))
+    paths = []
+    # initalize the paths and scores
+    for candIdx in range(n_candidates):
+        paths.append([0,])
+        cum_scores = distance[0,:]
+    
+    for stateIdx in range(1, n_states):
+        for candIdx in range(n_candidates):
+            trans_penalty = [1 if not abs(neighbs[stateIdx-1,i]-neighbs[stateIdx,candIdx])<c_value else 0.05 for i in range(n_candidates)]
+            trans_score = trans_penalty * cum_scores # to be replaced by a penalty of moving far from previous index         
+            best_prev_ind = np.argmin(trans_score)        
+            paths[candIdx].append(best_prev_ind)
+            cum_scores[candIdx] = distance[stateIdx,candIdx] + trans_score[best_prev_ind]
+    
+    best_score_ind = np.argmin(cum_scores)
+    best_path = paths[best_score_ind]
+    return best_path

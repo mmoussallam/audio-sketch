@@ -160,15 +160,32 @@ def time_stretch(signalin, tscale, wsize=512, tstep=128):
 
 def get_audio(filepath, seg_start, seg_duration):
     """ for use only with wav files from rwc database """
-    import wave
-    wavfile = wave.open(filepath, 'r')
+    
+    if filepath[-3:] == 'wav' or filepath[-3:] == 'WAV':
+        import wave
+        wavfile = wave.open(filepath, 'r')
+    elif filepath[-2:] == 'au':
+        import sunau
+        wavfile = sunau.open(filepath, 'r')
     fs = wavfile.getframerate()
     bFrame = int(seg_start*fs)
     nFrames = int(seg_duration*fs)    
     wavfile.setpos(bFrame)
 #        print "Reading ",bFrame, nFrames, wavfile._framesize
     str_bytestream = wavfile.readframes(nFrames)
-    audiodata = np.fromstring(str_bytestream, 'h')
+    
+    sample_width = wavfile.getsampwidth()
+    print filepath, sample_width, wavfile.getnchannels() , fs, nFrames
+    if sample_width == 1:
+        typeStr = 'int8'
+    elif sample_width == 2:
+        typeStr = 'int16'
+    elif sample_width == 3:
+        typeStr ='int24' # WARNING NOT SUPPORTED BY NUMPY
+    elif sample_width == 4:
+        typeStr = 'uint32'    
+    
+    audiodata = np.fromstring(str_bytestream, dtype=typeStr)
     wavfile.close()
     return audiodata, fs
 
