@@ -333,12 +333,16 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
     """ Resynthesize the target object """
     
     l_seg_start, l_seg_duration, ref_seg_indices = _get_seg_slicing(learn_feats, learn_segs)
-    total_target_duration = np.sum(dur_times)
+    
     # initialize array
-    resynth_data = np.zeros(total_target_duration*fs)
-    from feat_invert.transforms import get_audio, time_stretch
     if max_synth_idx is None:
         max_synth_idx = len(ref_indexes)
+    
+    total_target_duration = np.sum(dur_times[:max_synth_idx]) + 10
+    print total_target_duration
+    resynth_data = np.zeros(total_target_duration*fs)
+    from feat_invert.transforms import get_audio, time_stretch
+    
     # LOOP on segments
     for seg_idx in range(max_synth_idx):
         print "----- %d/%d ----"%(seg_idx, max_synth_idx)
@@ -358,7 +362,7 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
         # Load the reference audio
         filepath = ref_audio_dir + ref_audio_path + ext
         print "Loading %s  "%( filepath)
-        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration)        
+        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration, targetfs=fs)        
             
         # now add it to the signal, with or without time stretching
         if dotime_stretch:
@@ -381,6 +385,7 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
         
     return resynth_data
 
+
 def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
     """ saving output vector to an audio wav"""
     norm_str = ''
@@ -395,7 +400,7 @@ def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
     rec_sig.write('%s/%s.wav' % (outputpath,aud_str))
     return rec_sig
 
-def Viterbi(neighbs, distance, trans_penalty, c_value=5):
+def Viterbi(neighbs, distance, t_penalty, c_value=5):
     # can we perform viterbi decoding ?
     n_candidates = neighbs.shape[1]
     n_states = neighbs.shape[0]
@@ -409,7 +414,7 @@ def Viterbi(neighbs, distance, trans_penalty, c_value=5):
     
     for stateIdx in range(1, n_states):
         for candIdx in range(n_candidates):
-            trans_penalty = [1 if not abs(neighbs[stateIdx-1,i]-neighbs[stateIdx,candIdx])<c_value else 0.05 for i in range(n_candidates)]
+            trans_penalty = [1 if not abs(neighbs[stateIdx-1,i]-neighbs[stateIdx,candIdx])<c_value else t_penalty for i in range(n_candidates)]
             trans_score = trans_penalty * cum_scores # to be replaced by a penalty of moving far from previous index         
             best_prev_ind = np.argmin(trans_score)        
             paths[candIdx].append(best_prev_ind)
@@ -418,3 +423,28 @@ def Viterbi(neighbs, distance, trans_penalty, c_value=5):
     best_score_ind = np.argmin(cum_scores)
     best_path = paths[best_score_ind]
     return best_path
+
+
+#def SimPenalize(neighbs, distance, sim_mat, l_feats, sim_penalty, c_value=5):
+#    """ use also the correlation with previous segments to influence the choice """
+#    n_candidates = neighbs.shape[1]
+#    n_states = neighbs.shape[0]
+#    transition_cost = np.ones((n_candidates,))
+#    cum_scores = np.zeros((n_candidates,))
+#    paths = []
+#    for candIdx in range(n_candidates):
+#        paths.append([0,])
+#        cum_scores = distance[0,:]
+#        
+#    # for each state, weight the distance by the 
+#    for stateIdx in range(1, n_states):
+#        # for each candidate
+#        for candIdx in range(n_candidates):
+#            # compute the feat distance to all previous frames
+#            # weighted by the similarity
+#            scores = l_feats[neighbs[stateIdx,candIdx],:] - 
+#            
+#    best_score_ind = np.argmin(cum_scores)
+#    best_path = paths[best_score_ind]
+#    return best_path
+    

@@ -22,45 +22,25 @@ sys.path.append('/usr/local/python_packages')
 import hdf5_utils as HDF5
 import hdf5_getters
 import stft
-
 from tools.learning_tools import find_indexes, get_ten_features, get_ten_features_from_file, get_track_info
 from tools.learning_tools import resynth_sequence, save_audio
 
-ref_audio_dir = '/home/manu/workspace/databases/genres/blues/'
+from expe_scripts.invert.com_imports import get_learns_and_test 
+
+ref_audio_dir = '/home/manu/workspace/databases/genres/reggae/'
 outputpath = '/home/manu/workspace/audio-sketch/src/expe_scripts/audio/feat_invert'
-data_path = '/home/manu/workspace/databases/genres/blues/hdf5/'
-# List all the files
-h5files = [name  for name in os.listdir(data_path) if 'h5' in name]
+data_path = '/home/manu/workspace/databases/genres/reggae/hdf5/' # List all the files
 
-# isolate one of them 
-learn_feats_list = []
-learn_segs_list = []
+t_index = 100
+filter_key = False
+n_learn_max = 99
+args = get_learns_and_test(ref_audio_dir,
+                             data_path,
+                             t_index = t_index,
+                             filter_key= filter_key,
+                              n_learn_max = n_learn_max)  
+l_feats, t_feats, t_seg_starts, t_seg_duration, l_segments, h5files, n_learn = args
 
-n_learn = 10
-for fileIdx in range(n_learn):
-    get_ten_features_from_file(learn_feats_list, learn_segs_list, [],
-                               os.path.join(data_path, h5files[fileIdx]))
-
-l_feats = np.concatenate(learn_feats_list, axis=0)
-l_segments = np.vstack(learn_segs_list)    
-
-for h5file in h5files:
-    h5 = hdf5_getters.open_h5_file_read(os.path.join(data_path, h5file))
-    print h5file,  hdf5_getters.get_tempo(h5),  hdf5_getters.get_key(h5)
-
-
-t_index = len(h5files)-1
-
-# get the test
-test_feats_list = []
-test_segs_list = []
-test_confidence_list = []
-get_ten_features_from_file(test_feats_list, test_segs_list, test_confidence_list,
-                           os.path.join(data_path, h5files[t_index]))
-
-t_feats = test_feats_list[0]
-t_seg_starts = test_segs_list[0][0]
-t_seg_duration = np.diff(t_seg_starts)
 
 # find the nearest neighbors
 knn = NearestNeighbors(n_neighbors=10)    
@@ -85,6 +65,15 @@ distance, neigh = knn.kneighbors(t_feats[:,-nbFeats:], n_neighbors=10, return_di
 #sig.write('%s/%s.wav' % (outputpath,h5files[t_index]))
 #sig.crop(0, 9.5*sig.fs)
 
+# what is the similarity matrix of one of this
+#sim_mat = np.zeros((t_feats.shape[0],t_feats.shape[0]))
+#for t in range(t_feats.shape[0]):
+#    sim_mat[t,:] = np.sum((t_feats - t_feats[t,:])**2, axis=1)
+#
+#plt.figure()
+#plt.imshow(sim_mat, origin='lower')
+#plt.colorbar()
+#plt.show()
 
 # now try to viterbi decode this shit
 from tools.learning_tools import Viterbi
@@ -92,10 +81,12 @@ vit_path = Viterbi(neigh, distance, trans_penalty=0.01, c_value=20)
 vit_cands = [neigh[ind,neighbind] for ind, neighbind in enumerate(vit_path)]
 #
 sig_out_viterbi = resynth_sequence(np.squeeze(vit_cands), t_seg_starts, t_seg_duration,
-                           l_segments, l_feats, ref_audio_dir, '.wav', 22050,
-                           dotime_stretch=True,max_synth_idx=80,  normalize=True)
+                           l_segments, l_feats, ref_audio_dir, '.au', 22050,
+                           dotime_stretch=True,max_synth_idx=40,  normalize=True)
+
 sig_viterbi = Signal(sig_out_viterbi, 22050, normalize=True)
-sig_viterbi.write('%s/%s_viterbi_%dFeats_%dLearns_.wav' % (outputpath,h5files[t_index], nbFeats,n_learn))
+sig_viterbi.write('%s/%s_viterbi_%dFeats_%dLearns_Filter%d.wav' % (outputpath,h5files[t_index-1],
+                                                                   nbFeats,n_learn,filter_key))
 sig_viterbi.crop(0, 9.5*sig_viterbi.fs)
 #
 #sig_viterbi = save_audio(outputpath, '%s_viterbi'%h5files[t_index], sig_out_viterbi, 22050, norm_segments=False)

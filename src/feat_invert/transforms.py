@@ -158,34 +158,59 @@ def time_stretch(signalin, tscale, wsize=512, tstep=128):
     
     return sigout
 
-def get_audio(filepath, seg_start, seg_duration):
+def get_audio(filepath, seg_start, seg_duration, targetfs=None):
     """ for use only with wav files from rwc database """
     
-    if filepath[-3:] == 'wav' or filepath[-3:] == 'WAV':
-        import wave
-        wavfile = wave.open(filepath, 'r')
-    elif filepath[-2:] == 'au':
-        import sunau
-        wavfile = sunau.open(filepath, 'r')
-    fs = wavfile.getframerate()
-    bFrame = int(seg_start*fs)
-    nFrames = int(seg_duration*fs)    
-    wavfile.setpos(bFrame)
-#        print "Reading ",bFrame, nFrames, wavfile._framesize
-    str_bytestream = wavfile.readframes(nFrames)
+    # rewriting using scikits.audiolab
+    import scikits.audiolab as audiolab
+    # small hack search for alternate
+    if not op.exists(filepath):
+        filepath = op.splitext(filepath)[0] + '.wav'
+    if not op.exists(filepath):
+        filepath = op.splitext(filepath)[0] + '.WAV'
+    sndfile  = audiolab.Sndfile(filepath, 'r')
+    fs = sndfile.samplerate
+    (n, c) = ( sndfile.nframes, sndfile.channels)
     
-    sample_width = wavfile.getsampwidth()
-    print filepath, sample_width, wavfile.getnchannels() , fs, nFrames
-    if sample_width == 1:
-        typeStr = 'int8'
-    elif sample_width == 2:
-        typeStr = 'int16'
-    elif sample_width == 3:
-        typeStr ='int24' # WARNING NOT SUPPORTED BY NUMPY
-    elif sample_width == 4:
-        typeStr = 'uint32'    
+    #  initalize  position
+    sndfile.seek(int(seg_start*fs), 0, 'r')
+    audiodata =  sndfile.read_frames(int(seg_duration*fs))
     
-    audiodata = np.fromstring(str_bytestream, dtype=typeStr)
-    wavfile.close()
+    sndfile.close()
+    if targetfs is not None:
+        sig = Signal(audiodata, fs)
+        sig.resample(targetfs)
+        audiodata = sig.data
+        fs = targetfs
+    
     return audiodata, fs
+
+#    if filepath[-3:] == 'wav' or filepath[-3:] == 'WAV':
+#        import wave
+#        wavfile = wave.open(filepath, 'r')
+#    elif filepath[-2:] == 'au':
+#        import sunau
+#        wavfile = sunau.open(filepath, 'r')
+#    fs = wavfile.getframerate()
+#    bFrame = int(seg_start*fs)
+#    nFrames = int(seg_duration*fs)    
+#    wavfile.setpos(bFrame)
+##        print "Reading ",bFrame, nFrames, wavfile._framesize
+#    str_bytestream = wavfile.readframes(nFrames)
+#    
+#    sample_width = wavfile.getsampwidth()
+#    print filepath, sample_width, wavfile.getnchannels() , fs, nFrames
+#    if sample_width == 1:
+#        typeStr = 'int8'
+#    elif sample_width == 2:
+#        typeStr = 'int16'
+#    elif sample_width == 3:
+#        typeStr ='int24' # WARNING NOT SUPPORTED BY NUMPY
+#    elif sample_width == 4:
+#        typeStr = 'uint32'    
+#    
+#    audiodata = np.fromstring(str_bytestream, dtype=typeStr)
+
+#    wavfile.close()
+#    return audiodata, fs
 
