@@ -329,7 +329,7 @@ def resynth(ref_indexes, start_times, dur_times,
 
 def resynth_sequence(ref_indexes, start_times, dur_times, 
             learn_segs, learn_feats, ref_audio_dir, ext, fs,
-            dotime_stretch=False, max_synth_idx=None, normalize=False):
+            dotime_stretch=False, max_synth_idx=None, normalize=False, marge=10):
     """ Resynthesize the target object """
     
     l_seg_start, l_seg_duration, ref_seg_indices = _get_seg_slicing(learn_feats, learn_segs)
@@ -338,7 +338,7 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
     if max_synth_idx is None:
         max_synth_idx = len(ref_indexes)
     
-    total_target_duration = np.sum(dur_times[:max_synth_idx]) + 10
+    total_target_duration = np.sum(dur_times[:max_synth_idx]) + marge
     print total_target_duration
     resynth_data = np.zeros(total_target_duration*fs)
     from feat_invert.transforms import get_audio, time_stretch
@@ -385,6 +385,56 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
         
     return resynth_data
 
+
+def resynth_single_seg(ref_index, start_time, dur_time, 
+            learn_segs, learn_feats, ref_audio_dir, ext, fs,
+            dotime_stretch=False, normalize=False, marge=0.1):
+    """ Resynthesize the target object """
+    
+    l_seg_start, l_seg_duration, ref_seg_indices = _get_seg_slicing(learn_feats, learn_segs)
+    
+    from feat_invert.transforms import get_audio, time_stretch
+    
+    # LOOP on segments    
+    target_audio_start = int(start_time*fs)
+    target_audio_duration = dur_time + marge    
+    resynth_data = np.zeros(target_audio_duration*fs)
+    # Recover info from the reference
+    ref_seg_idx = ref_index     
+    ref_audio_path = learn_segs[ref_seg_indices[ref_seg_idx],1]
+    ref_audio_start = l_seg_start[ref_seg_idx]
+    ref_audio_duration = l_seg_duration[ref_seg_idx]    
+    
+#    print  ref_seg_idx, ref_audio_duration, target_audio_duration
+    stretch_ratio = float(ref_audio_duration)/float(target_audio_duration)
+    
+    if stretch_ratio <= 0:
+        return None    
+    # Load the reference audio
+    filepath = ref_audio_dir + ref_audio_path + ext
+#    print "Loading %s  "%( filepath)
+    signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration, targetfs=fs)        
+        
+    # now add it to the signal, with or without time stretching
+    if dotime_stretch:
+#        print "Stretching to %2.2f"%stretch_ratio
+        if stretch_ratio < 1.0:
+            stretched = time_stretch(signalin, stretch_ratio, wsize=1024, tstep=128)
+        else:
+            stretched = signalin.astype(float)
+        if normalize:
+            stretched /= 1.5*float(np.max(np.abs(stretched)))
+            stretched = stretched.astype(float)
+        
+        resynth_data[0:len(stretched)] = stretched                    
+    else:            
+        if normalize:
+            signalin = signalin.astype(float)
+            signalin /= 1.5*float(np.max(np.abs(signalin)))
+            
+        resynth_data[0:min(len(signalin),len(resynth_data))] = signalin[0:min(len(signalin),len(resynth_data))].astype(float)
+    
+    return resynth_data
 
 def save_audio(outputpath, aud_str, sigout,  fs, norm_segments=False):
     """ saving output vector to an audio wav"""

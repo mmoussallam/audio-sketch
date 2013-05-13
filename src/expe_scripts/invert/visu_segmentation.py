@@ -24,7 +24,7 @@ from feat_invert.transforms import spec_morph
 # load the audio data and the features
 audio_file_path = '/sons/rwc/Learn/rwc-g-m01_1.wav'
 output_path = '/home/manu/workspace/audio-sketch/src/results/audio'
-orig_sig = Signal(audio_file_path)
+orig_sig = Signal(audio_file_path, normalize=True)
 
 test_file = 'rwc-g-m01_1'
 h5_file_path = '/sons/rwc/Learn/hdf5/rwc-g-m01_1.h5'
@@ -38,18 +38,25 @@ get_ten_features_from_file(feats, segs, [], h5_file_path)
 # plot part of the audio and teh segmentation
 seg_starts = segs[0][0]
 seg_duration = np.diff(seg_starts)
+loud_start = feats[0][:,12]
+loud_max = feats[0][:,13]
+loud_max_time = feats[0][:,14]
 
-nseg = 50
-max_time = seg_starts[nseg] + seg_duration[nseg]
+nseg = 4
+max_time = seg_starts[nseg-1] + seg_duration[nseg-1]
 fs = orig_sig.fs
-plt.figure()
-plt.plot(range(int(max_time*fs)),orig_sig.data[0: int(max_time*orig_sig.fs)])
-for segIdx in range(nseg):        
-    print seg_starts[segIdx], seg_starts[segIdx]+ seg_duration[segIdx]
-    print "loudness: ", feats[0][segIdx,12:15]
-    plt.axvspan(int(seg_starts[segIdx]*fs), int((seg_starts[segIdx]+ seg_duration[segIdx])*fs),
-                -1, 1,facecolor='g', alpha=0.5)
-    
+
+plt.figure(figsize=(8,3))
+plt.plot(np.linspace(0, max_time, int(max_time*orig_sig.fs)),orig_sig.data[0: int(max_time*orig_sig.fs)])
+#for segIdx in range(nseg):        
+#    print seg_starts[segIdx], seg_starts[segIdx]+ seg_duration[segIdx]
+#    print "loudness: ", feats[0][segIdx,12:15]
+#    plt.axvspan(int(seg_starts[segIdx]*fs), int((seg_starts[segIdx]+ seg_duration[segIdx])*fs),
+#                -1, 1,facecolor='k', alpha=0.25+0.5*np.random.randn(1))
+plt.stem(seg_starts[:nseg], 0.15*np.ones((nseg,)), linefmt='k-', markerfmt='s')    
+plt.stem(seg_starts[:nseg] + loud_max_time[:nseg], 2.0**(loud_max[:nseg]/10.0), linefmt='r-', markerfmt='o')    
+plt.legend(('Waveform','Segment Starts', 'Loudness Peaks'),loc='lower right')
+plt.xlabel('Time (s)')
 plt.show()
 
 # How is Loudness related to energy of my elements?

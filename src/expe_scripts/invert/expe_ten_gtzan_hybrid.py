@@ -33,7 +33,6 @@ from tools.learning_tools import resynth_sequence, save_audio
 from expe_scripts.invert.com_imports import get_learns_multidir , get_test
 
 
-
 ref_audio_dirs = ['/home/manu/workspace/databases/genres/blues/',
                   '/home/manu/workspace/databases/genres/pop/',
                   '/home/manu/workspace/databases/genres/rock/',
@@ -45,7 +44,7 @@ ref_audio_dirs = ['/home/manu/workspace/databases/genres/blues/',
                   '/sons/rwc/Learn/',
                   '/sons/rwc/Test/']
 
-#ref_audio_dirs = ['/sons/rwc/Piano/',]
+ref_audio_dirs = ['/sons/rwc/Piano/',]
 #                  '/sons/rwc/Learn/',
 #                  '/sons/rwc/Test/']
 
@@ -55,13 +54,13 @@ outputpath = '/home/manu/workspace/audio-sketch/src/expe_scripts/audio/feat_inve
 
 
 # Global parameters
-#t_name = 'blues.00056'
-#t_path = '/home/manu/workspace/databases/genres/blues/'
-#test_file_target = '%shdf5/%s.h5'%(t_path,t_name)
+t_name = 'blues.00056'
+t_path = '/home/manu/workspace/databases/genres/blues/'
+test_file_target = '%shdf5/%s.h5'%(t_path,t_name)
 
-t_name = 'TRADPIA128E078EE1B'
-t_path = '/home/manu/workspace/databases/MillionSongSubset/data/A/D/P/'
-test_file_target = '%s%s.h5'%(t_path,t_name)
+#t_name = 'TRADPIA128E078EE1B'
+#t_path = '/home/manu/workspace/databases/MillionSongSubset/data/A/D/P/'
+#test_file_target = '%s%s.h5'%(t_path,t_name)
 
 test_key, t_feats, t_seg_starts, t_seg_duration = get_test(test_file_target)
 
@@ -72,8 +71,8 @@ else:
     t_key = None
 n_learn_max = 99
 nbFeats = 27
-max_synth_idx = 120
-n_neighbs = 1
+max_synth_idx = 10
+n_neighbs = 5
 
 # loading learn and test base
 l_feats,l_segments, n_learn = get_learns_multidir(ref_audio_dirs,
@@ -129,7 +128,6 @@ sig_viterbi.write('%s/%s_viterbi_%dneighbs_%dFeats_%dLearns_Filter%d.wav' % (out
                                                                    n_neighbs,nbFeats_viterbi,n_learn,filter_key))
 
 viterbi_spec = np.abs(stft.stft(sig_out_viterbi,512,128)[0,:,:])
-
 
 # Normalize the spectrums
 hybrid_magspec = np.zeros_like(viterbi_spec)

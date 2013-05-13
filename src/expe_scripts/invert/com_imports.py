@@ -116,7 +116,7 @@ def get_learns_multidir(ref_audio_dirs, filter_key= None, t_name=None, n_learn_m
             if t_name in h5files[fileIdx]:
                 print "Excluding %s from learn"%t_name
                 continue
-            if not filter_key is None and n_learn < n_learn_max:
+            if filter_key is not None and n_learn < n_learn_max:
                 h5 = hdf5_getters.open_h5_file_read(os.path.join(target_path, h5files[fileIdx]))
                 target_key = hdf5_getters.get_key(h5)
                 h5.close()
