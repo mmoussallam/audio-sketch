@@ -2,7 +2,7 @@
 feat_invert.features  -  Created on Feb 21, 2013
 @author: M. Moussallam
 '''
-from yaafelib import *
+
 import numpy as np
 from PyMP import signals
 from .transforms import get_stft
@@ -66,7 +66,7 @@ def get_yaafe_features(featuresList, audiofile, target_fs=32000):
         featName     (ex: MFCC)
         params       (ex: blockSize=512 stepSize=256)
     """
-
+    from yaafelib import *
     fp = FeaturePlan(sample_rate=target_fs, resample=True)
     for feat in featuresList:
         feat_str = '%s: %s %s' % (feat['name'], feat['featName'],
