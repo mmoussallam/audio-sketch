@@ -100,7 +100,8 @@ def get_learns_and_test(ref_audio_dir, data_path, t_index = 100, filter_key= Tru
 
 
 
-def get_learns_multidir(ref_audio_dirs, filter_key= None, t_name=None, n_learn_max = 99):
+def get_learns_multidir(ref_audio_dirs, filter_key= None, t_name=None,
+                        n_learn_max = 99):
     """ Load the features for a whole lotta directories """
         
     # Now load all the others
@@ -128,8 +129,9 @@ def get_learns_multidir(ref_audio_dirs, filter_key= None, t_name=None, n_learn_m
                 n_learn += 1
         print "Reached %d",n_learn
                 
-
+    
     l_feats = np.concatenate(learn_feats_list, axis=0)
+    
     l_segments = np.vstack(learn_segs_list)
     
     return l_feats,l_segments, n_learn

@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 from PyMP import Signal
 import sys
 import os
-from feat_invert import regression, transforms, features
+
 sys.path.append('/home/manu/workspace/audio-sketch')
+sys.path.append('/home/manu/workspace/audio-sketch/src')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
 sys.path.append('/usr/local/lib')
 sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')
 sys.path.append('/usr/local/python_packages')
+from feat_invert import regression, transforms, features
 import hdf5_utils as HDF5
 import hdf5_getters
 import pyechonest
@@ -24,8 +26,8 @@ config.ECHO_NEST_API_KEY="5TSYCVEZEIQ9R3HEO"
 #os.environ['ECHONEST_API_KEY'] = config.ECHO_NEST_API_KEY
 
 # the goal is to get the feature information for the learn subbase of rwc audio samples
-input_dir = '/home/manu/workspace/databases/genres/jazz/'
-output_dir = '/home/manu/workspace/databases/genres/jazz/hdf5/'
+input_dir = '/home/manu/workspace/databases/genres/country/'
+output_dir = '/home/manu/workspace/databases/genres/country/hdf5/'
 
 # Single file is working, now loop on all files from the learning directory
 #from pyechonest import track

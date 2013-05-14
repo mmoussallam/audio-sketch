@@ -41,12 +41,13 @@ seg_duration = np.diff(seg_starts)
 loud_start = feats[0][:,12]
 loud_max = feats[0][:,13]
 loud_max_time = feats[0][:,14]
+feats =  feats[0]
 
 nseg = 4
 max_time = seg_starts[nseg-1] + seg_duration[nseg-1]
 fs = orig_sig.fs
 
-plt.figure(figsize=(8,3))
+plt.figure(figsize=(10,3))
 plt.plot(np.linspace(0, max_time, int(max_time*orig_sig.fs)),orig_sig.data[0: int(max_time*orig_sig.fs)])
 #for segIdx in range(nseg):        
 #    print seg_starts[segIdx], seg_starts[segIdx]+ seg_duration[segIdx]
@@ -57,6 +58,10 @@ plt.stem(seg_starts[:nseg], 0.15*np.ones((nseg,)), linefmt='k-', markerfmt='s')
 plt.stem(seg_starts[:nseg] + loud_max_time[:nseg], 2.0**(loud_max[:nseg]/10.0), linefmt='r-', markerfmt='o')    
 plt.legend(('Waveform','Segment Starts', 'Loudness Peaks'),loc='lower right')
 plt.xlabel('Time (s)')
+plt.figure(figsize=(10,3))
+plt.imshow(feats[:nseg,-12:].T)
+plt.figure(figsize=(10,3))
+plt.imshow(feats[:nseg,:12].T)
 plt.show()
 
 # How is Loudness related to energy of my elements?

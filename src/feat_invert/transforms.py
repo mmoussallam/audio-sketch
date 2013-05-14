@@ -158,7 +158,7 @@ def time_stretch(signalin, tscale, wsize=512, tstep=128):
     
     return sigout
 
-def get_audio(filepath, seg_start, seg_duration, targetfs=None):
+def get_audio(filepath, seg_start, seg_duration, targetfs=None, verbose=True):
     """ for use only with wav files from rwc database """
     
     # rewriting using scikits.audiolab
@@ -171,18 +171,20 @@ def get_audio(filepath, seg_start, seg_duration, targetfs=None):
     sndfile  = audiolab.Sndfile(filepath, 'r')
     fs = sndfile.samplerate
     (n, c) = ( sndfile.nframes, sndfile.channels)
-    
+    if verbose: print "Reading"
     #  initalize  position
     sndfile.seek(int(seg_start*fs), 0, 'r')
     audiodata =  sndfile.read_frames(int(seg_duration*fs))
     
     sndfile.close()
-    if targetfs is not None:
+    if verbose: print "Done"
+    if targetfs is not None and not (targetfs==fs):
+        if verbose: print "Resampling"
         sig = Signal(audiodata, fs)
         sig.resample(targetfs)
         audiodata = sig.data
         fs = targetfs
-    
+        if verbose: print "Done"
     return audiodata, fs
 
 #    if filepath[-3:] == 'wav' or filepath[-3:] == 'WAV':

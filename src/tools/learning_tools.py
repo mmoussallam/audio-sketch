@@ -266,6 +266,8 @@ def _get_seg_slicing(learn_feats, learn_segs):
     c_idx = 0
     for segI in range(learn_segs.shape[0]):
         n_ub_seg = len(learn_segs[segI,0])
+        if c_idx + n_ub_seg>n_seg:
+            break
         ref_seg_indices[c_idx:c_idx+n_ub_seg] = segI
         l_seg_start[c_idx:c_idx+n_ub_seg] = learn_segs[segI,0]
         l_seg_duration[c_idx:c_idx+n_ub_seg-1] = learn_segs[segI,0][1:] - learn_segs[segI,0][0:-1]
@@ -329,7 +331,7 @@ def resynth(ref_indexes, start_times, dur_times,
 
 def resynth_sequence(ref_indexes, start_times, dur_times, 
             learn_segs, learn_feats, ref_audio_dir, ext, fs,
-            dotime_stretch=False, max_synth_idx=None, normalize=False, marge=10):
+            dotime_stretch=False, max_synth_idx=None, normalize=False, marge=10, verbose=False):
     """ Resynthesize the target object """
     
     l_seg_start, l_seg_duration, ref_seg_indices = _get_seg_slicing(learn_feats, learn_segs)
@@ -339,13 +341,16 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
         max_synth_idx = len(ref_indexes)
     
     total_target_duration = np.sum(dur_times[:max_synth_idx]) + marge
-    print total_target_duration
+    if verbose:
+        print total_target_duration
     resynth_data = np.zeros(total_target_duration*fs)
     from feat_invert.transforms import get_audio, time_stretch
     
+    names = []
     # LOOP on segments
     for seg_idx in range(max_synth_idx):
-        print "----- %d/%d ----"%(seg_idx, max_synth_idx)
+        if verbose:
+            print "----- %d/%d ----"%(seg_idx, max_synth_idx)
         
         target_audio_start = int(start_times[seg_idx]*fs)
         target_audio_duration = dur_times[seg_idx]          
@@ -361,8 +366,10 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
             continue    
         # Load the reference audio
         filepath = ref_audio_dir + ref_audio_path + ext
-        print "Loading %s  "%( filepath)
-        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration, targetfs=fs)        
+        names.append(os.path.split(filepath)[-1])
+#        print "Loading %s  "%( os.path.split(filepath)[-1]),
+        signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration,
+                                 targetfs=fs, verbose=verbose)        
             
         # now add it to the signal, with or without time stretching
         if dotime_stretch:
@@ -382,7 +389,10 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
                 signalin /= 1.5*float(np.max(np.abs(signalin)))
                 
             resynth_data[target_audio_start:target_audio_start+len(signalin)] += signalin.astype(float)
-        
+    from collections import Counter
+    counts =  Counter(names) 
+    if np.max(counts.values()) > 0.5*max_synth_idx:
+        print "WARNING: probable duplicate ",np.max(counts.values),0.5*max_synth_idx, counts
     return resynth_data
 
 
