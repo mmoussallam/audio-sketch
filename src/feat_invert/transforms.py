@@ -56,12 +56,14 @@ def gl_recons(magspec, init_vec, niter=10, wsize=512, tstep=256, display=False):
     # initialize signal        
     x_rec = init_vec
     (K, P) = magspec.shape
-
+    mask = magspec==0
+    magspec = np.ma.masked_array(magspec, mask=mask)
     for n in range(niter):
 
         # compute stft of candidate
-        S = get_stft(x_rec, wsize, tstep)        
-
+        S = get_stft(x_rec, wsize, tstep)   
+        S[mask]=0     
+        S = np.ma.masked_array(S, mask=mask)
         # estimate error        
         err = np.sum((np.abs(S[:]) - magspec[:]) ** 2) / np.sum(magspec[:] ** 2)
         print "Iteration %d: error of %1.6f " % (n, err)

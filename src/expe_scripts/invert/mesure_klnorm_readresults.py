@@ -86,14 +86,14 @@ klmat_mean = kl_matrix[...,0]
 klmat_median = kl_matrix[...,1]
 klmat_max = kl_matrix[...,2]
 
-plt.figure()
-plt.errorbar(range(len(feat_combinations)),
-             np.mean(np.reshape(np.swapaxes(klmat_max, 0,2),(len(feat_combinations),-1) ), 1),
-             yerr=np.std(np.reshape(np.swapaxes(klmat_max, 0,2),(len(feat_combinations),-1) ), 1))
-ax = plt.gca()
-ax.set_xticklabels(feat_combinations, rotation=45)
-plt.subplots_adjust(bottom=0.5)
-plt.show()
+#plt.figure()
+#plt.errorbar(range(len(feat_combinations)),
+#             np.mean(np.reshape(np.swapaxes(klmat_max, 0,2),(len(feat_combinations),-1) ), 1),
+#             yerr=np.std(np.reshape(np.swapaxes(klmat_max, 0,2),(len(feat_combinations),-1) ), 1))
+#ax = plt.gca()
+#ax.set_xticklabels(feat_combinations, rotation=45)
+#plt.subplots_adjust(bottom=0.5)
+#plt.show()
 
 
 plt.figure()
@@ -137,21 +137,22 @@ plt.subplots_adjust(left=0.08,right=0.97,top=0.97,bottom=0.13)
 plt.grid()
 plt.show()
 
-plt.figure()
-plt.plot(n_knn, np.mean(klmat_mean[:,-1,6,:],0))
-plt.plot(n_knn, np.mean(klmat_median[:,-1,6,:],0))
-plt.plot(n_knn, np.mean(klmat_max[:,-1,6,:],0))
-plt.show()
+#plt.figure()
+#plt.plot(n_knn, np.mean(klmat_mean[:,-1,6,:],0))
+#plt.plot(n_knn, np.mean(klmat_median[:,-1,6,:],0))
+#plt.plot(n_knn, np.mean(klmat_max[:,-1,6,:],0))
+#plt.show()
 
-plt.figure()
-plt.imshow(np.mean(klmat_max[:,-1,:,:],0))
-plt.colorbar()
-plt.show()
+#plt.figure()
+#plt.imshow(np.mean(klmat_max[:,-1,:,:],0))
+#plt.colorbar()
+#plt.show()
 
-min_idx = np.unravel_index(klmat_max.argmin(), klmat_max.shape)
-print klmat_max[min_idx]
-min_idx = np.unravel_index(klmat_mean.argmin(), klmat_mean.shape)
-print klmat_mean[min_idx]
+#min_idx = np.unravel_index(klmat_max.argmin(), klmat_max.shape)
+#print klmat_max[min_idx]
+
+min_idx = np.unravel_index(klmat_median.argmin(), klmat_median.shape)
+print klmat_median[min_idx]
 
 # Loading the corresponding mean
 magarray_name = 'magarray_Trial%d_%dFrames_%s_%dNN_seed%d.npy'%(min_idx[0],
@@ -159,8 +160,9 @@ magarray_name = 'magarray_Trial%d_%dFrames_%s_%dNN_seed%d.npy'%(min_idx[0],
                                                          feat_combinations[min_idx[2]],
                                                          n_knn[min_idx[3]], rndseed)
 magspecarr = np.load(os.path.join(out_dir,magarray_name))
-max_magspec = np.max(magspecarr, 0)
 
+median_magspec = np.median(magspecarr, 0)
+max_magspec = np.max(magspecarr, 0)
 # Loading the original spec
 # retrieve the name
 np.random.seed(rndseed)
@@ -176,10 +178,45 @@ for t in range(min_idx[0]+1):
 orig_spec_name = 'origrray_%s_Trial%d_seed%d.npy'%(t_name,min_idx[0],rndseed)
 orig_spec = np.load(os.path.join(out_dir,orig_spec_name))
 
-plt.figure()
-ax1 = plt.subplot(211)
-plt.imshow(np.log(orig_spec), origin='lower')
-plt.subplot(212, sharex=ax1, sharey=ax1)
-plt.imshow(np.log(max_magspec), origin='lower')
+# also load the Dan Ellis's synthesized version
+# The Piano cross-synthesis and the Viterbi smoothed Musaicing?
+# resynthesize using the first N frames
+n_max_frames = 900
+nb_gl_iter = 30
+init_vec = np.random.randn(128*n_max_frames)
+x_recon_median = transforms.gl_recons(median_magspec[:,:n_max_frames], init_vec, nb_gl_iter,
+                                       512, 128, display=False)
+
+sig_median = Signal(x_recon_median, 22050,normalize=True)
+
+init_vec = np.random.randn(128*n_max_frames)
+x_recon_orig = transforms.gl_recons(orig_spec[:,:n_max_frames], init_vec, nb_gl_iter,
+                                       512, 128, display=False)
+sig_orig= Signal(x_recon_orig, 22050,normalize=True)
+
+init_vec = np.random.randn(128*n_max_frames)
+x_recon_max = transforms.gl_recons(max_magspec[:,:n_max_frames], init_vec, nb_gl_iter,
+                                       512, 128, display=False)
+sig_max= Signal(x_recon_max, 22050,normalize=True)
+
+
+sig_ellis = Signal('/home/manu/workspace/audio-sketch/src/expe_scripts/invert/ellis_resynth%s.wav'%t_name, normalize=True)
+
+colormap = cm.jet
+
+plt.figure(figsize=(16,12))
+ax1 = plt.subplot(411)
+#plt.imshow(np.log(orig_spec), origin='lower')
+sig_orig.spectrogram(512, 128, order=1, log=True, ax=ax1, cmap=colormap, cbar=False)
+ax2 = plt.subplot(412, sharex=ax1, sharey=ax1)
+#plt.imshow(np.log(median_magspec), origin='lower')
+sig_median.spectrogram(512, 128, order=1, log=True, ax=ax2, cmap=colormap, cbar=False)
+ax3 = plt.subplot(413, sharex=ax1, sharey=ax1)
+#plt.imshow(np.log(max_magspec), origin='lower')
+sig_max.spectrogram(512, 128, order=1, log=True, ax=ax3, cmap=colormap, cbar=False)
+ax4=plt.subplot(414, sharex=ax1, sharey=ax1)
+sig_ellis.spectrogram(512, 128, order=1, log=True, ax=ax4, cmap=colormap, cbar=False)
+plt.subplots_adjust(left=0.05,bottom=0.07,right=0.97,top=0.97)
+plt.xlim((0,n_max_frames))
 plt.show() 
-# influence of the number of NN
+

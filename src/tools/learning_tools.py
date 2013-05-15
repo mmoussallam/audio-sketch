@@ -366,6 +366,8 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
             continue    
         # Load the reference audio
         filepath = ref_audio_dir + ref_audio_path + ext
+        if verbose:
+            print filepath
         names.append(os.path.split(filepath)[-1])
 #        print "Loading %s  "%( os.path.split(filepath)[-1]),
         signalin, fs = get_audio(filepath, ref_audio_start, ref_audio_duration,

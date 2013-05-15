@@ -29,7 +29,7 @@ config.ECHO_NEST_API_KEY="5TSYCVEZEIQ9R3HEO"
 input_dir = '/home/manu/workspace/databases/genres/jazz/'
 output_dir = '/home/manu/workspace/databases/genres/jazz/hdf5/'
 
-# Single file is working, now loop on all files from the learning directory
+# Single file is working, now loop on all files from the learning directory17
 #from pyechonest import track
 for audiofile in features.get_filepaths(input_dir, ext='.au'):
     print "Starting work on ", audiofile    

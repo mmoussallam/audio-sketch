@@ -4,6 +4,7 @@ expe_scripts.invert.visu_segmentation  -  Created on Apr 30, 2013
 '''
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from PyMP import Signal
 import sys
 import os
@@ -22,12 +23,21 @@ from feat_invert.transforms import spec_morph
 
 
 # load the audio data and the features
-audio_file_path = '/sons/rwc/Learn/rwc-g-m01_1.wav'
+test_file = 'blues.00000'
+dir_path = '/home/manu/workspace/databases/genres/blues'
+ext = 'au'
+#dir_path = '/sons/rwc/Learn/'
+#ext = '.WAV'
+#h5_file_path = '/sons/rwc/Learn/hdf5/rwc-g-m01_4.h5'
+#audio_file_path = '/sons/rwc/Learn/rwc-g-m01_4.wav'
+h5_file_path = '%s/hdf5/%s.h5'%(dir_path,test_file)
+audio_file_path = '%s/%s.%s'%(dir_path,test_file,ext)
 output_path = '/home/manu/workspace/audio-sketch/src/results/audio'
-orig_sig = Signal(audio_file_path, normalize=True)
+from feat_invert.transforms import get_audio
+audiodata, fs = get_audio(audio_file_path, 0, 30) 
+orig_sig = Signal(audiodata,fs, normalize=True)
 
-test_file = 'rwc-g-m01_1'
-h5_file_path = '/sons/rwc/Learn/hdf5/rwc-g-m01_1.h5'
+
 
 #test_file = '011PFNOF.WAV'
 #h5_file_path = '/sons/rwc/Piano/hdf5/011PFNOF.h5'
@@ -43,26 +53,27 @@ loud_max = feats[0][:,13]
 loud_max_time = feats[0][:,14]
 feats =  feats[0]
 
-nseg = 4
-max_time = seg_starts[nseg-1] + seg_duration[nseg-1]
+
+
+nseg = 15
+max_time = seg_starts[nseg-1]# + seg_duration[nseg-1]
+X,Y = np.meshgrid(seg_starts[:nseg], range(12))
 fs = orig_sig.fs
 
-plt.figure(figsize=(10,3))
+plt.figure(figsize=(10,9))
+ax1 = plt.subplot(311)
 plt.plot(np.linspace(0, max_time, int(max_time*orig_sig.fs)),orig_sig.data[0: int(max_time*orig_sig.fs)])
-#for segIdx in range(nseg):        
-#    print seg_starts[segIdx], seg_starts[segIdx]+ seg_duration[segIdx]
-#    print "loudness: ", feats[0][segIdx,12:15]
-#    plt.axvspan(int(seg_starts[segIdx]*fs), int((seg_starts[segIdx]+ seg_duration[segIdx])*fs),
-#                -1, 1,facecolor='k', alpha=0.25+0.5*np.random.randn(1))
-plt.stem(seg_starts[:nseg], 0.15*np.ones((nseg,)), linefmt='k-', markerfmt='s')    
-plt.stem(seg_starts[:nseg] + loud_max_time[:nseg], 2.0**(loud_max[:nseg]/10.0), linefmt='r-', markerfmt='o')    
-plt.legend(('Waveform','Segment Starts', 'Loudness Peaks'),loc='lower right')
-plt.xlabel('Time (s)')
-plt.figure(figsize=(10,3))
-plt.imshow(feats[:nseg,-12:].T)
-plt.figure(figsize=(10,3))
-plt.imshow(feats[:nseg,:12].T)
-plt.subplots_adjust(left=0.05,right=0.97,top=0.97)
+plt.stem(seg_starts[:nseg], 0.8*np.ones((nseg,)), linefmt='k-', markerfmt='s')    
+plt.stem(seg_starts[:nseg-1] + loud_max_time[:nseg-1], 2.0**(loud_max[:nseg-1]/10.0), linefmt='r-', markerfmt='o')    
+plt.subplot(312, sharex=ax1)
+
+plt.pcolor(X,Y, feats[:nseg,-12:].T, cmap=cm.copper_r, edgecolors='k')
+plt.subplot(313, sharex=ax1)
+plt.pcolor(X,Y, feats[:nseg,:12].T, cmap=cm.copper_r, edgecolors='k')
+plt.xlabel('Time (s)',size=16.0)
+plt.subplots_adjust(left=0.05,bottom=0.08,right=0.97,top=0.97)
+plt.xlim((-0.1, max_time+0.2))
+plt.savefig('/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Figures/visu_segments.pdf')
 plt.show()
 
 # How is Loudness related to energy of my elements?

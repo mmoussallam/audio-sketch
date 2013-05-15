@@ -94,7 +94,7 @@ feat_combinations = ['Chroma','Timbre','Loudness',
                      'Chroma-Timbre','Chroma-Loudness',
                      'Timbre-Loudness','All']
 n_knn = [1,5,10,20]#5,10]
-nbtest = 20
+nbtest = 25
 nb_max_seg = 20
 # BUGFIX NO METAL OR JAZZ (missing features)
 genre_list = [s for s in os.listdir('/home/manu/workspace/databases/genres/') if s not in ['jazz','metal','country']]
