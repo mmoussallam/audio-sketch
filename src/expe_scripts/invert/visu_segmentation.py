@@ -4,36 +4,30 @@ expe_scripts.invert.visu_segmentation  -  Created on Apr 30, 2013
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-worpspace_path = '/home/manumouss/workspace/git/'
-sys.path.append(worpspace_path+'PyMP')
 from PyMP import Signal
 import sys
 import os
-
-
-
-sys.path.append(worpspace_path+'audio-sketch')
-sys.path.append(worpspace_path+'PyMP')
-sys.path.append(worpspace_path+'MEG_Denoise')
+from feat_invert import regression, transforms, features
+sys.path.append('/home/manu/workspace/audio-sketch')
+sys.path.append('/home/manu/workspace/PyMP')
+sys.path.append('/home/manu/workspace/meeg_denoise')
 sys.path.append('/usr/local/lib')
-#sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')
-sys.path.append('/home/manumouss/workspace/git/MSongsDB-master/PythonSrc')
+sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')
 sys.path.append('/usr/local/python_packages')
 
-#import stft
-sys.path.append(worpspace_path+'audio-sketch/src')
+import stft
+
 from tools.learning_tools import find_indexes, get_ten_features, get_ten_features_from_file, get_track_info, resynth
-from feat_invert import regression, transforms, features
+from feat_invert.transforms import spec_morph
 
 
 # load the audio data and the features
-audio_file_path = '/home/manumouss/workspace/git/audio-sketch/src/expe_scripts/invert/rwc-g-m01_1.wav'
+audio_file_path = '/sons/rwc/Learn/rwc-g-m01_1.wav'
 output_path = '/home/manu/workspace/audio-sketch/src/results/audio'
 orig_sig = Signal(audio_file_path, normalize=True)
 
 test_file = 'rwc-g-m01_1'
-h5_file_path = '/home/manumouss/workspace/git/audio-sketch/src/expe_scripts/invert/rwc-g-m01_1.h5'
+h5_file_path = '/sons/rwc/Learn/hdf5/rwc-g-m01_1.h5'
 
 #test_file = '011PFNOF.WAV'
 #h5_file_path = '/sons/rwc/Piano/hdf5/011PFNOF.h5'
@@ -49,27 +43,26 @@ loud_max = feats[0][:,13]
 loud_max_time = feats[0][:,14]
 feats =  feats[0]
 
-nseg = 5
-max_time = seg_starts[nseg-1]# + seg_duration[nseg-1]
+nseg = 4
+max_time = seg_starts[nseg-1] + seg_duration[nseg-1]
 fs = orig_sig.fs
 
-X,Y = np.meshgrid(seg_starts[:nseg],range(12))
-
-fig=plt.figure(figsize=(10,3))
-ax1 = plt.subplot(311)
+plt.figure(figsize=(10,3))
 plt.plot(np.linspace(0, max_time, int(max_time*orig_sig.fs)),orig_sig.data[0: int(max_time*orig_sig.fs)])
+#for segIdx in range(nseg):        
+#    print seg_starts[segIdx], seg_starts[segIdx]+ seg_duration[segIdx]
+#    print "loudness: ", feats[0][segIdx,12:15]
+#    plt.axvspan(int(seg_starts[segIdx]*fs), int((seg_starts[segIdx]+ seg_duration[segIdx])*fs),
+#                -1, 1,facecolor='k', alpha=0.25+0.5*np.random.randn(1))
 plt.stem(seg_starts[:nseg], 0.15*np.ones((nseg,)), linefmt='k-', markerfmt='s')    
 plt.stem(seg_starts[:nseg] + loud_max_time[:nseg], 2.0**(loud_max[:nseg]/10.0), linefmt='r-', markerfmt='o')    
-#plt.legend(('Waveform','Segment Starts', 'Loudness Peaks'),loc='lower right')
-plt.xlim([-0.05,1.2])
-plt.subplot(312, sharex=ax1)
-ax2 = plt.pcolor(X,Y, feats[:nseg,-12:].T, cmap=cm.copper_r)
-#ax_col = fig.add_axes([0.6, 0.35, 0.1, 0.2])
-#plt.colorbar( mappable=ax2, ax=ax_col)
-plt.subplot(313, sharex=ax1)
-plt.pcolor(X,Y,feats[:nseg,:12].T, cmap=cm.copper_r)
-#plt.colorbar()
+plt.legend(('Waveform','Segment Starts', 'Loudness Peaks'),loc='lower right')
 plt.xlabel('Time (s)')
+plt.figure(figsize=(10,3))
+plt.imshow(feats[:nseg,-12:].T)
+plt.figure(figsize=(10,3))
+plt.imshow(feats[:nseg,:12].T)
+plt.subplots_adjust(left=0.05,right=0.97,top=0.97)
 plt.show()
 
 # How is Loudness related to energy of my elements?

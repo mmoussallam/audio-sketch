@@ -4,7 +4,7 @@ feat_invert.regression  -  Created on Feb 21, 2013
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-#import spams
+import spams
 from .features import getoptions
 from .transforms import gl_recons
 from scipy.ndimage.filters import median_filter

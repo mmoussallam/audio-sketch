@@ -18,7 +18,7 @@ import hdf5_getters
 from tempfile import mkdtemp
 cachedir = mkdtemp()
 from joblib import Memory
-memory = Memory(cachedir='/tmp/joblib')
+memory = Memory(cachedir='/data/tmp/joblib')
 
 
 @memory.cache

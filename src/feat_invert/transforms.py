@@ -12,9 +12,9 @@ from PyMP.signals import LongSignal
 import sys
 import os.path as op
 import os
-#import cv
-#import cv2
-#import stft
+import cv
+import cv2
+import stft
 from math import pi
 sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')

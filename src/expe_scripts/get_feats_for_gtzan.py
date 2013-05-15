@@ -26,8 +26,8 @@ config.ECHO_NEST_API_KEY="5TSYCVEZEIQ9R3HEO"
 #os.environ['ECHONEST_API_KEY'] = config.ECHO_NEST_API_KEY
 
 # the goal is to get the feature information for the learn subbase of rwc audio samples
-input_dir = '/home/manu/workspace/databases/genres/country/'
-output_dir = '/home/manu/workspace/databases/genres/country/hdf5/'
+input_dir = '/home/manu/workspace/databases/genres/jazz/'
+output_dir = '/home/manu/workspace/databases/genres/jazz/hdf5/'
 
 # Single file is working, now loop on all files from the learning directory
 #from pyechonest import track
