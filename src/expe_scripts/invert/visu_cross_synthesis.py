@@ -20,9 +20,17 @@ import stft
 
 from tools.learning_tools import resynth_sequence, get_ten_features, get_ten_features_from_file, get_track_info
 from feat_invert.transforms import spec_morph
+output_audio_path = '/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Audio/'
+output_fig_path = '/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Figures/'
+def save_fig_audio(rec_sig, target_name, format=(8,3)):
+    import matplotlib.cm as cm
+    rec_sig.write(os.path.join(output_audio_path, '%s.wav'%target_name))
+    plt.figure(figsize=format)
+    rec_sig.spectrogram(512, 128, order=1, log=True, cmap=cm.jet, cbar=False)
+    plt.savefig(os.path.join(output_fig_path, '%s.png'%target_name))
 
 ################# EXPE 2 ###########################
-learntype = 'Piano'
+learntype = 'Learn'
 ext = '.WAV'
 ref_audio_dir = '/sons/rwc/%s/'%learntype
 h5_dir =  '/sons/rwc/%s/hdf5/'%learntype
@@ -42,8 +50,8 @@ for segI in range(learn_segs.shape[0]):
     c_idx += n_ub_seg
 
 # now let us take an example from the test dataset (or any file in the MSDataSet)
-test_file = 'blues.00056'
-dir_path = '/home/manu/workspace/databases/genres/blues'
+test_file = 'reggae.00011'
+dir_path = '/home/manu/workspace/databases/genres/reggae'
 extref = 'au'
 #dir_path = '/sons/rwc/Learn/'
 #ext = '.WAV'
@@ -91,7 +99,7 @@ else:
 from feat_invert.transforms import get_audio, time_stretch
 
 max_synth_idx = len(neighb_segments_idx)-5
-max_synth_idx = 17
+max_synth_idx = 20
 rescale = True
 stretch = True
 
@@ -116,8 +124,13 @@ sig_out_normalized = resynth_sequence(neighb_segments_idx[:,0], test_segs, t_seg
 rec_sig = Signal(sig_out, 22050, normalize=True)
 rec_sig.crop(0, test_segs[max_synth_idx]*rec_sig.fs)
 
+save_fig_audio(rec_sig, '%s_plain_cross_%s'%(test_file,learntype))
+
 rec_sig_normalized = Signal(sig_out_normalized, 22050, normalize=True)
 rec_sig_normalized.crop(0, test_segs[max_synth_idx]*rec_sig.fs)
+
+save_fig_audio(rec_sig_normalized, '%s_normalized_cross_%s'%(test_file,learntype))
+
 # load original audio
 orig_data, fs = get_audio(audio_file_path, 0, rec_sig.get_duration(),
                           targetfs=None, verbose=True)
@@ -125,6 +138,8 @@ orig_data, fs = get_audio(audio_file_path, 0, rec_sig.get_duration(),
 
 
 orig_sig = Signal(orig_data, fs, normalize=True)
+save_fig_audio(orig_sig, '%s_original_%dsegments'%(test_file,max_synth_idx))
+
 Lmax = min(orig_sig.length,rec_sig.length)
 t_vec = np.arange(float(Lmax))/float(fs)
 plt.figure(figsize=(8,8))
@@ -146,7 +161,7 @@ plt.ylim((-1,1))
 plt.xlabel('Time (s)', fontsize=16.0)
 plt.grid(axis='x')
 plt.subplots_adjust(left=0.07, top=0.97,right=0.97,hspace=0.04)
-plt.savefig('/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Figures/visu_concatenative_synth%s.pdf'%learntype)
+#plt.savefig('/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Figures/visu_concatenative_synth%s.pdf'%learntype)
 plt.show()
 
 
@@ -164,4 +179,5 @@ sig_out_viterbi = resynth_sequence(np.squeeze(vit_cands), test_segs, t_seg_durat
                            dotime_stretch=True,max_synth_idx=max_synth_idx,  normalize=True,
                            marge=3, verbose=True)
 sig_viterbi = Signal(sig_out_viterbi, 22050, normalize=True)
-
+sig_viterbi.crop(0, rec_sig.length)
+save_fig_audio(sig_viterbi, '%s_viterbi_cross_%s'%(test_file,learntype))

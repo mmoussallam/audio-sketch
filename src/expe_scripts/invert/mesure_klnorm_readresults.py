@@ -19,11 +19,13 @@ sys.path.append('/usr/local/python_packages')
 import hdf5_utils as HDF5
 import hdf5_getters
 import stft
-from tools.learning_tools import find_indexes, get_ten_features, get_ten_features_from_file, get_track_info
-from tools.learning_tools import resynth_single_seg, save_audio
-from expe_scripts.invert.com_imports import get_learns_multidir , get_test
-from feat_invert.transforms import get_audio, time_stretch
-from tools.learning_tools import resynth_sequence, save_audio
+#from tools.learning_tools import find_indexes, get_ten_features, get_ten_features_from_file, get_track_info
+#from tools.learning_tools import resynth_single_seg, save_audio
+#from expe_scripts.invert.com_imports import get_learns_multidir , get_test
+#from feat_invert.transforms import get_audio, time_stretch
+#from tools.learning_tools import resynth_sequence, save_audio
+#
+#    
 
 out_dir = '/home/manu/workspace/audio-sketch/data/scores/'
 n_frames_list = [10000,100000,] # logarithmically scaled
@@ -31,7 +33,7 @@ feat_combinations = ['Chroma','Timbre','Loudness',
                      'Chroma-Timbre','Chroma-Loudness',
                      'Timbre-Loudness','All']
 n_knn = [1,5,10,20]
-nbtest = 20
+nbtest = 25
 rndseed = 2
 # BUGFIX NO METAL OR JAZZ (missing features)
 
@@ -178,6 +180,11 @@ for t in range(min_idx[0]+1):
 orig_spec_name = 'origrray_%s_Trial%d_seed%d.npy'%(t_name,min_idx[0],rndseed)
 orig_spec = np.load(os.path.join(out_dir,orig_spec_name))
 
+
+output_audio_path = '/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Audio/'
+output_fig_path = '/home/manu/Documents/Articles/ISMIR2013/ListeningMSD/Figures/'
+colormap = cm.jet
+format = (8,3)
 # also load the Dan Ellis's synthesized version
 # The Piano cross-synthesis and the Viterbi smoothed Musaicing?
 # resynthesize using the first N frames
@@ -188,21 +195,35 @@ x_recon_median = transforms.gl_recons(median_magspec[:,:n_max_frames], init_vec,
                                        512, 128, display=False)
 
 sig_median = Signal(x_recon_median, 22050,normalize=True)
+sig_median.write(os.path.join(output_audio_path, '%s_add_median.wav'%t_name))
+plt.figure(figsize=format)
+sig_median.spectrogram(512, 128, order=1, log=True, cmap=colormap, cbar=False)
+plt.savefig(os.path.join(output_fig_path, '%s_add_median.png'%t_name))
 
 init_vec = np.random.randn(128*n_max_frames)
 x_recon_orig = transforms.gl_recons(orig_spec[:,:n_max_frames], init_vec, nb_gl_iter,
                                        512, 128, display=False)
 sig_orig= Signal(x_recon_orig, 22050,normalize=True)
+sig_orig.write(os.path.join(output_audio_path, '%s_original.wav'%t_name))
+plt.figure(figsize=format)
+sig_orig.spectrogram(512, 128, order=1, log=True, cmap=colormap, cbar=False)
+plt.savefig(os.path.join(output_fig_path, '%s_original.png'%t_name))
 
 init_vec = np.random.randn(128*n_max_frames)
 x_recon_max = transforms.gl_recons(max_magspec[:,:n_max_frames], init_vec, nb_gl_iter,
                                        512, 128, display=False)
 sig_max= Signal(x_recon_max, 22050,normalize=True)
-
+sig_max.write(os.path.join(output_audio_path, '%s_add_max.wav'%t_name))
+plt.figure(figsize=format)
+sig_max.spectrogram(512, 128, order=1, log=True, cmap=colormap, cbar=False)
+plt.savefig(os.path.join(output_fig_path, '%s_max.png'%t_name))
 
 sig_ellis = Signal('/home/manu/workspace/audio-sketch/src/expe_scripts/invert/ellis_resynth%s.wav'%t_name, normalize=True)
+sig_ellis.crop(0,sig_max.length)
+plt.figure(figsize=format)
+sig_ellis.spectrogram(512, 128, order=1, log=True, cmap=colormap, cbar=False)
+plt.savefig(os.path.join(output_fig_path, '%s_ellis.png'%t_name))
 
-colormap = cm.jet
 
 plt.figure(figsize=(16,12))
 ax1 = plt.subplot(411)
