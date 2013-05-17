@@ -375,7 +375,7 @@ def resynth_sequence(ref_indexes, start_times, dur_times,
             
         # now add it to the signal, with or without time stretching
         if dotime_stretch:
-            print "Stretching to %2.2f"%stretch_ratio
+#            print "Stretching to %2.2f"%stretch_ratio
             if stretch_ratio < 1.0:
                 stretched = time_stretch(signalin, stretch_ratio, wsize=1024, tstep=128)
             else:

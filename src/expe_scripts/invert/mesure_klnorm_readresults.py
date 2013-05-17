@@ -133,8 +133,8 @@ plt.plot(n_knn, np.mean(np.reshape(np.swapaxes(klmat_median, 0,3),(len(n_knn),-1
 plt.plot(n_knn, np.mean(np.reshape(np.swapaxes(klmat_max, 0,3),(len(n_knn),-1) ), 1),
          'ko-',linewidth=2.0,markersize=7.0)
 plt.legend(("Mean","Median","Max"))
-plt.ylabel('Average KL divergence')
-plt.xlabel('Number of combined examples - k')
+plt.ylabel('Average KL divergence',fontsize=16.0)
+plt.xlabel('Number of combined examples - P',fontsize=16.0)
 plt.subplots_adjust(left=0.08,right=0.97,top=0.97,bottom=0.13)
 plt.grid()
 plt.show()
