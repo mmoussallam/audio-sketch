@@ -1,10 +1,8 @@
 '''
-expe_scripts.invert.Visu_all_synthesis  -  Created on May 17, 2013
-
-generate the big picture end of the ismir paper
-summarizes visu_add and visu_cross
+expe_scripts.invert.visu_all_synthesis_MSD  -  Created on May 21, 2013
 @author: M. Moussallam
 '''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -31,7 +29,7 @@ from tools.learning_tools import Viterbi, resynth_sequence
 from expe_scripts.invert.visu_add_synthesis import ref_audio_dirs, get_feat_idx_from_name
 
 
-def save_fig_audio(rec_sig, audio_path, fig_path, target_name, format=(8,4), max_t=19):
+def save_fig_audio(rec_sig, audio_path, fig_path, target_name, format=(8,4), max_t=25):
     import matplotlib.cm as cm
     rec_sig.crop(0, max_t*rec_sig.fs)
     rec_sig.write(os.path.join(audio_path, '%s.wav'%target_name))
@@ -52,20 +50,29 @@ solo_piano_dirs = ['/sons/rwc/Piano',]
 
 # Parameters
 M = 150000
-genre = 'classical'
-t_name = 'classical.00019'
+fs = 22050
+
+pokerface = 'TRAZWGK128F93141E3'
+angie = 'TRAADLN128F14832E9'
+babyboy = 'TRBDOVF128E0795641'
+heartshaped = 'TRADPIA128E078EE1B'
+
+genre = 'B/D/O'
+t_name = babyboy;
+
+root_path = '';
 recons_audio_path = op.join(output_audio_path,t_name)
 recons_fig_path = op.join(output_fig_path,t_name)
 if not op.exists(recons_audio_path): 
     os.mkdir(recons_audio_path)
 if not op.exists(recons_fig_path):
     os.mkdir(recons_fig_path)
-marge = 8.0
-nb_max_seg = 50
-Ps = [5,10,20,]
+marge = 7.0
+nb_max_seg = 97
+Ps = [5,10,20]
 feat_comb = 'Chroma'
-t_path = '/home/manu/workspace/databases/genres/%s'%genre
-test_file_target = '%s/hdf5/%s.h5'%(t_path,t_name)
+t_path = '/home/manu/workspace/databases/MillionSongSubset/data/%s'%genre
+test_file_target = '%s//%s.h5'%(t_path,t_name)
 test_key, t_feats_all, t_seg_starts, t_seg_duration = get_test(test_file_target)
 
 target_duration = np.sum(t_seg_duration[:nb_max_seg]) + marge
@@ -83,19 +90,19 @@ l_feats_piano, l_segments_piano, n_learn_piano = get_learns_multidir(solo_piano_
                                                       n_learn_max = 1000)
 
 # Loading the reference and Ellis reconstruction
-print t_path + '/' + t_name + '.au'
-orig, fs = get_audio(t_path + '/' + t_name + '.au', 0,
-                     target_duration, targetfs=22050)    
-
-sig_orig = Signal(orig, fs, normalize=True)
-#sig_orig.write(op.join(recons_audio_path, '_original.wav'))
-save_fig_audio(sig_orig,
-               recons_audio_path,
-               recons_fig_path,
-               "original")
-print "Working on %s duration of %2.2f"%(t_name, np.sum(t_seg_duration[:nb_max_seg]))
-orig_spec = np.abs(stft.stft(orig, 512,128)[0,:,:])
-Lmin = orig_spec.shape[1]
+#print t_path + '/' + t_name + '.au'
+#orig, fs = get_audio(t_path + '/' + t_name + '.au', 0,
+#                     target_duration, targetfs=22050)    
+#
+#sig_orig = Signal(orig, fs, normalize=True)
+##sig_orig.write(op.join(recons_audio_path, '_original.wav'))
+#save_fig_audio(sig_orig,
+#               recons_audio_path,
+#               recons_fig_path,
+#               "original")
+#print "Working on %s duration of %2.2f"%(t_name, np.sum(t_seg_duration[:nb_max_seg]))
+#orig_spec = np.abs(stft.stft(orig, 512,128)[0,:,:])
+#Lmin = orig_spec.shape[1]
 
 sig_ellis = Signal('%sellis_resynth%s.wav'%(output_audio_path,t_name), normalize=True)
 #sig_ellis.write(op.join(recons_audio_path, '_ellisrec.wav'))
@@ -104,8 +111,8 @@ save_fig_audio(sig_ellis,
                recons_fig_path,
                "ellisrec")
 magspec_ellis = np.abs(stft.stft(sig_ellis.data[:,0], 512,128)[0,:,:])
-Lmin = min(Lmin,magspec_ellis.shape[1])
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_ellis[:,:Lmin])
+Lmin = magspec_ellis.shape[1]
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_ellis[:,:Lmin])
 
 #sig_ellis.crop(0,orig_spec.shape[1]*128 + 512-128)
 #plt.figure(figsize=(8,3))
@@ -162,7 +169,7 @@ save_fig_audio(sig_cross_plain_piano,
                recons_fig_path,
                "cross_plain_piano")
 #sig_cross_plain_piano.write(op.join(recons_audio_path, '_cross_plain_piano.wav'))
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_plain_piano[:,:Lmin])
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_plain_piano[:,:Lmin])
 
 
 print " CROSS-PLAIN - full dev"
@@ -182,7 +189,7 @@ save_fig_audio(sig_cross_plain,
                recons_fig_path,
                "cross_plain")
 #sig_cross_plain.write(op.join(recons_audio_path, '_cross_plain.wav'))
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_plain[:,:Lmin])
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_plain[:,:Lmin])
 
 
 print " CROSS-NORMALIZED - Piano"
@@ -202,7 +209,7 @@ save_fig_audio(sig_cross_normalized_piano,
                recons_fig_path,
                "cross_normalized_piano")
 #sig_cross_normalized_piano.write(op.join(recons_audio_path, '_cross_normalized_piano.wav'))
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized_piano[:,:Lmin])
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized_piano[:,:Lmin])
 
 print " CROSS-NORMALIZED - full dev"
 data_cross_normalized =  resynth_sequence(neigh[:,0], t_seg_starts,
@@ -221,7 +228,7 @@ save_fig_audio(sig_cross_normalized,
                recons_fig_path,
                "cross_normalized")
 #sig_cross_normalized.write(op.join(recons_audio_path, '_cross_normalized.wav'))
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized[:,:Lmin])
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized[:,:Lmin])
 
 sig_data_cross_normalized = Signal(data_cross_normalized, 22050, normalize=True)
 
@@ -244,7 +251,7 @@ save_fig_audio(sig_cross_penalized,
                recons_fig_path,
                "cross_penalized")
 #sig_cross_penalized.write(op.join(recons_audio_path, '_cross_penalized.wav'))
-print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_penalized[:,:Lmin])
+#print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], magspec_cross_penalized[:,:Lmin])
 
 
 print " ADDITIVE SYNTHESIS "
@@ -276,7 +283,7 @@ for P in Ps:
                    recons_audio_path,
                    recons_fig_path,
                    "add_max_%s_P%d"%(feat_comb,P))
-    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], max_magspec[:,:Lmin])
+#    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], max_magspec[:,:Lmin])
     print "Add-Mean"
     mean_magspec = np.mean(magspecarr, 0)
     init_vec = np.random.randn(128*Lmin)
@@ -288,7 +295,7 @@ for P in Ps:
                    recons_fig_path,
                    "add_mean_%s_P%d"%(feat_comb,P))
     #sig_add_mean.write(op.join(recons_audio_path, '_add_mean_%s_P%d.wav'%(feat_comb,P)))
-    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], mean_magspec[:,:Lmin])
+#    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], mean_magspec[:,:Lmin])
     print "Add-Median"
     median_magspec = np.median(magspecarr, 0)
     init_vec = np.random.randn(128*Lmin)
@@ -300,62 +307,62 @@ for P in Ps:
                    recons_fig_path,
                    "add_median_%s_P%d"%(feat_comb,P))
     #sig_add_median.write(op.join(recons_audio_path, '_add_median_%s_P%d.wav'%(feat_comb,P)))
-    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], median_magspec[:,:Lmin])
+#    print "KL value %2.2f"%KLspec(orig_spec[:,:Lmin], median_magspec[:,:Lmin])
 
 
-# Plotting only the last one    
-N = Lmin*128;
-yticksvalues = np.arange(0.0,8001.0,4000.0).astype(int)
-xticksvalues = np.arange(0.0,(N/22050),2).astype(int)
-fs = 22050.0
-Fmax = 257.0
-yticks = np.floor((yticksvalues/(0.5*fs))*Fmax).astype(int)
-xticks = (xticksvalues*fs/128).astype(int)
-
-
-plt.figure(figsize=(14,10))
-ax1 = plt.subplot(421)
-plt.imshow(np.log(orig_spec[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks(yticks,yticksvalues)
-plt.ylabel('Frequency (Hz)',fontsize=16.0)
-plt.title('(a)')
-plt.subplot(422)
-plt.imshow(np.log(magspec_ellis[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks([])
-plt.title('(b) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_ellis[:,:Lmin]))
-plt.subplot(423)
-plt.imshow(np.log(magspec_cross_plain_piano[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks(yticks,yticksvalues)
-plt.ylabel('Frequency (Hz)',fontsize=16.0)
-plt.title('(c) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_plain_piano[:,:Lmin]))
-plt.subplot(424)
-plt.imshow(np.log(median_magspec[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks([])
-plt.title('(d) : %2.2f'%KLspec(orig_spec[:,:Lmin], median_magspec[:,:Lmin]))
-plt.subplot(425)
-plt.imshow(np.log(magspec_cross_normalized_piano[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks(yticks,yticksvalues)
-plt.ylabel('Frequency (Hz)',fontsize=16.0)
-plt.title('(e) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized_piano[:,:Lmin]))
-plt.subplot(426)
-plt.imshow(np.log(mean_magspec[:,:Lmin]), origin='lower');
-plt.xticks([]);plt.yticks([])
-plt.title('(f) : %2.2f'%KLspec(orig_spec[:,:Lmin], mean_magspec[:,:Lmin]))
-plt.subplot(427)
-plt.imshow(np.log(magspec_cross_penalized[:,:Lmin]), origin='lower');
-plt.xticks(xticks, xticksvalues);plt.yticks(yticks,yticksvalues)
-plt.xlabel('Time (s)',fontsize=16.0)
-plt.ylabel('Frequency (Hz)',fontsize=16.0)
-plt.title('(g) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_penalized[:,:Lmin]))
-plt.subplot(428)
-plt.imshow(np.log(max_magspec[:,:Lmin]), origin='lower');
-plt.xticks(xticks, xticksvalues);plt.yticks([])
-plt.xlabel('Time (s)',fontsize=16.0)
-plt.title('(h) : %2.2f'%KLspec(orig_spec[:,:Lmin], max_magspec[:,:Lmin]))
-plt.subplots_adjust(left=0.08,bottom=0.07,top=0.97,right=0.97,hspace=0.14,wspace=0.03)
-plt.savefig(os.path.join(output_fig_path,
-                         '%s_%dsegments_%s_logspectro_P%d.pdf'%(t_name,nb_max_seg,feat_comb,P)))
-plt.show()
+## Plotting only the last one    
+#N = Lmin*128;
+#yticksvalues = np.arange(0.0,8001.0,4000.0).astype(int)
+#xticksvalues = np.arange(0.0,(N/22050),2).astype(int)
+#fs = 22050.0
+#Fmax = 257.0
+#yticks = np.floor((yticksvalues/(0.5*fs))*Fmax).astype(int)
+#xticks = (xticksvalues*fs/128).astype(int)
+#
+#
+#plt.figure(figsize=(14,10))
+#ax1 = plt.subplot(421)
+#plt.imshow(np.log(orig_spec[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks(yticks,yticksvalues)
+#plt.ylabel('Frequency (Hz)',fontsize=16.0)
+#plt.title('(a)')
+#plt.subplot(422)
+#plt.imshow(np.log(magspec_ellis[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks([])
+#plt.title('(b) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_ellis[:,:Lmin]))
+#plt.subplot(423)
+#plt.imshow(np.log(magspec_cross_plain_piano[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks(yticks,yticksvalues)
+#plt.ylabel('Frequency (Hz)',fontsize=16.0)
+#plt.title('(c) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_plain_piano[:,:Lmin]))
+#plt.subplot(424)
+#plt.imshow(np.log(median_magspec[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks([])
+#plt.title('(d) : %2.2f'%KLspec(orig_spec[:,:Lmin], median_magspec[:,:Lmin]))
+#plt.subplot(425)
+#plt.imshow(np.log(magspec_cross_normalized_piano[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks(yticks,yticksvalues)
+#plt.ylabel('Frequency (Hz)',fontsize=16.0)
+#plt.title('(e) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_normalized_piano[:,:Lmin]))
+#plt.subplot(426)
+#plt.imshow(np.log(mean_magspec[:,:Lmin]), origin='lower');
+#plt.xticks([]);plt.yticks([])
+#plt.title('(f) : %2.2f'%KLspec(orig_spec[:,:Lmin], mean_magspec[:,:Lmin]))
+#plt.subplot(427)
+#plt.imshow(np.log(magspec_cross_penalized[:,:Lmin]), origin='lower');
+#plt.xticks(xticks, xticksvalues);plt.yticks(yticks,yticksvalues)
+#plt.xlabel('Time (s)',fontsize=16.0)
+#plt.ylabel('Frequency (Hz)',fontsize=16.0)
+#plt.title('(g) : %2.2f'%KLspec(orig_spec[:,:Lmin], magspec_cross_penalized[:,:Lmin]))
+#plt.subplot(428)
+#plt.imshow(np.log(max_magspec[:,:Lmin]), origin='lower');
+#plt.xticks(xticks, xticksvalues);plt.yticks([])
+#plt.xlabel('Time (s)',fontsize=16.0)
+#plt.title('(h) : %2.2f'%KLspec(orig_spec[:,:Lmin], max_magspec[:,:Lmin]))
+#plt.subplots_adjust(left=0.08,bottom=0.07,top=0.97,right=0.97,hspace=0.14,wspace=0.03)
+#plt.savefig(os.path.join(output_fig_path,
+#                         '%s_%dsegments_%s_logspectro_P%d.pdf'%(t_name,nb_max_seg,feat_comb,P)))
+#plt.show()
 
 
 
