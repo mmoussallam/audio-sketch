@@ -8,14 +8,14 @@ import matplotlib.cm as cm
 from PyMP import Signal
 # import dear
 from joblib import Parallel, delayed
-from dear import spectrum
-from dear.spectrum import cqt, dft, auditory, SpectrogramFile
-from dear.spectrogram import plot_spectrogram
+#from dear import spectrum
+#from dear.spectrum import cqt, dft, auditory, SpectrogramFile
+#from dear.spectrogram import plot_spectrogram
 # cqt_spec = spectrum.CQTSpectrum(audio_test_file)
 from scipy.io import loadmat
 from scipy.signal import lfilter
-import dear.io as io
-decoder = io.get_decoder(name='audioread')
+#import dear.io as io
+#decoder = io.get_decoder(name='audioread')
 filter_coeffs_path = '/home/manu/workspace/recup_angelique/Sketches/sketches/nsltools/aud24.mat'
 
 

@@ -5,9 +5,13 @@ Created on Jan 31, 2013
 '''
 import unittest
 import sys
-sys.path.append('/home/manu/workspace/audio-sketch')
-sys.path.append('/home/manu/workspace/PyMP')
-sys.path.append('/home/manu/workspace/meeg_denoise')
+import os.path as op
+#workspace_path = op.abspath(op.curdir)
+workspace_path = '/home/manumouss/workspace/git/'
+print workspace_path
+sys.path.append(op.join(workspace_path,'audio-sketch'))
+sys.path.append(op.join(workspace_path,'PyMP'))
+sys.path.append(op.join(workspace_path,'meeg_denoise'))
 
 from classes import sketch
 import matplotlib.pyplot as plt
