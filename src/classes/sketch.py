@@ -492,7 +492,7 @@ class CochleoDumbPeaksSketch(AudioSketch):
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
 
-        self.cochleogram = cochleo_tools.cochleogram(self.orig_signal.data)
+        self.cochleogram = cochleo_tools.Cochleogram(self.orig_signal.data)
         self.cochleogram.build_aud()
 
     def sparsify(self, sparsity):

@@ -161,6 +161,28 @@ def ann(Xdev, Ydev, X, Y, display=False, K=1):
 
     return Y_hat, kneighs
 
+def weighted_ann(Xdev, Ydev, X, Y, display=False, K=100):
+    """ same as ann but build the estimate as a weighted sum instead of the median """
+    N = Ydev.shape[0]
+    Tdev = Xdev.shape[1]
+    T = X.shape[1]
+    print Xdev.shape, Ydev.shape, X.shape
+    # initalize output
+    Y_hat = np.zeros((N, T))
+
+    D = l2_distance(Xdev, X)
+    
+    W = np.exp(-D)
+    W[...,:] /= np.sum(W,1) 
+
+    if display:
+        plt.figure()
+        plt.imshow(kneighs)
+    for t in range(T):
+        Y_hat[:, t] = np.sum(w[t]*Ydev[:, kneighs[t, :]], 1)
+
+    return Y_hat, kneighs
+
 
 def eval_knn(learn_feats, learn_magspecs, test_feats,
              test_magspecs, ref_t_data,

@@ -14,30 +14,27 @@ from dear.spectrogram import plot_spectrogram
 # cqt_spec = spectrum.CQTSpectrum(audio_test_file)
 from scipy.io import loadmat
 from scipy.signal import lfilter
+from numpy.fft import fft, ifft
 import dear.io as io
 decoder = io.get_decoder(name='audioread')
 filter_coeffs_path = '/home/manu/workspace/recup_angelique/Sketches/sketches/nsltools/aud24.mat'
 
 
-class cochleogram(object):
-    ''' Class handling the cochleogram parameters and methods to build
+class Cochleogram(object):
+    ''' Class handling the Cochleogram parameters and methods to build
         and synthesize '''
 
     # parameters
-    data = None
-    coeffs = None
-    n_chans = 128
-    load_coch_filt = True
-    fac = -2
+#    data = None
+#    coeffs = None
+#    n_chans = 128
+#    load_coch_filt = True
+#    fac = -2
     # different steps of auditory processing
-    y1 = None
-    y2 = None
-    y3 = None
-    y4 = None
-    y5 = None
+
 
     # static filter coefficients
-    coeffs = None
+#    coeffs = None
 
     def __init__(self, data, load_coch_filt=True, n_chans=None, fac=None):
 
@@ -54,6 +51,12 @@ class cochleogram(object):
 
         if fac is not None:
             self.fac = fac
+
+        self.y1 = None
+        self.y2 = None
+        self.y3 = None
+        self.y4 = None
+        self.y5 = None
 
     def _toy1(self):
         ''' compute y1 from the raw audio data '''
@@ -430,6 +433,39 @@ class cochleogram(object):
         ax.set_ylabel('Frequency (Hz)')
 
 
+class Corticogram(object):
+    """ Cortical representation a.k.a 2D wavelet transform of a cochleogram"""
+    
+    def __init__(self, obj, **kwargs):
+    
+        self.rv = [1, 2, 4, 8, 16, 32]             
+        self.sv = [0.5, 1, 2, 4, 8]
+        self.corparams = [8, 8, -2, 0, 0, 0, 1]
+                         
+        # First test if it's instantiated with a Cochleogram
+        if not isinstance(obj, Cochleogram):
+            self.coch = Cochleogram(obj, **kwargs)
+        else:
+            self.coch = obj
+    
+    def build_cor(self):
+        """ need some improvements but should be working """        
+        if self.coch.y5 is None:
+            self.coch.build_aud()
+        self.cor = _build_cor(np.array(self.coch.y5), self.corparams, self.rv, self.sv)
+    
+    def invert(self, cor=None):
+        """ resynthesize the auditory spectrum from self or from given corticogram """
+    
+        if cor is None:
+            cor = self.cor
+        
+        self.rec = _cor2aud(cor, self.corparams, self.rv, self.sv)
+
+    
+        
+        
+
 def coch_filt(data, coeffs, chan_idx):
     p = int(coeffs[0, chan_idx].real)    # order of ARMA filter
     b = coeffs[range(1, p + 2),
@@ -518,7 +554,250 @@ def plot_auditory(aud_spec, duration, freqs=[110., 2 * 4435.]):
     plt.show()
 
 
+def gen_cort(fc, L, STF, PASS):
+    """ generate cortical filter """
+    
+    t = np.arange(0.0,float(L))/float(STF) * float(fc);
+    h = np.sin(2*np.pi*t) *t**2.* np.exp(-3.5*t) * fc;
+    
+    #%h = diff(h); h = [h(1)/2; h];
+    h = h-np.mean(h);
+    H0 = fft(h, n=2*L);
+    A = np.angle(H0[:L]);
+    H = np.abs(H0[:L]);
+    maxi = np.argmax(H);
+    maxH = H[maxi] 
+    H = H / max(H);
+    
+    #% passband
+    if PASS[0] == 1:       #lowpass    
+        H[:maxi] = np.ones((maxi-1, ), complex)    
+    elif PASS[0] == PASS[1]:    # highpass    
+        H[maxi:L] = np.ones((L-maxi, ), complex)    
+    
+    return H * np.exp(1j*A)
 
-# def wav2aud(audio_file_path):
-#
-#    sig = Signal(audio_file_path)
+def gen_corf(fc, L, SRF, KIND):
+    
+    if len(KIND) == 1:
+        PASS = [2, 3];   # bandpass
+    else:
+        PASS = KIND;
+        KIND = 2;
+    
+    R1    = np.arange(0.0, float(L))/float(L)*float(SRF)/2.0/np.abs(float(fc))
+    
+    if KIND == 1:    # Gabor function
+        C1      = 1.0/2.0/.3/.3;
+        H       = np.exp(-C1*(R1-1)**2) + np.exp(-C1*(R1+1)**2);
+    else:        # Gaussian Function 
+        R1    = R1 ** 2;         
+        H    = R1 * np.exp(1.0-R1);     # single-side filter
+    
+    # passband
+    if PASS[0] == 1:        #lowpass
+        maxi = np.argmax(H)
+        maxH = H[maxi]
+        sumH = np.sum(H)
+        H[:maxi] = np.ones((maxi-1, ))
+        H = H / np.sum(H) * sumH;
+    elif PASS[0] == PASS[1]:    # highpass
+        maxi = np.argmax(H)
+        maxH = H[maxi]
+        sumH = np.sum(H);
+        H[maxi:L] = np.ones((L-maxi, ))
+        H = H / np.sum(H) * sumH;
+    
+    return H
+
+def _build_cor(y, paras1, rv, sv):
+    """ Transcription of aud2cor in NSL Toolbox
+        See the original Matlab code for info """
+    
+    K1    = len(rv);     # num of rate channel
+    K2    = len(sv);     # num of scale channel
+    [N, M] = y.shape    # dimensions of auditory spectrogram
+    
+    # spatial, temporal zeros padding 
+    N1 = int(2**np.ceil(np.log2(N)))
+    N2 = N1*2
+    M1 = int(2**np.ceil(np.log2(M)))
+    M2 = M1*2
+    
+    # first fourier transform (w.r.t. frequency axis)
+    Y = np.zeros((N2, M1), complex)
+    
+    for n in range(N):
+        R1 = fft(y[n, :], n=int(M2));
+        Y[n, :] = R1[:M1];
+    
+    # second fourier transform (w.r.t. temporal axis)
+    for m in range(int(M1)):
+        R1 = fft(Y[:N, m], n=N2);
+        Y[:, m] = R1;
+    
+    STF = 1000 / paras1[0]    # frame per second
+    SRF = 24                 # channel per octave (fixed)
+    
+    DISP = 0
+    FULLT = paras1[4]
+    FULLX = paras1[5]
+    BP = paras1[6]
+    
+    from numpy import floor
+    # freq. index
+    dM   = int(floor(M/2*FULLX))
+    # TODO : this could change if dM is not zero
+    mdx1 = range(M+dM)
+    mdx2 = np.array([0, 0, M+1, M+1, 0])+dM
+    
+    # temp. index
+    dN   = int(floor(N/2*FULLT))
+    ndx  = range(N+2*dN)
+    ndx1 = ndx
+    ndx2 = [0, N+1, N+1, 0, 0]
+    
+    z  = np.zeros((N+2*dN, M+2*dM), complex)
+    cr = np.zeros((K2, K1*2, N+2*dN, M+2*dM), complex)
+    
+    # loop on rates
+    for rdx in range(K1):    
+        fc_rt = rv[rdx]
+        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2])
+        # 
+        for sgn in [1, -1]:            
+            # rate filtering modification
+            if sgn > 0:
+                HR = np.concatenate((HR, np.zeros((N1, ), complex)))    # SSB -> DSB
+            else:
+                Clist = [HR[0]]
+#                Clist = [0.0]
+                Clist.extend(np.conj(np.flipud(HR[1:N2])))
+                HR = np.array(Clist)            
+                HR[N1] = np.abs(HR[N1+1])
+            
+            # first inverse fft (w.r.t. time axis)
+            z1= np.zeros((N2,M1), complex); 
+            for m in range(M1): 
+                z1[:,m]= HR*Y[:,m];
+            
+            z1= ifft(z1, axis=0);
+            z1= z1[ndx1,:]
+            
+            for sdx in range(K2):
+                # scale filtering
+                fc_sc = sv[sdx]
+                HS = gen_corf(fc_sc, M1, SRF, [sdx+1+BP, K2+BP*2])
+                
+                # second inverse fft (w.r.t frequency axis)
+                for n in ndx:
+                    R1 = ifft( (z1[n, :]*HS), n=M2)
+                    z[n, :] = R1[mdx1]
+                            
+                cr[sdx, rdx+(sgn==1)*K1, :, :] = z;
+
+    return cr
+
+def _cor2aud(cor, paras1, rv, sv):
+    """ Reconstructing auditory spectrogram from 4-D cortical rep"""
+
+    [K1, K2, N, M] = cor.shape    # dimensions of corticogram
+    # spatial, temporal zeros padding 
+    N1 = int(2**np.ceil(np.log2(N)))
+    N2 = N1*2
+    M1 = int(2**np.ceil(np.log2(M)))
+    M2 = M1*2
+    
+    STF = 1000 / paras1[0]    # frame per second
+    SRF = 24                 # channel per octave (fixed)
+    
+    DISP = 0
+    FULLT = paras1[4]
+    FULLX = paras1[5]
+    BP = paras1[6]
+    
+    HH   = 0;
+    Z_cum = 0;
+
+    for rdx in range(K1):
+        # rate filtering
+        fc_rt = rv[rdx];
+        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2]);
+#        print HR.shape  , N, N1, N2 
+        for sgn in [1 -1]:        
+            # rate filtering modification
+            if sgn > 0:
+                HR = np.conj(np.concatenate( ( HR, np.zeros((N1, ),complex)))) 
+            else:
+                Clist = [HR[0]]
+                Clist.extend(np.conj(np.flipud(HR[1:N2])))
+                HR = np.array(Clist)
+#                print HR.shape                
+#                HR[N1] = np.abs(HR[N1+1]);            
+    
+            for sdx in range(K2):
+                # scale filtering
+                HS = gen_corf(sv[sdx], M1, SRF, [sdx+1+BP, K2+BP*2]);
+                z = np.squeeze(cor[sdx, rdx+(sgn==1)*K1, :, :]);
+    
+                # 2-D FFT and cumulation
+#                Mout = floor(M/2*FULLX);
+#                Nout = floor(N/2*FULLT);
+                _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH);
+
+    # normalization
+    HH[:, 0] = HH[:, 0]*2;        # normalization for DC
+    return _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM);
+
+
+def _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH):
+    " TODO check that: I simplified a lot"
+    # 2-D FFT
+    Z = np.zeros((N2, M1),complex);    
+#    z[0, M2] = 0;    # why? I forgot. Oh, it is zero padding
+        
+    for n in range(N):        
+           R1 = fft(z[n, :])
+           Z[n, :] = R1[:M1]
+    
+    for m in range(M1):
+        Z[:, m] = fft(Z[:, m]);
+    
+    # cumulation
+    R1 = HR*HS.T
+    HH = HH + R1 * np.conj(R1);
+    Z_cum = Z_cum + R1 * Z;
+
+def _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM):
+    """ Simplified a lot !"""
+    FOUTT = 0
+    FOUTX = 0
+    
+    # modify overall transfer function
+    sumH = np.sum(HH.ravel())
+    HH = NORM * HH + (1 - NORM) * np.max(HH.ravel());
+    HH = HH / np.sum(HH.ravel()) * sumH;
+    
+    # normalization
+    ndx = range(N2)
+    mdx = range(M1)
+    Z_cum[ndx, mdx] = Z_cum[ndx, mdx] / HH[ndx, mdx];
+    
+    # SIMPLIFIED dN=dM=0
+    ndx  = range(N)                    
+    ndx1 = range(N)         
+    mdx1 = range(M)   
+    
+    y     = np.zeros((N, M1))
+    yh    = np.zeros((N, M))
+    
+    # 2-D IFFT
+    for m in range(M1):
+        R1 = ifft(Z_cum[:, m])
+        y[:, m] = R1[ndx1]
+    
+    for n in ndx:
+        R1 = ifft(y[n, :], M2)
+        yh[n, :] = R1[mdx1]
+    
+    return yh * 2;

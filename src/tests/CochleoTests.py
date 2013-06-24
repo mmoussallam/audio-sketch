@@ -29,7 +29,7 @@ class staticMethodTest(unittest.TestCase):
         
         sig = Signal(audio_test_file, mono=True, normalize=True)                
         
-        gram = cochleo_tools.cochleogram(sig.data)
+        gram = cochleo_tools.Cochleogram(sig.data)
         
         gram._toy2()
         rec_data = gram.invert_y2()
@@ -52,12 +52,12 @@ class CochleoTest(unittest.TestCase):
         
         # test bad call
         sig = Signal(audio_test_file)
-        gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+        gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
         self.assertRaises(NotImplementedError, gram.build_aud)
         
         
         sig = Signal(audio_test_file, mono=True, normalize=True)                
-        gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+        gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
         
         gram.build_aud()
         gram.plot_aud()
@@ -94,6 +94,12 @@ class CochleoTest(unittest.TestCase):
 #        aud, duration = cochleo_tools.auditory_spectrum(audio_test_file)
 
 #        cochleo_tools.plot_auditory(aud, duration)
+
+class CorticoTest(unittest.TestCase):
+    """ Creating and manipulating a corticogram """
+    sig = Signal(audio_test_file)
+    cochleo = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
+#    cortico = cochleo_tools.Corticogram(cochleo)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
