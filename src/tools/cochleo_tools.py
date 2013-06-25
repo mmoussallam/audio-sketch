@@ -436,12 +436,17 @@ class Cochleogram(object):
 class Corticogram(object):
     """ Cortical representation a.k.a 2D wavelet transform of a cochleogram"""
     
-    def __init__(self, obj, **kwargs):
+    def __init__(self, obj, params = None):
     
         self.rv = [1, 2, 4, 8, 16, 32]             
         self.sv = [0.5, 1, 2, 4, 8]
-        self.corparams = [8, 8, -2, 0, 0, 0, 1]
-                         
+        
+
+        if params is not None:
+            self.corparams = params
+        else:
+            self.corparams = [8, 8, -2, 0, 0, 0, 1]
+                             
         # First test if it's instantiated with a Cochleogram
         if not isinstance(obj, Cochleogram):
             self.coch = Cochleogram(obj, **kwargs)
