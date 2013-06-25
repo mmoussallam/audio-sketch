@@ -452,19 +452,23 @@ class Corticogram(object):
         """ need some improvements but should be working """        
         if self.coch.y5 is None:
             self.coch.build_aud()
-        self.cor = _build_cor(np.array(self.coch.y5), self.corparams, self.rv, self.sv)
-    
+        self.cor = _build_cor(np.array(self.coch.y5).T, self.corparams, self.rv, self.sv)
+#        print self.cor.shape 
+#        plt.figure()
+#        plt.imshow(np.abs(self.cor[0, 6, :, :]))
+#        plt.show()  
+        
+#        print self.cor.shape
     def invert(self, cor=None):
         """ resynthesize the auditory spectrum from self or from given corticogram """
     
         if cor is None:
-            cor = self.cor
-        
+            cor = np.copy(self.cor)        
+#        print cor.shape
+        # HACK : the last parameter should now be zero?
+        self.corparams = [8, 8, -2, 0, 0, 0, 0]
         self.rec = _cor2aud(cor, self.corparams, self.rv, self.sv)
-
-    
-        
-        
+   
 
 def coch_filt(data, coeffs, chan_idx):
     p = int(coeffs[0, chan_idx].real)    # order of ARMA filter
@@ -557,21 +561,21 @@ def plot_auditory(aud_spec, duration, freqs=[110., 2 * 4435.]):
 def gen_cort(fc, L, STF, PASS):
     """ generate cortical filter """
     
-    t = np.arange(0.0,float(L))/float(STF) * float(fc);
-    h = np.sin(2*np.pi*t) *t**2.* np.exp(-3.5*t) * fc;
+    t = np.arange(0.0,float(L))/float(STF) * float(fc)
+    h = np.sin(2*np.pi*t) *t**2.* np.exp(-3.5*t) * fc
     
     #%h = diff(h); h = [h(1)/2; h];
-    h = h-np.mean(h);
-    H0 = fft(h, n=2*L);
-    A = np.angle(H0[:L]);
-    H = np.abs(H0[:L]);
-    maxi = np.argmax(H);
+    h = h-np.mean(h)
+    H0 = fft(h, n=2*L)
+    A = np.angle(H0[:L])
+    H = np.abs(H0[:L])
+    maxi = np.argmax(H)
     maxH = H[maxi] 
-    H = H / max(H);
-    
+    H = H / max(H)
+    H = H.astype(complex)  
     #% passband
     if PASS[0] == 1:       #lowpass    
-        H[:maxi] = np.ones((maxi-1, ), complex)    
+        H[:maxi] = np.ones((maxi, ), complex)    
     elif PASS[0] == PASS[1]:    # highpass    
         H[maxi:L] = np.ones((L-maxi, ), complex)    
     
@@ -599,7 +603,7 @@ def gen_corf(fc, L, SRF, KIND):
         maxi = np.argmax(H)
         maxH = H[maxi]
         sumH = np.sum(H)
-        H[:maxi] = np.ones((maxi-1, ))
+        H[:maxi] = np.ones((maxi, ))
         H = H / np.sum(H) * sumH;
     elif PASS[0] == PASS[1]:    # highpass
         maxi = np.argmax(H)
@@ -695,13 +699,18 @@ def _build_cor(y, paras1, rv, sv):
                     z[n, :] = R1[mdx1]
                             
                 cr[sdx, rdx+(sgn==1)*K1, :, :] = z;
-
+#                print sdx, rdx, sgn
+#                plt.figure()
+#                plt.imshow(np.abs(cr[sdx, rdx+(sgn==1)*K1, :, :]))
+#                plt.show()
+ 
     return cr
 
 def _cor2aud(cor, paras1, rv, sv):
     """ Reconstructing auditory spectrogram from 4-D cortical rep"""
 
-    [K1, K2, N, M] = cor.shape    # dimensions of corticogram
+    [K2, K12, N, M] = cor.shape    # dimensions of corticogram
+    K1 = K12/2
     # spatial, temporal zeros padding 
     N1 = int(2**np.ceil(np.log2(N)))
     N2 = N1*2
@@ -715,7 +724,7 @@ def _cor2aud(cor, paras1, rv, sv):
     FULLT = paras1[4]
     FULLX = paras1[5]
     BP = paras1[6]
-    
+    NORM = .9
     HH   = 0;
     Z_cum = 0;
 
@@ -724,7 +733,8 @@ def _cor2aud(cor, paras1, rv, sv):
         fc_rt = rv[rdx];
         HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2]);
 #        print HR.shape  , N, N1, N2 
-        for sgn in [1 -1]:        
+        for sgn in [1, -1]:      
+            
             # rate filtering modification
             if sgn > 0:
                 HR = np.conj(np.concatenate( ( HR, np.zeros((N1, ),complex)))) 
@@ -733,18 +743,21 @@ def _cor2aud(cor, paras1, rv, sv):
                 Clist.extend(np.conj(np.flipud(HR[1:N2])))
                 HR = np.array(Clist)
 #                print HR.shape                
-#                HR[N1] = np.abs(HR[N1+1]);            
+                HR[N1] = np.abs(HR[N1+1]);            
     
             for sdx in range(K2):
                 # scale filtering
+#                print sdx+1+BP, K2+(BP*2), BP
                 HS = gen_corf(sv[sdx], M1, SRF, [sdx+1+BP, K2+BP*2]);
+#                print rdx+(sgn==1)*K1, K1                
                 z = np.squeeze(cor[sdx, rdx+(sgn==1)*K1, :, :]);
     
                 # 2-D FFT and cumulation
 #                Mout = floor(M/2*FULLX);
 #                Nout = floor(N/2*FULLT);
-                _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH);
+                Z_cum, HH = _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH);
 
+                
     # normalization
     HH[:, 0] = HH[:, 0]*2;        # normalization for DC
     return _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM);
@@ -755,18 +768,19 @@ def _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH):
     # 2-D FFT
     Z = np.zeros((N2, M1),complex);    
 #    z[0, M2] = 0;    # why? I forgot. Oh, it is zero padding
-        
+#    print Z.shape, z.shape, HR.shape, HS.shape    
     for n in range(N):        
-           R1 = fft(z[n, :])
-           Z[n, :] = R1[:M1]
+       R1 = fft(z[n,:], n=M2) # Oh, it is zero padding
+       Z[n, :] = R1[:M1]    
     
     for m in range(M1):
-        Z[:, m] = fft(Z[:, m]);
+       Z[:, m] = fft(Z[:, m]);
     
-    # cumulation
-    R1 = HR*HS.T
-    HH = HH + R1 * np.conj(R1);
+    # cumulation    
+    R1 = np.dot(HR.reshape((len(HR),1)),HS.reshape((1,len(HS))))        
+    HH = HH + R1 * np.conj(R1);    
     Z_cum = Z_cum + R1 * Z;
+    return Z_cum, HH
 
 def _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM):
     """ Simplified a lot !"""
@@ -774,30 +788,32 @@ def _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM):
     FOUTX = 0
     
     # modify overall transfer function
-    sumH = np.sum(HH.ravel())
-    HH = NORM * HH + (1 - NORM) * np.max(HH.ravel());
-    HH = HH / np.sum(HH.ravel()) * sumH;
+    sumH = np.sum(HH)
+    HH = NORM * HH + (1.0 - NORM) * np.max(HH);
+    HH = HH / np.sum(HH) * sumH;
     
     # normalization
     ndx = range(N2)
     mdx = range(M1)
-    Z_cum[ndx, mdx] = Z_cum[ndx, mdx] / HH[ndx, mdx];
+#    print ndx, mdx
+#    Z_cum[ndx, mdx] /= HH[ndx, mdx];
+    Z_cum /= HH
     
     # SIMPLIFIED dN=dM=0
     ndx  = range(N)                    
     ndx1 = range(N)         
     mdx1 = range(M)   
     
-    y     = np.zeros((N, M1))
-    yh    = np.zeros((N, M))
+    y     = np.zeros((N, M1),complex)
+    yh    = np.zeros((N, M),complex)
     
     # 2-D IFFT
     for m in range(M1):
         R1 = ifft(Z_cum[:, m])
         y[:, m] = R1[ndx1]
-    
+
     for n in ndx:
         R1 = ifft(y[n, :], M2)
-        yh[n, :] = R1[mdx1]
+        yh[n, :] = R1[mdx1]    
     
     return yh * 2;
