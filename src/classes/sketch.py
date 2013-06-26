@@ -427,15 +427,18 @@ class WaveletSparseSketch(XMDCTSparseSketch):
                 wsize=512, tstep=256, order=1, log=True, ax=plt.gca())
 
 
-class CochleoDumbPeaksSketch(AudioSketch):
-    ''' Sketch based on a cochleogram and pairs of peaks as a sparsifier '''
+class CochleoSketch(AudioSketch):
+    """ meta class for all cochleogram-based sketches     
+    
+    Subclass should implement their own sparsification method
+    """
 
-    # parameters
-    n_bands = 64
-    # number of cochlear filters
-
+    
     def __init__(self, original_sig=None, **kwargs):
-        # add all the parameters that you want
+        # add all the parameters that you want        
+        
+        self.params = {'n_bands': 64, 'shift':0, 'fac':-2}
+        
         for key in kwargs:
             self.params[key] = kwargs[key]
 
@@ -445,7 +448,7 @@ class CochleoDumbPeaksSketch(AudioSketch):
         
 
     def get_sig(self):
-        strret = '_bands-%d_' % (self.n_bands)
+        strret = '_bands-%d_' % (self.params['n_bands'])
         return strret
 
     def synthesize(self, sparse=False):
@@ -483,6 +486,9 @@ class CochleoDumbPeaksSketch(AudioSketch):
 
     def recompute(self, signal=None, **kwargs):
         ''' recomputing the cochleogram'''
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
         if signal is not None:
             if isinstance(signal, str):
                 # TODO allow for stereo signals
@@ -491,10 +497,26 @@ class CochleoDumbPeaksSketch(AudioSketch):
 
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
-
-        self.cochleogram = cochleo_tools.Cochleogram(self.orig_signal.data)
+        
+        if self.params.has_key('downsample'):
+            self.orig_signal.downsample(self.params['downsample'])
+        
+        print "Cochleogram for first computation"
+        self.cochleogram = cochleo_tools.Cochleogram(self.orig_signal.data, **self.params)
         self.cochleogram.build_aud()
 
+
+
+class CochleoDumbPeaksSketch(CochleoSketch):
+    ''' Sketch based on a cochleogram and pairs of peaks as a sparsifier '''
+
+    
+    # number of cochlear filters
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(CochleoDumbPeaksSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+    
     def sparsify(self, sparsity):
         ''' sparsify using the peaks '''
         if self.cochleogram.y5 is None:
@@ -516,9 +538,10 @@ class CochleoDumbPeaksSketch(AudioSketch):
         )[max_indexes[-sparsity:]]
 
         self.sp_rep = np.reshape(self.sp_rep, v5.shape)
+    
 
 
-class CochleoPeaksSketch(CochleoDumbPeaksSketch):
+class CochleoPeaksSketch(CochleoSketch):
     """ A slightly less stupid way to select the coefficients : by spreading them
         in the TF plane
 
@@ -551,6 +574,88 @@ class CochleoPeaksSketch(CochleoDumbPeaksSketch):
 
         self.sp_rep = np.reshape(self.sp_rep, v5.shape)
 
+class CochleoIHTSketch(CochleoSketch):
+    """ Iterative Hard Thresholding on an auditory spectrum 
+    
+    Inherit from CochleoSketch and only implements a different sparisication
+    method
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(CochleoIHTSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+        
+        self.params['max_iter'] = 5     # number of IHT iterations
+        self.params['n_rec_iter'] = 2   # number of reconstructive steps
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+        
+    def sparsify(self, sparsity, **kwargs):
+        """ sparsification is performed using the 
+        Iterative Hard Thresholding Algorithm """
+        L = sparsity
+        if  self.cochleogram.y5 is None:
+            self.cochleogram.build_aud()
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        cand_rep = np.array(self.cochleogram.y5)
+            
+        A = np.zeros(cand_rep.shape)
+        original = self.cochleogram.invert(nb_iter=1, init_vec=self.cochleogram.data)
+        original /= np.max(original)
+        original *= 0.9
+        residual = np.copy(original)
+        
+        n_iter = 0
+        print "Cochleogram for Sparsification"
+        print self.params
+        res_coch = cochleo_tools.Cochleogram(residual, **self.params)
+        while n_iter < self.params['max_iter']:
+            print "Iteration %d"%n_iter
+            if n_iter>0 or cand_rep is None:    
+                print res_coch.fac            
+                res_coch.build_aud()
+                projection = np.array(res_coch.y5)
+            else:
+                projection = cand_rep
+            # sort the elements            
+            A_buff = A + projection
+            A_flat = A_buff.flatten()
+            idx_order = np.abs(A_flat).argsort()
+            A = np.zeros(A_flat.shape)
+            A[idx_order[-L:]] = A_flat[idx_order[-L:]]
+            A = A.reshape(A_buff.shape)
+                
+            rec_a = res_coch.invert(v5=A, init_vec=original,
+                                    nb_iter=self.params['n_rec_iter'])
+
+            rec_a /= np.max(rec_a)
+            rec_a *= 0.9
+            residual = original - rec_a;
+            res_coch.data = residual
+            print "New fac of %d"%res_coch.fac
+            n_iter += 1
+                
+        self.sp_rep = A
+        self.rec_a = rec_a
+    
+    def synthesize(self, sparse = False):
+        ''' synthesize the sparse rep or the original rep?'''
+        if sparse:
+            if self.rec_a is not None:
+                return Signal(self.rec_a, self.orig_signal.fs)
+            v5 = self.sp_rep
+        else:
+            v5 = np.array(self.cochleogram.y5)
+
+        # initialize invert
+        init_vec = self.cochleogram.init_inverse(v5)
+        # then do 20 iteration (TODO pass as a parameter)
+        return Signal(
+            self.cochleogram.invert(v5, init_vec, nb_iter=10, display=False),
+            self.orig_signal.fs)
 
 class SWSSketch(AudioSketch):
     """ Sine Wave Speech """

@@ -16,7 +16,6 @@ audio_test_file = '/sons/jingles/panzani.wav'
 
 class SketchTest(unittest.TestCase):
 
-
     def runTest(self):
                 
         abstractSketch = sketch.AudioSketch()
@@ -33,17 +32,19 @@ class SketchTest(unittest.TestCase):
 #        xmdctmpsketch = sketch.XMDCTSparseSketch()
         learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
         
-        sketches_to_test = [sketch.KNNSketch(**{'location':learned_base_dir,
-                                                'shuffle':87,
-                                                'n_frames':100000,
-                                                'n_neighbs':1}),
-                            sketch.SWSSketch(),
-                            sketch.CochleoPeaksSketch(),
-                            sketch.CochleoDumbPeaksSketch(),
-                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
-                            sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
-                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
+        sketches_to_test = [
+#                            sketch.KNNSketch(**{'location':learned_base_dir,
+#                                                'shuffle':87,
+#                                                'n_frames':100000,
+#                                                'n_neighbs':1}),
+#                            sketch.SWSSketch(),
+                            sketch.CochleoIHTSketch(),
+#                            sketch.CochleoPeaksSketch(),
+#                            sketch.CochleoDumbPeaksSketch(),
+##                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+##                            sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
+#                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
+#                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
                             ]
         
         # for all sketches, we performe the same testing
@@ -62,6 +63,7 @@ class SketchTest(unittest.TestCase):
             
             print " plot the sparsified representation"
             sk.represent(sparse=True)
+            plt.title(sk.__class__)
             
             print " and synthesize the sketch"
             synth_sig = sk.synthesize(sparse=True)
@@ -71,6 +73,7 @@ class SketchTest(unittest.TestCase):
             plt.plot(sk.orig_signal.data)
             plt.subplot(212)
             plt.plot(synth_sig.data)
+            
             
 #            synth_sig.play()
             synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
@@ -82,5 +85,5 @@ if __name__ == "__main__":
     suite.addTest(SketchTest())
 
     unittest.TextTestRunner(verbosity=2).run(suite)
-    plt.show()
+#    plt.show()
     

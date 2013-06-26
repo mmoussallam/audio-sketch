@@ -36,10 +36,11 @@ class Cochleogram(object):
     # static filter coefficients
 #    coeffs = None
 
-    def __init__(self, data, load_coch_filt=True, n_chans=None, fac=None):
-
+    def __init__(self, data, load_coch_filt=True, n_chans=None, 
+                 **kwargs):
+                        
         self.data = data
-
+        
         self.load_coch_filt = load_coch_filt
         if self.load_coch_filt:
             d = loadmat(filter_coeffs_path)
@@ -48,25 +49,43 @@ class Cochleogram(object):
             self.n_chans = n_chans
         else:
             self.n_chans = self.coeffs.shape[1]
+        
+        if kwargs.has_key('shift'):
+            self.shift = kwargs['shift']
+        else:
+            self.shift = -1 # default for 16Khz Fs
+        if kwargs.has_key('frmlen'):
+            self.frmlen = kwargs['frmlen']
+        else:
+            self.frmlen = 8 # default window size
+            
+        if kwargs.has_key('dec'):
+            self.dec = kwargs['dec']
+        else:
+            self.dec = self.frmlen # 
+            
+        if kwargs.has_key('fac'):
+            self.fac = kwargs['fac']
+        else:
+            self.fac = -2 # default for linear filtering (no sigmoid)
 
-        if fac is not None:
-            self.fac = fac
-
+        print self.frmlen, self.dec, self.shift, self.fac
         self.y1 = None
         self.y2 = None
         self.y3 = None
         self.y4 = None
         self.y5 = None
+    
 
     def _toy1(self):
         ''' compute y1 from the raw audio data '''
         self.y1 = [coch_filt(
             self.data, self.coeffs, m) for m in range(self.n_chans - 1, 0, -1)]
 
-    def _toy2(self, shift=0):
+    def _toy2(self):
         ''' Cochlear filtering + non linearity '''
         haircell_tc = 0.5
-        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + shift)))
+        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + self.shift)))
 
         self.y2 = []
 
@@ -87,7 +106,7 @@ class Cochleogram(object):
             self.y2 = [lfilter([1.0], [1.0 - beta], self.y2[c]) for c in range(
                 self.n_chans - 2, 0, -1)]
 
-    def build_aud(self, shift=0, fac=-2, dec=8):
+    def build_aud(self, shift=None, fac=None, dec=None, frmlen=None):
         ''' build the auditory spectrogram
             This is largely inspired by Matlab NSL Toolbox
             but transcribed in a more pythonic fashion
@@ -96,24 +115,33 @@ class Cochleogram(object):
             see [Wang and Shamma 1994] for more details
             it is stored in y5
             '''
+        if shift is not None:
+            self.shift = shift # default for 16Khz Fs
+        if dec is not None:
+            self.dec = dec
+        if frmlen is not None:
+            self.frmlen = frmlen    
+        if fac is not None:
+            self.fac = fac
+
+        print self.fac
         if np.ndim(self.data) > 1:
             raise NotImplementedError(
                 "Sorry cannot process multichannel audio for now")
-
-        self.fac = fac
+        
         # octave shift, nonlinear factor, frame length, leaky integration
-        L_frm = int(round(8 * 2 ** (4 + shift)))    # frame length (points)
-
-        if dec > 0:
+        L_frm = int(round(self.frmlen * 2 ** (4 + self.shift)))    # frame length (points)
+        
+        if self.dec > 0:
             alph = np.exp(
-                -1.0 / (float(dec) * 2.0 ** (4.0 + shift)))    # decaying factor
+                -1.0 / (float(self.dec) * 2.0 ** (4.0 + self.shift)))    # decaying factor
         else:
             alph = 0
             # short-term avg.
-
+        
         # hair cell time constant in ms
         haircell_tc = 0.5
-        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + shift)))
+        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + self.shift)))
 
         # compute number of frame
         n_frames = int(np.ceil(self.data.shape[0] / L_frm))
@@ -121,19 +149,23 @@ class Cochleogram(object):
         if self.data.shape[0] < n_frames * L_frm:
             self.data = np.concatenate((self.data,
                                         np.zeros(((n_frames * L_frm) - self.data.shape[0],))))
-
+        # alternatively cut the end
+        elif self.data.shape[0] > n_frames * L_frm:
+            self.data = self.data[:n_frames * L_frm]
+        
         # initialize lists (TODO start from pre-existing y2?)
         self.y2 = []
         self.y4 = []
         self.y3 = []
         self.y5 = []
-
+        
         self.y2.append(sigmoid(coch_filt(self.data, self.coeffs,
                                          self.n_chans - 1), self.fac))
 
         # hair cell membrane (low-pass <= 4 kHz); ignored for LINEAR ionic
         # channels
-        if not (fac == -2):
+        print self.fac
+        if not (self.fac == -2):
             self.y2[0] = lfilter(1, [1 - beta], self.y2[0])
         y2_h = self.y2[0]
 
@@ -144,7 +176,8 @@ class Cochleogram(object):
                                 self.fac) for ch in range(self.n_chans - 1, 0, -1)])
 
         # non-linearity if needed
-        if not (fac == -2):
+        if not (self.fac == -2):
+            print "NON LINEARITY"
             self.y2 = [lfilter([1.0], [1.0 - beta],
                                self.y2[c]) for c in range(self.n_chans - 1, 0, -1)]
 
@@ -166,27 +199,26 @@ class Cochleogram(object):
             else:        # short-term average
                 if (L_frm == 1):
                     self.y5.append(self.y4[-1])
-                else:
-                    print
+                else:                                 
                     self.y5.append(np.mean(
                         self.y4[-1].reshape((L_frm, n_frames)), axis=0))
 
-    def invert_y2(self, shift=0, dec=8):
-        ''' recompute the waveform from the auditory spectrum
-            Suppose that we still have y2 available
-
-            Here we just perform the inverse wavelet transform
-            and sum on all tonotopic channels
-            '''
-
-        assert (self.y2 is not None)
-        x_rec = np.zeros_like(self.data)
-
-        for ch in range(self.coeffs.shape[1] - 2):
-            x_rec += np.flipud(
-                coch_filt(np.flipud(self.y2[ch]), self.coeffs, ch))
-
-        return x_rec
+#    def invert_y2(self, shift=0, dec=8):
+#        ''' recompute the waveform from the auditory spectrum
+#            Suppose that we still have y2 available
+#
+#            Here we just perform the inverse wavelet transform
+#            and sum on all tonotopic channels
+#            '''
+#
+#        assert (self.y2 is not None)
+#        x_rec = np.zeros_like(self.data)
+#
+#        for ch in range(self.coeffs.shape[1] - 2):
+#            x_rec += np.flipud(
+#                coch_filt(np.flipud(self.y2[ch]), self.coeffs, ch))
+#
+#        return x_rec
 
     def autofix(self, v5=None):
         ''' we need the auditory spectrum to be real and non-negative
@@ -205,13 +237,13 @@ class Cochleogram(object):
             y2 = lfilter([1.0,], [1.0, - beta], y2)
 
         y3 = y2 - y2_h            # difference (L-H)
-        y4 = np.maximum(y3, 0)        # half-wave rect.
+        y4 = np.maximum(y3, 0)    # half-wave rect.
 
         if alph:
             y5 = lfilter([1.0], [1.0, -alph], y4)  # leaky integ.
             vx = y5[range(L_frm-1, L_frm * n_frames, L_frm)]    # new aud. spec.
         else:
-            vx = np.mean(np.reshape(y4, L_frm, n_frames))
+            vx = np.mean(y4.reshape(L_frm, n_frames),axis=0)
         
         return y2, y3, vx
 
@@ -235,10 +267,19 @@ class Cochleogram(object):
         return s.repeat(L_frm) * y3
 
         
-    def invert(self, v5=None, init_vec=None, shift=0, dec=8, fac=-2, rec=None, nb_iter=2, display=False):
+    def invert(self, v5=None, init_vec=None, rec=None, nb_iter=2, display=False,
+               shift=None, fac=None, dec=None, frmlen=None):
         ''' recompute the waveform from the auditory spectrum
         stored in y5 or the given v5 list
             '''
+        if shift is not None:
+            self.shift = shift # default for 16Khz Fs
+        if dec is not None:
+            self.dec = dec
+        if frmlen is not None:
+            self.frmlen = frmlen    
+        if fac is not None:
+            self.fac = fac
 
         # if no auditory spetcrum is provided use the one that has been
         # computed
@@ -252,22 +293,20 @@ class Cochleogram(object):
         # If no initial guess is made, then draw first trial at random
 #        if rec is None:
 #            rec = np.random.randn(self.data.shape[0])
-
-        self.fac = fac
         # octave shift, nonlinear factor, frame length, leaky integration
-        L_frm = int(round(8 * 2 ** (4 + shift)))    # frame length (points)
+        L_frm = int(round(self.frmlen * 2 ** (4 + self.shift)))    # frame length (points)
 
-        if dec > 0:
+        if self.dec > 0:
             alph = np.exp(
-                -1.0 / (float(dec) * 2.0 ** (4.0 + shift)))    # decaying factor
-            alp1 = np.exp(-8.0 / float(dec))
+                -1.0 / (float(self.dec) * 2.0 ** (4.0 + self.shift)))    # decaying factor
+            alp1 = np.exp(-float(self.frmlen) / float(self.dec))
         else:
             alph = 0                   # short-term avg.
             alp1 = 0
 
         # hair cell time constant in ms
         haircell_tc = 0.5
-        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + shift)))
+        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + self.shift)))
 
         # fix the auditory spectrum
         if not np.isreal(v5).all():
@@ -285,7 +324,13 @@ class Cochleogram(object):
         if init_vec is None:
             x0 = np.random.randn(L_x)
         else:
-            x0 = init_vec
+            x0 = init_vec        
+            # if needed pad with zeroes
+            if x0.shape[0] < n_frames * L_frm:
+                x0 = np.concatenate((x0,
+                                        np.zeros(((n_frames * L_frm) - x0.shape[0],))))
+            elif x0.shape[0] > n_frames * L_frm:
+                x0 = x0[:n_frames * L_frm]
 
         # iteration
         xmin = x0
@@ -299,7 +344,7 @@ class Cochleogram(object):
         for iter_idx in range(nb_iter):
 
             # Initialization with the last channel
-            y2_h = sigmoid(coch_filt(x0, self.coeffs, v5.shape[0]), fac)
+            y2_h = sigmoid(coch_filt(x0, self.coeffs, v5.shape[0]), self.fac)
             y_cum = np.zeros((L_x,))
 
             # All other channels
@@ -369,19 +414,22 @@ class Cochleogram(object):
 
         return xmin
 
-    def init_inverse(self, v5=None, shift=0.0):
+    def init_inverse(self, v5=None, shift=None):
         ''' calculate a good initial candidate before iterating
             '''
+        if shift is not None:
+            self.shift = shift
+        
         if v5 is None:
             v5 = np.array(self.y5)
         (M, N) = v5.shape
         print (N, M)
         x0 = 0
-        SF = 16000 * 2 ** (shift)
+        SF = 16000 * 2 ** (self.shift)
 
         # characteristic frequency
         CF = 440.0 * 2.0 ** ((np.arange(1.0, self.n_chans - 1.0, 1.0) -
-                              31.0) / 24.0 + shift)
+                              31.0) / 24.0 + self.shift)
 
         CF = CF / SF
         T = int(8.0 * SF / 1000.0)
