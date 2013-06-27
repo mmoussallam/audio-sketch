@@ -37,8 +37,8 @@ filter_coeffs_path = '/home/manu/workspace/recup_angelique/Sketches/sketches/nsl
 data = sig.data
 import time
 params = {'shift':-1,
-          'dec':4,
-          'frmlen':4}
+          'dec':8,
+          'frmlen':8}
 gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True, **params)
 gram.build_aud()
 

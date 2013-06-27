@@ -432,12 +432,11 @@ class CochleoSketch(AudioSketch):
     
     Subclass should implement their own sparsification method
     """
-
     
     def __init__(self, original_sig=None, **kwargs):
         # add all the parameters that you want        
         
-        self.params = {'n_bands': 64, 'shift':0, 'fac':-2}
+        self.params = {'n_bands': 64, 'shift':0, 'fac':-2,'n_inv_iter':5}
         
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -462,7 +461,7 @@ class CochleoSketch(AudioSketch):
         init_vec = self.cochleogram.init_inverse(v5)
         # then do 20 iteration (TODO pass as a parameter)
         return Signal(
-            self.cochleogram.invert(v5, init_vec, nb_iter=10, display=False),
+            self.cochleogram.invert(v5, init_vec, nb_iter=self.params['n_inv_iter'], display=False),
             self.orig_signal.fs)
 
     def represent(self, fig=None, sparse=False):
@@ -500,17 +499,111 @@ class CochleoSketch(AudioSketch):
         
         if self.params.has_key('downsample'):
             self.orig_signal.downsample(self.params['downsample'])
-        
-        print "Cochleogram for first computation"
+                
         self.cochleogram = cochleo_tools.Cochleogram(self.orig_signal.data, **self.params)
         self.cochleogram.build_aud()
 
+class CorticoSketch(AudioSketch):
+    """ meta class for all corticogram-based sketches     
+    
+    Subclass should implement their own sparsification method
+    """
+    
+    def __init__(self, obj=None, **kwargs):
+        # add all the parameters that you want        
+        
+        self.params = {'n_bands': 64,
+                       'shift':0,                       
+                       'rv':[1, 2, 4, 8, 16, 32],
+                       'sv':[0.5, 1, 2, 4, 8]}
+        self.orig_signal = None
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        if obj is not None:
+            self.orig_signal = obj
+            self.recompute()
+#        if isinstance(obj, cochleo_tools.Cochleogram):
+#            self.coch = obj
+#            self.orig_signal = self.coch.
+#        elif isinstance(obj, Signal):        
+#            self.orig_signal = obj
+#            self.coch = cochleo_tools.Cochleogram(self.orig_signal.data)
+#            self.recompute()
+#        else:
+#            raise TypeError("Object %s is neither a cochleogram nor a signal"%str(obj))
 
+    def get_sig(self):
+        strret = '_bands-%d_%drates_%scales' % (self.params['n_bands'],
+                                                len(self.params['rv']),
+                                                len(self.params['sv']))
+        return strret
+
+    def synthesize(self, sparse=False):
+        ''' synthesize the sparse rep or the original rep?'''
+        if sparse:
+            cor = self.cort
+            # sparse auditory spectrum should already have been computed
+            v5 = np.abs(self.rec_aud).T
+        else:
+            cor = self.cort
+            # inverting the corticogram
+            v5 = np.abs(cor.invert()).T                    
+
+
+        # then do 20 iteration (TODO pass as a parameter)
+        if self.orig_signal is not None:
+            return Signal(
+            self.coch.invert(v5, self.orig_signal.data, nb_iter=self.params['n_inv_iter'], display=False),
+            self.orig_signal.fs)
+        else:
+            # initialize invert        
+            init_vec = self.coch.init_inverse(v5)
+            return Signal(
+            self.coch.invert(v5, init_vec, nb_iter=self.params['n_inv_iter'], display=False),
+            8000)
+
+    def represent(self, fig=None, sparse=False):
+        if fig is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+        else:
+            ax = plt.gca()
+
+        if sparse:            
+            self.cort.plot_cort(self.sp_rep)
+        else:
+            self.cort.plot_cort()
+
+    def fgpt(self):
+        raise NotImplementedError(
+            "NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+
+    def recompute(self, signal=None, **kwargs):
+        ''' recomputing the cochleogram'''
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        if signal is not None:
+            if isinstance(signal, str):
+                # TODO allow for stereo signals
+                signal = Signal(signal, normalize=True, mono=True)
+            self.orig_signal = signal
+
+        if self.orig_signal is None:
+            raise ValueError("No original Sound has been given")
+        
+        if self.params.has_key('downsample'):
+            self.orig_signal.downsample(self.params['downsample'])
+                
+        self.coch = cochleo_tools.Cochleogram(self.orig_signal.data, **self.params)
+        self.coch.build_aud()
+        self.cort = cochleo_tools.Corticogram(self.coch, **self.params)
 
 class CochleoDumbPeaksSketch(CochleoSketch):
-    ''' Sketch based on a cochleogram and pairs of peaks as a sparsifier '''
+    ''' Sketch based on a sparse peaks in the cochleogram '''
 
-    
     # number of cochlear filters
     def __init__(self, original_sig=None, **kwargs):
         # add all the parameters that you want
@@ -574,6 +667,79 @@ class CochleoPeaksSketch(CochleoSketch):
 
         self.sp_rep = np.reshape(self.sp_rep, v5.shape)
 
+class CorticoIHTSketch(CorticoSketch):
+    """ Iterative Hard Thresholding on a 4-D corticogram spectrum 
+    
+    Inherit from CorticoSketch and only implements a different sparisication
+    method
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(CorticoIHTSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+        
+        self.params['max_iter'] = 5     # number of IHT iterations
+        self.params['n_inv_iter'] = 2   # number of reconstructive steps
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+    
+    def get_sig(self):
+        strret = '_%diter_frmlen%d' % (self.params['max_iter'],
+                                            self.params['frmlen'])
+        return strret
+    
+    def sparsify(self, sparsity, **kwargs):
+        """ sparsification is performed using the 
+        Iterative Hard Thresholding Algorithm """
+        L = sparsity
+        if  self.cort is None:
+            raise ValueError("No representation has been computed yet")
+        
+        if self.coch.y5 is None:
+            self.coch.build_aud()
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        # We go back and forth from the auditory spectrum to the 4-D corticogram                
+        X = np.array(self.coch.y5).T
+        # dimensions
+        K1    = len(self.params['rv']);     # of rate channel
+        K2    = len(self.params['sv']);     # of scale channel
+        (N2, M1)  = X.shape    # dimensions of auditory spectrogram
+        
+        # initialize output and residual
+        A = np.zeros((K2,2*K1,N2,M1), complex)        
+        residual = X
+        
+        n_iter = 0
+        
+        while n_iter < self.params['max_iter']:
+            print "IHT Iteration %d"%n_iter       
+            A_old = np.copy(A)     
+            # build corticogram                  
+            projection = cochleo_tools._build_cor(residual, **self.params)
+
+            # sort the elements and hard threshold        
+            A_buff = A + projection
+            A_flat = A_buff.flatten()
+            idx_order = np.abs(A_flat).argsort()
+            A = np.zeros(A_flat.shape, complex)
+            A[idx_order[-L:]] = A_flat[idx_order[-L:]]
+            A = A.reshape(A_buff.shape)
+            
+            # Reconstruct auditory spectrum
+            rec_aud = cochleo_tools._cor2aud(A, **self.params)
+            
+            # update residual
+            residual = X - rec_aud
+            
+            n_iter += 1
+                
+        self.sp_rep = A
+        self.rec_aud = rec_aud
+
+
 class CochleoIHTSketch(CochleoSketch):
     """ Iterative Hard Thresholding on an auditory spectrum 
     
@@ -586,10 +752,16 @@ class CochleoIHTSketch(CochleoSketch):
             original_sig=original_sig, **kwargs)
         
         self.params['max_iter'] = 5     # number of IHT iterations
-        self.params['n_rec_iter'] = 2   # number of reconstructive steps
+        self.params['n_inv_iter'] = 2   # number of reconstructive steps
         for k in kwargs:
             self.params[k] = kwargs[k]
-        
+    
+    def get_sig(self):
+        strret = '_bands-%d_%diter_frmlen%d' % (self.params['n_bands'],
+                                            self.params['max_iter'],
+                                            self.params['frmlen'])
+        return strret
+    
     def sparsify(self, sparsity, **kwargs):
         """ sparsification is performed using the 
         Iterative Hard Thresholding Algorithm """
@@ -609,13 +781,11 @@ class CochleoIHTSketch(CochleoSketch):
         residual = np.copy(original)
         
         n_iter = 0
-        print "Cochleogram for Sparsification"
-        print self.params
         res_coch = cochleo_tools.Cochleogram(residual, **self.params)
         while n_iter < self.params['max_iter']:
-            print "Iteration %d"%n_iter
+            print "IHT Iteration %d"%n_iter
             if n_iter>0 or cand_rep is None:    
-                print res_coch.fac            
+                            
                 res_coch.build_aud()
                 projection = np.array(res_coch.y5)
             else:
@@ -629,13 +799,13 @@ class CochleoIHTSketch(CochleoSketch):
             A = A.reshape(A_buff.shape)
                 
             rec_a = res_coch.invert(v5=A, init_vec=original,
-                                    nb_iter=self.params['n_rec_iter'])
+                                    nb_iter=self.params['n_inv_iter'])
 
             rec_a /= np.max(rec_a)
             rec_a *= 0.9
             residual = original - rec_a;
             res_coch.data = residual
-            print "New fac of %d"%res_coch.fac
+            
             n_iter += 1
                 
         self.sp_rep = A

@@ -3,6 +3,7 @@ tools.cochleo_tools  -  Created on Feb 1, 2013
 @author: M. Moussallam
 '''
 import numpy as np
+from numpy import floor
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from PyMP import Signal
@@ -68,8 +69,7 @@ class Cochleogram(object):
             self.fac = kwargs['fac']
         else:
             self.fac = -2 # default for linear filtering (no sigmoid)
-
-        print self.frmlen, self.dec, self.shift, self.fac
+        
         self.y1 = None
         self.y2 = None
         self.y3 = None
@@ -106,7 +106,7 @@ class Cochleogram(object):
             self.y2 = [lfilter([1.0], [1.0 - beta], self.y2[c]) for c in range(
                 self.n_chans - 2, 0, -1)]
 
-    def build_aud(self, shift=None, fac=None, dec=None, frmlen=None):
+    def build_aud_old(self, shift=None, fac=None, dec=None, frmlen=None):
         ''' build the auditory spectrogram
             This is largely inspired by Matlab NSL Toolbox
             but transcribed in a more pythonic fashion
@@ -116,7 +116,7 @@ class Cochleogram(object):
             it is stored in y5
             '''
         if shift is not None:
-            self.shift = shift # default for 16Khz Fs
+            self.shift = shift 
         if dec is not None:
             self.dec = dec
         if frmlen is not None:
@@ -124,7 +124,7 @@ class Cochleogram(object):
         if fac is not None:
             self.fac = fac
 
-        print self.fac
+        
         if np.ndim(self.data) > 1:
             raise NotImplementedError(
                 "Sorry cannot process multichannel audio for now")
@@ -141,7 +141,7 @@ class Cochleogram(object):
         
         # hair cell time constant in ms
         haircell_tc = 0.5
-        beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + self.shift)))
+        beta = np.exp(-1.0 / (haircell_tc * 2.0 ** (4.0 + self.shift)))
 
         # compute number of frame
         n_frames = int(np.ceil(self.data.shape[0] / L_frm))
@@ -160,20 +160,22 @@ class Cochleogram(object):
         self.y5 = []
         
         self.y2.append(sigmoid(coch_filt(self.data, self.coeffs,
-                                         self.n_chans - 1), self.fac))
+                                         self.n_chans -1), self.fac))
 
         # hair cell membrane (low-pass <= 4 kHz); ignored for LINEAR ionic
         # channels
-        print self.fac
+
         if not (self.fac == -2):
-            self.y2[0] = lfilter(1, [1 - beta], self.y2[0])
-        y2_h = self.y2[0]
+            self.y2[0] = lfilter(1, [1, -beta], self.y2[0])
+        
+#        y2_h = self.y2[0]
+        y2_h = 0
 
         zer_array = np.zeros_like(y2_h)
 
         # apply cochlear filter to all channels
         self.y2.extend([sigmoid(coch_filt(self.data, self.coeffs, ch),
-                                self.fac) for ch in range(self.n_chans - 1, 0, -1)])
+                                self.fac) for ch in range(self.n_chans - 2, -1, -1)])
 
         # non-linearity if needed
         if not (self.fac == -2):
@@ -182,7 +184,7 @@ class Cochleogram(object):
                                self.y2[c]) for c in range(self.n_chans - 1, 0, -1)]
 
         # Inhibition and thresholding step: TODO optimize
-        for ch in range(self.n_chans - 1, 0, -1):
+        for ch in range(self.n_chans - 2, -1, -1):
 
             # masked by higher (frequency) spatial response
             self.y3.append(self.y2[ch] - y2_h)
@@ -203,6 +205,70 @@ class Cochleogram(object):
                     self.y5.append(np.mean(
                         self.y4[-1].reshape((L_frm, n_frames)), axis=0))
 
+    def build_aud(self,shift=None, fac=None, dec=None, frmlen=None):
+        """ simplified version assuming linearity in all cases 
+            Faster and more stable : also it yields a matrix directly"""
+        if shift is not None:
+            self.shift = shift 
+        if dec is not None:
+            self.dec = dec
+        if frmlen is not None:
+            self.frmlen = frmlen    
+        if fac is not None:
+            self.fac = fac
+        
+        # octave shift, nonlinear factor, frame length, leaky integration
+        L_frm = int(round(self.frmlen * 2 ** (4 + self.shift)))    # frame length (points)
+        
+        if self.dec > 0:
+            alph = np.exp(
+                -1.0 / (float(self.dec) * 2.0 ** (4.0 + self.shift)))    # decaying factor
+        else:
+            alph = 0
+            # short-term avg.
+        
+        # hair cell time constant in ms
+#        haircell_tc = 0.5
+#        beta = np.exp(-1.0 / (haircell_tc * 2.0 ** (4.0 + self.shift)))
+
+        # compute number of frame
+        n_frames = int(np.ceil(self.data.shape[0] / L_frm))
+        # if needed pad with zeroes
+        if self.data.shape[0] < n_frames * L_frm:
+            self.data = np.concatenate((self.data,
+                                        np.zeros(((n_frames * L_frm) - self.data.shape[0],))))
+        # alternatively cut the end
+        elif self.data.shape[0] > n_frames * L_frm:            
+            self.data = self.data[:n_frames * L_frm]
+
+        v5 = np.zeros((n_frames, self.n_chans-1))
+        
+        # Highest channel
+        print self.coeffs.shape, self.n_chans -1
+        y2 = coch_filt(self.data, self.coeffs, self.n_chans -1)
+    
+        y2_h = y2        
+        zer_array = np.zeros(y2_h.shape)
+        for ch in range(self.n_chans - 2, -1, -1):
+            
+            # filtering
+            y2 = coch_filt(self.data, self.coeffs, ch)
+    
+            # masking
+            y3   = y2 - y2_h
+            y2_h = y2
+    
+            # rectifying
+            y4 = np.maximum(y3, zer_array)
+            
+            # low pass             
+            y5 = lfilter([1.0], [1.0, -alph], y4)            
+            
+            # stock
+            v5[:, ch] = y5[range(0, L_frm * n_frames, L_frm)]
+        
+        self.y5 = v5.T
+        return v5
 #    def invert_y2(self, shift=0, dec=8):
 #        ''' recompute the waveform from the auditory spectrum
 #            Suppose that we still have y2 available
@@ -309,8 +375,9 @@ class Cochleogram(object):
         beta = np.exp(-1.0 / (haircell_tc * 2 ** (4 + self.shift)))
 
         # fix the auditory spectrum
-        if not np.isreal(v5).all():
-            self.autofix(v5)
+#        if not np.isreal(v5).all():
+#            v5 = np.abs(v5)
+#            self.autofix(v5)
 
         # convert to array if needed
 #        v5 = np.array(v5)
@@ -484,49 +551,68 @@ class Cochleogram(object):
 class Corticogram(object):
     """ Cortical representation a.k.a 2D wavelet transform of a cochleogram"""
     
-    def __init__(self, obj, params = None):
-    
-        self.rv = [1, 2, 4, 8, 16, 32]             
-        self.sv = [0.5, 1, 2, 4, 8]
-        
-
-        if params is not None:
-            self.corparams = params
-        else:
-            self.corparams = [8, 8, -2, 0, 0, 0, 1]
+    def __init__(self, obj, **kwargs):
+     
+        self.cor = None
+        self.params={'rv': [1, 2, 4, 8, 16, 32],
+                     'sv' : [0.5, 1, 2, 4, 8]}
+     
+        for key in kwargs:
+            self.params[key] = kwargs[key]          
                              
         # First test if it's instantiated with a Cochleogram
         if not isinstance(obj, Cochleogram):
-            self.coch = Cochleogram(obj, **kwargs)
+            self.coch = Cochleogram(obj, **self.params)
         else:
             self.coch = obj
     
-    def build_cor(self):
+    def build_cor(self, coch=None):
         """ need some improvements but should be working """        
-        if self.coch.y5 is None:
-            self.coch.build_aud()
-        self.cor = _build_cor(np.array(self.coch.y5).T, self.corparams, self.rv, self.sv)
-#        print self.cor.shape 
-#        plt.figure()
-#        plt.imshow(np.abs(self.cor[0, 6, :, :]))
-#        plt.show()  
+        if coch is None:
+            if self.coch.y5 is None:
+                self.coch.build_aud()
+            else:
+                coch = np.array(self.coch.y5).T
         
-#        print self.cor.shape
-    def invert(self, cor=None):
+        # Don't really get this one....
+        self.params['BP'] = 1
+        self.cor = _build_cor(coch, **self.params)
+
+    def invert(self, cor=None, order=2):
         """ resynthesize the auditory spectrum from self or from given corticogram """
     
         if cor is None:
             cor = np.copy(self.cor)        
 #        print cor.shape
-        # HACK : the last parameter should now be zero?
-        self.corparams = [8, 8, -2, 0, 0, 0, 0]
-        self.rec = _cor2aud(cor, self.corparams, self.rv, self.sv)
-   
+        # BUGFIX!!!!!!!! HACK : the last parameter should now be zero?
+#        self.params['BP'] = 0
+        self.rec = _cor2aud(cor, **self.params) ** order
+        return self.rec
+
+    def plot_cort(self, cor=None, scale=True, Rate=True):
+        """ gives a summarized view of a Scale-Rate evolution in time/frequency"""
+        if cor is None:
+            if self.cor is None:
+                self.build_cor()
+            cor = self.cor
+        
+        rs_view = np.abs(np.squeeze(np.mean(np.mean(cor,axis=3),axis=2)))
+        (K2,K1) = rs_view.shape
+        X, Y = np.meshgrid(self.params['sv'], self.params['rv'])
+        
+        
+        plt.figure()
+        plt.subplot(121)
+        plt.pcolor(np.fliplr(-X), Y, rs_view[:,:K1/2],                   
+                   cmap=cm.bone_r)
+        plt.subplot(122)
+        plt.pcolor(X,Y,rs_view[:,K1/2:],
+                   cmap=cm.bone_r)
 
 def coch_filt(data, coeffs, chan_idx):
     p = int(coeffs[0, chan_idx].real)    # order of ARMA filter
     b = coeffs[range(1, p + 2),
-               chan_idx].real    # moving average coefficients
+               chan_idx].real    # moving average coefficients               
     a = coeffs[range(1, p + 2),
                chan_idx].imag    # autoregressive coefficients
 
@@ -667,9 +753,27 @@ def gen_corf(fc, L, SRF, KIND):
     
     return H
 
-def _build_cor(y, paras1, rv, sv):
+def getopt(dict, optname, defval):
+    """ simple utility to get the option in the param dictionary or the default value"""
+    if dict.has_key(optname):
+        return dict[optname]
+    else:
+        if defval is not None:
+            return defval
+        else:
+            raise ValueError("Parameter %s has not been transmitted"%optname)
+
+def _build_cor(y, **kwargs):
     """ Transcription of aud2cor in NSL Toolbox
         See the original Matlab code for info """
+        
+    rv = getopt(kwargs, 'rv', None) # mandatory    
+    sv = getopt(kwargs, 'sv', None) # mandatory
+    STF = getopt(kwargs, 'STF', 100)
+    FULLT = getopt(kwargs, 'FULLT', 0)
+    FULLX = getopt(kwargs, 'FULLX', 0)
+    BP = getopt(kwargs, 'BP', 0)
+    DISP = getopt(kwargs, 'DISP', 0)
     
     K1    = len(rv);     # num of rate channel
     K2    = len(sv);     # num of scale channel
@@ -693,15 +797,8 @@ def _build_cor(y, paras1, rv, sv):
         R1 = fft(Y[:N, m], n=N2);
         Y[:, m] = R1;
     
-    STF = 1000 / paras1[0]    # frame per second
-    SRF = 24                 # channel per octave (fixed)
-    
-    DISP = 0
-    FULLT = paras1[4]
-    FULLX = paras1[5]
-    BP = paras1[6]
-    
-    from numpy import floor
+    SRF = 24                 # channel per octave (fixed)    
+
     # freq. index
     dM   = int(floor(M/2*FULLX))
     # TODO : this could change if dM is not zero
@@ -752,15 +849,20 @@ def _build_cor(y, paras1, rv, sv):
                     z[n, :] = R1[mdx1]
                             
                 cr[sdx, rdx+(sgn==1)*K1, :, :] = z;
-#                print sdx, rdx, sgn
-#                plt.figure()
-#                plt.imshow(np.abs(cr[sdx, rdx+(sgn==1)*K1, :, :]))
-#                plt.show()
  
     return cr
 
-def _cor2aud(cor, paras1, rv, sv):
+def _cor2aud(cor, **kwargs):
     """ Reconstructing auditory spectrogram from 4-D cortical rep"""
+
+    rv = getopt(kwargs, 'rv', None) # mandatory    
+    sv = getopt(kwargs, 'sv', None) # mandatory
+    STF = getopt(kwargs, 'STF', 100)
+    FULLT = getopt(kwargs, 'FULLT', 0)
+    FULLX = getopt(kwargs, 'FULLX', 0)
+    BP = getopt(kwargs, 'BP', 0)
+    DISP = getopt(kwargs, 'DISP', 0)
+    NORM = getopt(kwargs,'NORM',.9)
 
     [K2, K12, N, M] = cor.shape    # dimensions of corticogram
     K1 = K12/2
@@ -769,22 +871,16 @@ def _cor2aud(cor, paras1, rv, sv):
     N2 = N1*2
     M1 = int(2**np.ceil(np.log2(M)))
     M2 = M1*2
-    
-    STF = 1000 / paras1[0]    # frame per second
+
     SRF = 24                 # channel per octave (fixed)
     
-    DISP = 0
-    FULLT = paras1[4]
-    FULLX = paras1[5]
-    BP = paras1[6]
-    NORM = .9
-    HH   = 0;
-    Z_cum = 0;
+    HH   = 0
+    Z_cum = 0
 
     for rdx in range(K1):
         # rate filtering
-        fc_rt = rv[rdx];
-        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2]);
+        fc_rt = rv[rdx]
+        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2])
 #        print HR.shape  , N, N1, N2 
         for sgn in [1, -1]:      
             
@@ -796,30 +892,30 @@ def _cor2aud(cor, paras1, rv, sv):
                 Clist.extend(np.conj(np.flipud(HR[1:N2])))
                 HR = np.array(Clist)
 #                print HR.shape                
-                HR[N1] = np.abs(HR[N1+1]);            
+                HR[N1] = np.abs(HR[N1+1])            
     
             for sdx in range(K2):
                 # scale filtering
 #                print sdx+1+BP, K2+(BP*2), BP
-                HS = gen_corf(sv[sdx], M1, SRF, [sdx+1+BP, K2+BP*2]);
+                HS = gen_corf(sv[sdx], M1, SRF, [sdx+1+BP, K2+BP*2])
 #                print rdx+(sgn==1)*K1, K1                
-                z = np.squeeze(cor[sdx, rdx+(sgn==1)*K1, :, :]);
+                z = np.squeeze(cor[sdx, rdx+(sgn==1)*K1, :, :])
     
                 # 2-D FFT and cumulation
 #                Mout = floor(M/2*FULLX);
 #                Nout = floor(N/2*FULLT);
-                Z_cum, HH = _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH);
+                Z_cum, HH = _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH)
 
                 
     # normalization
-    HH[:, 0] = HH[:, 0]*2;        # normalization for DC
-    return _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM);
+    HH[:, 0] = HH[:, 0]*2     # normalization for DC
+    return _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM)
 
 
 def _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH):
     " TODO check that: I simplified a lot"
     # 2-D FFT
-    Z = np.zeros((N2, M1),complex);    
+    Z = np.zeros((N2, M1),complex)   
 #    z[0, M2] = 0;    # why? I forgot. Oh, it is zero padding
 #    print Z.shape, z.shape, HR.shape, HS.shape    
     for n in range(N):        
@@ -827,7 +923,7 @@ def _corfftc(z, Z_cum, N, N1, N2,  M, M1, M2,  HR, HS, HH):
        Z[n, :] = R1[:M1]    
     
     for m in range(M1):
-       Z[:, m] = fft(Z[:, m]);
+       Z[:, m] = fft(Z[:, m])
     
     # cumulation    
     R1 = np.dot(HR.reshape((len(HR),1)),HS.reshape((1,len(HS))))        
