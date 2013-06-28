@@ -193,7 +193,7 @@ class STFTPeaksSketch(AudioSketch):
                                 x_ind + t_index] = rect_data[f_index, t_index]
 
         self.nnz = np.count_nonzero(self.sp_rep)
-        print "Sparse rep of %d element computed" % self.nnz
+#        print "Sparse rep of %d element computed" % self.nnz
 
 #    def represent_sparse(self):
 #        if self.sp_rep is None:

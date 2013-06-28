@@ -32,7 +32,7 @@ class FgptHandle(object):
         the db object
     persistent :  bool
         a boolean indicating whether the db is to be kept or destroy 
-        when object id deleted
+        when object is deleted
     
     '''    
     
@@ -45,7 +45,7 @@ class FgptHandle(object):
             os.remove(dbName)
         self.db_name = dbName
         self.dbObj = db.DB()
-        
+        self.opened = False
         # allow multiple key entries
         # TODO :  mettre en DB_DUPSORT
         self.dbObj.set_flags(db.DB_DUP | db.DB_DUPSORT)
@@ -53,12 +53,17 @@ class FgptHandle(object):
         if not load:
             try:
                 self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
+                self.opened = True
             except:                
                 raise IOError('Failed to create %s ' % self.db_name)
         else:
             if self.db_name is None:
                 raise ValueError('No Database name provided')
-            self.dbObj.open(dbName, dbtype=db.DB_HASH)
+            if not os.path.exists(self.db_name):
+                self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
+            else:
+                self.dbObj.open(dbName, dbtype=db.DB_HASH)
+            self.opened = True
             print "Loaded DB:", dbName
     
         # keep in mind if the db is to be kept or destroy
@@ -66,7 +71,8 @@ class FgptHandle(object):
         # cursor object : might get instantiated later
         self.cursor = None
     
-    def __del__(self):
+    def __del__(self):        
+        self.dbObj.sync()
         self.dbObj.close()
         if not self.persistent:
             if os.path.exists(self.db_name):
@@ -117,6 +123,17 @@ class FgptHandle(object):
         estFileI = maxI % nbCandidates
         return estFileI, OffsetI
 
+#    def close(self):
+#        """ safely close the db object """
+#        if self.opened:
+#            self.dbObj.close()
+#            self.opened = False
+#    
+#    def reopen(self):
+#        if not self.opened:
+#            self.dbObj.open(self.db_name, dbtype=db.DB_HASH)
+#            self.opened = True
+
 class STFTPeaksBDB(FgptHandle):
     ''' handling the fingerprints based on a pairing of STFT peaks 
     
@@ -141,7 +158,8 @@ class STFTPeaksBDB(FgptHandle):
                         'value_total_bits':32,
                         'file_index_n_bits':20,
                         'time_n_bits':12,
-                        'time_max':60.0* 20.0}
+                        'time_max':60.0* 20.0,
+                        'wall':True}
         
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -149,9 +167,11 @@ class STFTPeaksBDB(FgptHandle):
         # Formatting the key - FORMAT 1 : Absolute
         self.alpha = ceil((self.params['fmax'])/(2**self.params['f1_n_bits']-1))
         self.beta = ceil((self.params['fmax'])/(2**self.params['f2_n_bits']-1))
-        self.gamma = ceil(self.params['delta_t_max']/(2**self.params['dt_n_bits']-1))
-    
-    
+        
+        # BUGFIX remove the ceiling function cause it causes all values to be zeroes
+        self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
+#        self.gamma = ceil(self.params['delta_t_max']/(2**self.params['dt_n_bits']-1))        
+#        print self.alpha, self.beta, self.gamma, self.params['f1_n_bits'], self.params['f2_n_bits'], self.params['dt_n_bits']
 
     def format_value(self, fileIndex, t1):
         """ Format the value according to the parameters """
@@ -187,7 +207,8 @@ class STFTPeaksBDB(FgptHandle):
             try:
                 self.dbObj.put(Kbin, Bbin)
             except db.DBKeyExistError:
-                print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
+                if self.params['wall']:
+                    print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
     
     
     def get(self, key):
@@ -195,8 +216,9 @@ class STFTPeaksBDB(FgptHandle):
         Retrieve the values in the database associated with this key
         '''
         Bin_key = self.format_key(key)
+#        print key, Bin_key
         Kbin = struct.pack('<I4', Bin_key)
-
+        
         # retrieving in db
         # since multiple data can be retrieved for one key, use a cursor
         if self.cursor is None:
@@ -251,7 +273,8 @@ class STFTPeaksBDB(FgptHandle):
         """ populate by creating pairs of peaks """
         # get all non zero elements            
         keys, values = self._build_pairs(fgpt, params, offset)
-        
+        if self.params['wall']:
+            print " %d key/value pairs"%len(keys)
         Set = set(zip(keys, values))
         self.add(list(Set), file_index)
         
@@ -272,9 +295,11 @@ class STFTPeaksBDB(FgptHandle):
         # the corresponding value in histogram by one.
         results = map(self.get , keys)
         # or maybe we can just sum all the values in the desired dimension?
-        
+#        print keys[1:10]
 #        print results
-        for keyIdx in range(len(keys)):
+        for keyIdx in range(len(keys)): 
+#            if len(results[keyIdx][0])>1:
+#                print  results[keyIdx]          
             histogram[results[keyIdx]] +=1            
 
         # voting for best candidate
@@ -303,7 +328,8 @@ class XMDCTBDB(FgptHandle):
                        'fmax': 8000.0,
                        'freq_n_bits':14,
                        'time_max':600.0, # 10 minutes is the biggest allowed time interval
-                       'time_res':1.0}
+                       'time_res':1.0,
+                       'wall':True}
         
         # populating optional parameters
         for karg in kwargs:
@@ -353,7 +379,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
             try:
                 self.dbObj.put(Kbin, Bbin)
             except db.DBKeyExistError:
-                print "Warning existing Key/Value pair " + str(key) + ' ' + str(value)
+                if self.params['wall']:
+                    print "Warning existing Key/Value pair " + str(key) + ' ' + str(value)
 
 
     def get(self, Key, const=0):        
@@ -417,7 +444,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 continue
             S.append(log(atom.length, 2))
             F.append(atom.reduced_frequency * fgpt.fs)
-            T.append((float(offset + atom.time_position) / float(fgpt.fs)))
+            T.append(( offset + (float(atom.time_position) / float(fgpt.fs))))
 
         # look for duplicates and removes them: construct a set of zipped elements
 #        print zip(F , T)
