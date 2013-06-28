@@ -10,13 +10,6 @@ import os.path as op
 from classes import pydb, sketch
 from tools.fgpt_tools import db_creation, db_test
 
-# The RWC subset path
-audio_path = '/sons/rwc/Test'
-db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
-
-file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
-nb_files = len(file_names)
-
 # define a pair FgptHandle/Sketch 
 #fgpt_sketches = [
 #                 (pydb.STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
@@ -25,6 +18,13 @@ nb_files = len(file_names)
 #                  sketch.XMDCTSparseSketch(**{'scales':[64,512,2048],'n_atoms':100})),                                     
 #                    ]
 
+
+# The RWC subset path
+audio_path = '/sons/rwc/Test'
+db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
+
+file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
+nb_files = len(file_names)
 # define experimental conditions
 set_id = 'RWCTest' # Choose a unique identifier for the dataset considered
 sparsity = 300
@@ -49,9 +49,9 @@ fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
 # create the base:
 db_creation(fgpthandle, sk, sparsity,
             file_names, 
-            force_recompute = False,
+            force_recompute = True,
             seg_duration = seg_dur, resample = fs,
-            files_path = audio_path, debug=False)
+            files_path = audio_path, debug=False, n_jobs=2)
 
 
 

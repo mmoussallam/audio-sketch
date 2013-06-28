@@ -6,3 +6,5 @@
 *~
 *#
 *.aux
+/data
+/fgpt_db
