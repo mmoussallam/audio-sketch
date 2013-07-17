@@ -433,11 +433,12 @@ class CochleoSketch(AudioSketch):
     Subclass should implement their own sparsification method
     """
     
+    
     def __init__(self, original_sig=None, **kwargs):
         # add all the parameters that you want        
         
         self.params = {'n_bands': 64, 'shift':0, 'fac':-2,'n_inv_iter':5}
-        
+        self.cochleogram = None
         for key in kwargs:
             self.params[key] = kwargs[key]
 
@@ -479,9 +480,12 @@ class CochleoSketch(AudioSketch):
             self.cochleogram.plot_aud(ax=ax,
                                       duration=self.orig_signal.get_duration())
 
-    def fgpt(self):
-        raise NotImplementedError(
-            "NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+    def fgpt(self, sparse=False):
+        """ This only has a meaning if the peaks have been selected """
+        if self.sp_rep is None:
+            print "WARNING : default peak-picking of 100"
+            self.sparsify(100)        
+        return self.sp_rep
 
     def recompute(self, signal=None, **kwargs):
         ''' recomputing the cochleogram'''
@@ -499,9 +503,14 @@ class CochleoSketch(AudioSketch):
         
         if self.params.has_key('downsample'):
             self.orig_signal.downsample(self.params['downsample'])
-                
+        
+        # cleaning
+        if self.cochleogram is not None:
+            del self.cochleogram
+               
         self.cochleogram = cochleo_tools.Cochleogram(self.orig_signal.data, **self.params)
         self.cochleogram.build_aud()
+        self.rep = np.array(self.cochleogram.y5)
 
 class CorticoSketch(AudioSketch):
     """ meta class for all corticogram-based sketches     
@@ -517,7 +526,7 @@ class CorticoSketch(AudioSketch):
                        'rv':[1, 2, 4, 8, 16, 32],
                        'sv':[0.5, 1, 2, 4, 8]}
         self.orig_signal = None
-        
+        self.rec_aud = None
         for key in kwargs:
             self.params[key] = kwargs[key]
         
@@ -545,6 +554,8 @@ class CorticoSketch(AudioSketch):
         if sparse:
             cor = self.cort
             # sparse auditory spectrum should already have been computed
+            if self.rec_aud is None:
+                self.rec_aud = cochleo_tools._cor2aud(self.sp_rep, **self.params)
             v5 = np.abs(self.rec_aud).T
         else:
             cor = self.cort
@@ -645,27 +656,87 @@ class CochleoPeaksSketch(CochleoSketch):
         super(CochleoPeaksSketch, self).__init__(
             original_sig=original_sig, **kwargs)
 
-    def sparsify(self, sparsity):
-        '''@TODO sparsify using the peaks with spreading on the TF plane '''
-        if self.cochleogram.y5 is None:
-            raise ValueError("cochleogram not computed yet")
+    def fgpt(self, sparse=False):
+        """ This only has a meaning if the peaks have been selected """
+        if self.sp_rep is None:
+            print "WARNING : default peak-picking of 100"
+            self.sparsify(100)        
+        return self.sp_rep
 
-        v5 = np.array(self.cochleogram.y5)
-        self.sp_rep = np.zeros_like(v5.ravel())
-#        print self.sp_rep.shape
-        # peak picking
+    def sparsify(self, sparsity, **kwargs):
+        '''sparsify using the peak-picking with spreading on the TF plane '''
+        if self.rep is None:
+            self.rep = np.array(self.cochleogram.y5)
+            
+        if self.rep is None:
+            raise ValueError("representation hasn't been computed yet..")
+
+        for key in kwargs:
+            self.params[key] = kwargs[key]
 
         if sparsity <= 0:
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= np.sum(self.sp_rep.shape)
+            sparsity *= np.sum(self.rep.shape)
+#        else:
+            # otherwise the sparsity argument take over and we divide in
+            # the desired number of regions (preserving the bin/frame ratio)
+#            print self.rep.shape[1:]        
+        self.params['f_width'] = int(self.rep.shape[0] / np.sqrt(sparsity))
+        self.params['t_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+#            print self.params['f_width'], self.params['t_width']
 
-        max_indexes = np.argsort(v5.ravel())
-        self.sp_rep[max_indexes[-sparsity:]] = v5.ravel(
-        )[max_indexes[-sparsity:]]
+        self.sp_rep = np.zeros_like(self.rep)
+        # naive implementation: cut in non-overlapping zone and get the max
+        (n_bins, n_frames) = self.rep.shape
+        (f, t) = (self.params['f_width'], self.params['t_width'])
+        for x_ind in range(0, (n_frames / t) * t, t):
+            for y_ind in range(0, (n_bins / f) * f, f):
+                rect_data = self.rep[y_ind:y_ind + f, x_ind:x_ind + t]
 
-        self.sp_rep = np.reshape(self.sp_rep, v5.shape)
+                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
+                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                    # add the peak to the sparse rep
+                    self.sp_rep[y_ind + f_index,
+                                x_ind + t_index] = rect_data[f_index, t_index]
+
+        self.nnz = np.count_nonzero(self.sp_rep)
+        
+class CorticoPeaksSketch(CorticoSketch):
+    """ Peack Picking on the 4-D corticogram as the sparsification process
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(CorticoPeaksSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+                
+        self.params['n_inv_iter'] = 2   # number of reconstructive steps
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+
+    def sparsify(self, sparsity, **kwargs):
+        """ Sparfifying using plain peak picking """
+        
+        if self.rep is None:
+            self.rep = self.cort.cor
+        
+        if self.rep is None:
+            raise ValueError("Not computed yet!")
+        
+        self.sp_rep = np.ones(self.rep.shape, bool)
+        alldims = range(len(self.rep.shape))
+        for id in alldims:
+            # compute the diff in the first axis after swaping
+            d = np.diff(np.swapaxes(self.rep, 0, id), axis=0)
+            
+            self.sp_rep = np.swapaxes(self.sp_rep, 0, id)
+            self.sp_rep[:-1,...] &= d < 0
+            self.sp_rep[1:,...] &= d > 0
+            
+            self.sp_rep = np.swapaxes(self.sp_rep, 0, id)
+
+        self.sp_rep = self.sp_rep.astype(int)
 
 class CorticoIHTSketch(CorticoSketch):
     """ Iterative Hard Thresholding on a 4-D corticogram spectrum 

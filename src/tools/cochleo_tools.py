@@ -244,7 +244,7 @@ class Cochleogram(object):
         v5 = np.zeros((n_frames, self.n_chans-1))
         
         # Highest channel
-        print self.coeffs.shape, self.n_chans -1
+#        print self.coeffs.shape, self.n_chans -1
         y2 = coch_filt(self.data, self.coeffs, self.n_chans -1)
     
         y2_h = y2        
@@ -762,6 +762,12 @@ def getopt(dict, optname, defval):
             return defval
         else:
             raise ValueError("Parameter %s has not been transmitted"%optname)
+
+def get_freq_vec(N):
+    
+    gram = getattr(auditory, 'Y5')
+        
+    return (gram.erb_space(N , 180. , 7246.)).astype(int)
 
 def _build_cor(y, **kwargs):
     """ Transcription of aud2cor in NSL Toolbox

@@ -33,19 +33,20 @@ class SketchTest(unittest.TestCase):
         learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
         
         sketches_to_test = [
-                            sketch.KNNSketch(**{'location':learned_base_dir,
-                                                'shuffle':87,
-                                                'n_frames':100000,
-                                                'n_neighbs':1}),
-                            sketch.SWSSketch(),
-                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
-                            sketch.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-                            sketch.CochleoPeaksSketch(),                            
-                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+#                            sketch.KNNSketch(**{'location':learned_base_dir,
+#                                                'shuffle':87,
+#                                                'n_frames':100000,
+#                                                'n_neighbs':1}),
+#                            sketch.SWSSketch(),
+#                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+#                            sketch.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
+#                            sketch.CochleoPeaksSketch(),   
+                            sketch.CorticoPeaksSketch(),                         
+#                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
-                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
+#                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
+#                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
                             ]
         
         # for all sketches, we performe the same testing

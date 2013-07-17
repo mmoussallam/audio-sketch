@@ -7,6 +7,7 @@ are correctly implemented
 @author: M. Moussallam
 '''
 import unittest
+import os
 import sys
 import numpy as np
 sys.path.append('/home/manu/workspace/audio-sketch')
@@ -45,6 +46,8 @@ file_names = os.listdir(audio_files_path)
 fgpt_sketches = [
                  (pydb.STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
                   sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+                 (pydb.CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+                  sketch.CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
                  (pydb.XMDCTBDB('xMdct.db', **{'wall':False}),
                   sketch.XMDCTSparseSketch(**{'scales':[64,512,2048],'n_atoms':100})),                                     
                     ]
@@ -124,7 +127,7 @@ for (fgpthand, sk) in fgpt_sketches:
 #    self.assertEqual(0, estimated_index)
 #    self.assertGreater(5.0, estimated_offset)
     assert estimated_index == 0
-    assert estimated_offset < 5.0
+    assert estimated_offset < 6.0
     
     # Now the last of the test: populate a base of a few dozens musical samples
     populate(sk, fgpthand)

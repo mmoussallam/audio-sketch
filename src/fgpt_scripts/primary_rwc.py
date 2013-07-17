@@ -20,20 +20,22 @@ from tools.fgpt_tools import db_creation, db_test
 
 
 # The RWC subset path
-audio_path = '/sons/rwc/Test'
+audio_path = '/sons/rwc/Learn'
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
 
 file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
 nb_files = len(file_names)
 # define experimental conditions
-set_id = 'RWCTest' # Choose a unique identifier for the dataset considered
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 sparsity = 300
 seg_dur = 5.0
 fs = 16000
 
 
 # Initialize the sketchifier
-sk = sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})
+#sk = sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})
+sk = sketch.CochleoPeaksSketch(**{'fs':fs,'step':512})
+
 sk_id = sk.__class__.__name__[:-6]
 
 # construct a nice name for the DB object to be saved on disk
@@ -41,17 +43,19 @@ db_name = "%s_%s_k%d_%s_%dsec_%dfs.db"%(set_id, sk_id, sparsity, sk.get_sig(),
                                         int(seg_dur), int(fs))
 
 # initialize the fingerprint Handler object
-fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+#fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+#                               load=True,
+#                               persistent=True, **{'wall':False})
+fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
                                load=True,
                                persistent=True, **{'wall':False})
-
 ################# This is a complete experimental run given the setup ############## 
 # create the base:
 db_creation(fgpthandle, sk, sparsity,
             file_names, 
-            force_recompute = True,
+            force_recompute = False,
             seg_duration = seg_dur, resample = fs,
-            files_path = audio_path, debug=False, n_jobs=2)
+            files_path = audio_path, debug=True, n_jobs=4)
 
 
 
@@ -64,6 +68,6 @@ scores = db_test(fgpthandle, sk, sparsity,
                  files_path = audio_path,
                  test_seg_prop = test_proportion,
                  seg_duration = seg_dur, resample =fs,
-                 step = 5.0, tolerance = 5.0, shuffle=True, debug=True)
+                 step = 5.0, tolerance = 7.5, shuffle=True, debug=True)
 
 ################### End of the complete run #####################################
