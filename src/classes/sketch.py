@@ -277,8 +277,8 @@ class XMDCTSparseSketch(AudioSketch):
         # add all the parameters that you want
         self.params = {'scales': [128, 1024, 8192],
                        'nature': 'MDCT',
-                                 'n_atoms': 1000,
-                                 'SRR': 30}
+                         'n_atoms': 1000,
+                         'SRR': 30}
 
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -295,6 +295,7 @@ class XMDCTSparseSketch(AudioSketch):
 
     def _get_dico(self):
         from PyMP.mdct import Dico, LODico
+        from PyMP.mdct.dico import SpreadDico
         from PyMP.wavelet import dico as wavelet_dico
 
         if self.params['nature'] == 'LOMDCT':
@@ -302,6 +303,9 @@ class XMDCTSparseSketch(AudioSketch):
 
         elif self.params['nature'] == 'MDCT':
             mdct_dico = Dico(self.params['scales'])
+        
+        elif self.params['nature'] == 'SpreadMDCT':
+            mdct_dico = SpreadDico(self.params['scales'])
         else:
             raise ValueError("Unrecognized nature %s" % self.params['nature'])
         return mdct_dico
@@ -554,8 +558,8 @@ class CorticoSketch(AudioSketch):
         if sparse:
             cor = self.cort
             # sparse auditory spectrum should already have been computed
-            if self.rec_aud is None:
-                self.rec_aud = cochleo_tools._cor2aud(self.sp_rep, **self.params)
+#            if self.rec_aud is None:
+            self.rec_aud = cochleo_tools._cor2aud(self.sp_rep, **self.params)
             v5 = np.abs(self.rec_aud).T
         else:
             cor = self.cort
@@ -583,13 +587,15 @@ class CorticoSketch(AudioSketch):
             ax = plt.gca()
 
         if sparse:            
-            self.cort.plot_cort(self.sp_rep)
+            self.cort.plot_cort(cor=self.sp_rep)
         else:
             self.cort.plot_cort()
 
-    def fgpt(self):
-        raise NotImplementedError(
-            "NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+    def fgpt(self, sparse=False):
+        """ return the 4-D sparsified representation """
+        if sparse:
+            return self.sp_rep
+        return self.rep
 
     def recompute(self, signal=None, **kwargs):
         ''' recomputing the cochleogram'''
@@ -611,6 +617,8 @@ class CorticoSketch(AudioSketch):
         self.coch = cochleo_tools.Cochleogram(self.orig_signal.data, **self.params)
         self.coch.build_aud()
         self.cort = cochleo_tools.Corticogram(self.coch, **self.params)
+        self.cort.build_cor()
+        self.rep = np.array(self.cort.cor)
 
 class CochleoDumbPeaksSketch(CochleoSketch):
     ''' Sketch based on a sparse peaks in the cochleogram '''
@@ -737,6 +745,15 @@ class CorticoPeaksSketch(CorticoSketch):
             self.sp_rep = np.swapaxes(self.sp_rep, 0, id)
 
         self.sp_rep = self.sp_rep.astype(int)
+        r_indexes = np.flatnonzero(self.sp_rep)        
+        r_values = self.rep.flatten()[r_indexes]
+        inds = np.abs(r_values).argsort()
+        
+        self.sp_rep = np.zeros_like(self.rep.flatten())
+        self.sp_rep[inds[-sparsity:]] = r_values[inds[-sparsity:]]
+        self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
+        # no only keep the k biggest values
+        
 
 class CorticoIHTSketch(CorticoSketch):
     """ Iterative Hard Thresholding on a 4-D corticogram spectrum 

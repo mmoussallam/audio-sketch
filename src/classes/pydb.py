@@ -141,6 +141,8 @@ class FgptHandle(object):
 class STFTPeaksBDB(FgptHandle):
     ''' handling the fingerprints based on a pairing of STFT peaks 
     
+    A key is the triplet (f1, f2, delta_t) the value is the time of occurrence
+    
     Attributes
     ----------
     params : dict
@@ -315,9 +317,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
     
     Most of the methods are the same as STFTPeaksBDB so inheritance is natural
     Only the pairing may be different since the peak zones may not be TF squares
-    
-    A key is now defined by 
-    
+            
     '''    
     
     def __init__(self, dbName, load=False, persistent=None,dbenv=None,
@@ -384,6 +384,51 @@ class CochleoPeaksBDB(STFTPeaksBDB):
                 values.append(t1 + offset)
         return keys, values
     
+
+class CorticoPeaksBDB(FgptHandle):
+    """ 4-D peaks of corticograms used directly as fingerprints 
+    
+    A key is now defined by each peak position in terms of scale x rate x freq x time
+    index. The time of occurrence being the value
+    It is interesting to test whether the frequency information should be discriminative 
+    or not. In the negative case, the frequency should be added to the value.
+    
+    """
+    
+    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
+                 **kwargs):
+        # Call superclass constructor        
+        super(CorticoPeaksBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)
+    
+        self.params = {'delta_t_max':3.0,
+                       'fmax': 8000.0,
+                       'key_total_nbits':32,
+                        'scale_n_bits': 5,
+                        'rate_n_bits': 5,
+                        'freq_n_bits': 10,
+                        'time_n_bits': 12,
+                        'value_total_bits':32,
+                        'file_index_n_bits':20,                        
+                        'time_max':60.0* 20.0,
+                        'wall':True}
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        # Formatting the key - FORMAT 1 : Absolute
+        self.alpha = ceil((self.params['fmax'])/(2**self.params['freq_n_bits']-1))
+
+    def format_key(self, key):
+        """ Format the Key as [f1 , f2, delta_t] """
+        (scale, rate, freq, time) = key
+        return floor((f1 / self.alpha) * 2 ** (self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + floor((delta_t) / self.gamma)
+
+
+    def populate(self, fgpt, params, fileIndex, offset=0):
+        """ retrieve the non zero elements and use them as keys """
+        
+        # The keys are the indexes of the non-zero elements in the 4-D sparsified corticogram
+        indices = np.nonzero(fgpt)
 
 class XMDCTBDB(FgptHandle):
     '''

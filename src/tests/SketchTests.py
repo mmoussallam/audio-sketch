@@ -38,7 +38,7 @@ class SketchTest(unittest.TestCase):
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
 #                            sketch.SWSSketch(),
-#                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            sketch.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
 #                            sketch.CochleoPeaksSketch(),   
                             sketch.CorticoPeaksSketch(),                         
@@ -61,7 +61,7 @@ class SketchTest(unittest.TestCase):
             sk.represent()
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
-            sk.sparsify(1000)
+            sk.sparsify(1000)                    
             
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)

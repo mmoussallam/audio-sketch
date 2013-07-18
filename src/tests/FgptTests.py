@@ -44,12 +44,15 @@ file_names = os.listdir(audio_files_path)
 #self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
 fgpt_sketches = [
-                 (pydb.STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-                  sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-                 (pydb.CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-                  sketch.CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-                 (pydb.XMDCTBDB('xMdct.db', **{'wall':False}),
-                  sketch.XMDCTSparseSketch(**{'scales':[64,512,2048],'n_atoms':100})),                                     
+#                 (pydb.STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+#                  sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+#                 (pydb.CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+#                  sketch.CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+#                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+#                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+#                                              'nature':'LOMDCT'})),         
+                 (pydb.CorticoPeaksBDB('CorticoPeaks.db', **{'wall':False}),
+                  sketch.CorticoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),                            
                     ]
 
 #@mem.cache
@@ -134,7 +137,7 @@ for (fgpthand, sk) in fgpt_sketches:
     
     # and retrieve a segment in the base
     true_file_index = 3
-    true_offset = 7.5
+    true_offset = 11.5
     
     # get the fingerprint 
     true_file_path = op.join(audio_files_path, file_names[true_file_index])

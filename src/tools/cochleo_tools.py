@@ -769,6 +769,24 @@ def get_freq_vec(N):
         
     return (gram.erb_space(N , 180. , 7246.)).astype(int)
 
+def _2DFourier(N, N2, M1, M2, y):
+    """ 2D fourier transform of a time-frequency representation y """
+    
+    # first fourier transform (w.r.t. frequency axis)
+    Y = np.zeros((N2, M1), complex)
+    
+    for n in range(N):
+        R1 = fft(y[n, :], n=int(M2))
+        Y[n, :] = R1[:M1]
+    
+    # second fourier transform (w.r.t. temporal axis)
+    for m in range(int(M1)):
+        R1 = fft(Y[:N, m], n=N2)
+        Y[:, m] = R1
+    
+    return Y
+    
+
 def _build_cor(y, **kwargs):
     """ Transcription of aud2cor in NSL Toolbox
         See the original Matlab code for info """
@@ -791,17 +809,7 @@ def _build_cor(y, **kwargs):
     M1 = int(2**np.ceil(np.log2(M)))
     M2 = M1*2
     
-    # first fourier transform (w.r.t. frequency axis)
-    Y = np.zeros((N2, M1), complex)
-    
-    for n in range(N):
-        R1 = fft(y[n, :], n=int(M2));
-        Y[n, :] = R1[:M1];
-    
-    # second fourier transform (w.r.t. temporal axis)
-    for m in range(int(M1)):
-        R1 = fft(Y[:N, m], n=N2);
-        Y[:, m] = R1;
+    Y = _2DFourier(N, N2, M1, M2, y)
     
     SRF = 24                 # channel per octave (fixed)    
 
@@ -820,17 +828,21 @@ def _build_cor(y, **kwargs):
     z  = np.zeros((N+2*dN, M+2*dM), complex)
     cr = np.zeros((K2, K1*2, N+2*dN, M+2*dM), complex)
     
+    HRlist = [gen_cort(rv[rdx], N1, STF, [rdx+1+BP, K1+BP*2]) for rdx in range(K1)]
+    HSlist = [gen_corf(sv[sdx], M1, SRF, [sdx+1+BP, K2+BP*2]) for sdx in range(K2)]
+    
     # loop on rates
     for rdx in range(K1):    
-        fc_rt = rv[rdx]
-        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2])
+#        fc_rt = rv[rdx]
+#        HR = gen_cort(fc_rt, N1, STF, [rdx+1+BP, K1+BP*2])        
+        HR = HRlist[rdx]
         # 
         for sgn in [1, -1]:            
             # rate filtering modification
             if sgn > 0:
                 HR = np.concatenate((HR, np.zeros((N1, ), complex)))    # SSB -> DSB
             else:
-                Clist = [HR[0]]
+                Clist = [HRlist[rdx][0]]
 #                Clist = [0.0]
                 Clist.extend(np.conj(np.flipud(HR[1:N2])))
                 HR = np.array(Clist)            
@@ -838,23 +850,29 @@ def _build_cor(y, **kwargs):
             
             # first inverse fft (w.r.t. time axis)
             z1= np.zeros((N2,M1), complex); 
-            for m in range(M1): 
-                z1[:,m]= HR*Y[:,m];
+            z1 = HR.reshape((len(HR),1)) * Y
+#            for m in range(M1): 
+#                z1[:,m]= HR*Y[:,m];
             
             z1= ifft(z1, axis=0);
             z1= z1[ndx1,:]
             
+            # second inverse fft (w.r.t frequency axis
+            invs = [] 
             for sdx in range(K2):
                 # scale filtering
-                fc_sc = sv[sdx]
-                HS = gen_corf(fc_sc, M1, SRF, [sdx+1+BP, K2+BP*2])
+#                fc_sc = sv[sdx]
+#                HS = gen_corf(fc_sc, M1, SRF, [sdx+1+BP, K2+BP*2])
                 
                 # second inverse fft (w.r.t frequency axis)
-                for n in ndx:
-                    R1 = ifft( (z1[n, :]*HS), n=M2)
-                    z[n, :] = R1[mdx1]
-                            
-                cr[sdx, rdx+(sgn==1)*K1, :, :] = z;
+#                R1 = ifft( (z1[ndx, :]*HSlist[sdx]), n=M2, axis=1)
+#                print R1.shape, z.shape
+#                z = R1[:, mdx1]
+#                for n in ndx:
+#                    R1 = ifft( (z1[n, :]*HS), n=M2)
+#                    z[n, :] = R1[mdx1]
+#                ifft( (z1[ndx, :]*HSlist[sdx]), n=M2, axis=1)[:, mdx1]
+                cr[sdx, rdx+(sgn==1)*K1, :, :] = ifft( (z1[ndx, :]*HSlist[sdx]), n=M2, axis=1)[:, mdx1]
  
     return cr
 
