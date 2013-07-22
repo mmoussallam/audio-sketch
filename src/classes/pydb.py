@@ -258,7 +258,7 @@ class STFTPeaksBDB(FgptHandle):
         t_target_width = 3*params['t_width']
         freq_step = float(params['fs'])/float(params['scale'])
         time_step = float(params['step'])/float(params['fs'])
-        print "Params : ",f_target_width,t_target_width,freq_step,time_step
+#        print "Params : ",f_target_width,t_target_width,freq_step,time_step
         # then for each of them look in the target zone for other
         for pIdx in range(len(peak_indexes[0])):
             peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
@@ -398,7 +398,8 @@ class CorticoPeaksBDB(FgptHandle):
     def __init__(self, dbName, load=False, persistent=None,dbenv=None,
                  **kwargs):
         # Call superclass constructor        
-        super(CorticoPeaksBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)
+        super(CorticoPeaksBDB, self).__init__(dbName, load=load,
+                                              persistent=persistent,dbenv=dbenv)
     
         self.params = {'delta_t_max':3.0,
                        'fmax': 8000.0,

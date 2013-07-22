@@ -38,10 +38,10 @@ class SketchTest(unittest.TestCase):
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
 #                            sketch.SWSSketch(),
-                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+#                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            sketch.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
 #                            sketch.CochleoPeaksSketch(),   
-                            sketch.CorticoPeaksSketch(),                         
+                            sketch.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),                         
 #                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),

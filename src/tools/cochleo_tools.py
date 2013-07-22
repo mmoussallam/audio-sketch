@@ -589,25 +589,50 @@ class Corticogram(object):
         self.rec = _cor2aud(cor, **self.params) ** order
         return self.rec
 
-    def plot_cort(self, cor=None, scale=True, Rate=True):
+    def plot_cort(self,fig=None, cor=None, scale=True, Rate=True):
         """ gives a summarized view of a Scale-Rate evolution in time/frequency"""
+        
         if cor is None:
             if self.cor is None:
                 self.build_cor()
             cor = self.cor
         
-        rs_view = np.abs(np.squeeze(np.mean(np.mean(cor,axis=3),axis=2)))
-        (K2,K1) = rs_view.shape
-        X, Y = np.meshgrid(self.params['sv'], self.params['rv'])
+        if fig is None:
+            fig = plt.figure()
         
+#        rs_view = np.abs(np.squeeze(np.mean(np.mean(cor,axis=3),axis=2)))
+#        (K2,K1) = rs_view.shape
+#        X, Y = np.meshgrid(self.params['sv'], self.params['rv'])
         
-        plt.figure()
-        plt.subplot(121)
-        plt.pcolor(np.fliplr(-X), Y, rs_view[:,:K1/2],                   
-                   cmap=cm.bone_r)
-        plt.subplot(122)
-        plt.pcolor(X,Y,rs_view[:,K1/2:],
-                   cmap=cm.bone_r)
+        y = self.params['sv']
+        x = []
+        
+        for ind,r in enumerate(self.params['rv']):
+            x.append(r)
+            x.insert(0,-r)
+            
+        for i in range(cor.shape[0]):
+            for j in range(cor.shape[1]):                
+                plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
+                if j < cor.shape[1]/2:
+                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
+                else:
+                    plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r)
+                plt.xticks([])
+                plt.yticks([])
+                plt.subplot(cor.shape[0], cor.shape[1], j+1)
+                plt.title(str(x[j]))
+            plt.subplot(cor.shape[0], cor.shape[1], (i* cor.shape[1]) + 1)
+            plt.ylabel(str(self.params['sv'][i]))
+#        plt.show()
+        
+#        plt.figure()
+#        plt.subplot(121)
+#        plt.pcolor(np.fliplr(-X), Y, rs_view[:,:K1/2],                   
+#                   cmap=cm.bone_r)
+#        plt.subplot(122)
+#        plt.pcolor(X,Y,rs_view[:,K1/2:],
+#                   cmap=cm.bone_r)
 
 def coch_filt(data, coeffs, chan_idx):
     p = int(coeffs[0, chan_idx].real)    # order of ARMA filter

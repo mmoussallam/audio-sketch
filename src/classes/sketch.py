@@ -582,16 +582,13 @@ class CorticoSketch(AudioSketch):
     def represent(self, fig=None, sparse=False):
         if fig is None:
             fig = plt.figure()
-            ax = fig.add_subplot(111)
-        else:
-            ax = plt.gca()
 
         if sparse:            
-            self.cort.plot_cort(cor=self.sp_rep)
+            self.cort.plot_cort(fig= fig, cor=self.sp_rep)
         else:
-            self.cort.plot_cort()
+            self.cort.plot_cort(fig= fig)
 
-    def fgpt(self, sparse=False):
+    def fgpt(self, sparse=True):
         """ return the 4-D sparsified representation """
         if sparse:
             return self.sp_rep
@@ -749,8 +746,8 @@ class CorticoPeaksSketch(CorticoSketch):
         r_values = self.rep.flatten()[r_indexes]
         inds = np.abs(r_values).argsort()
         
-        self.sp_rep = np.zeros_like(self.rep.flatten())
-        self.sp_rep[inds[-sparsity:]] = r_values[inds[-sparsity:]]
+        self.sp_rep = np.zeros_like(self.rep.flatten(), complex)
+        self.sp_rep[r_indexes[inds[-sparsity:]]] = r_values[inds[-sparsity:]]
         self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
         # no only keep the k biggest values
         

@@ -153,7 +153,7 @@ def db_test(fgpthandle,
     print "Final Scores of %1.2f - %1.2f - %1.2f" %((countokok / countall,
                                                           countokbad / countall,
                                                           countbadbad / countall))
-    return countokok / countall, countokbad / countall
+    return countokok / countall, countokbad / countall, countbadbad / countall
 
 
 def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx):        
