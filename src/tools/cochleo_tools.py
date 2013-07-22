@@ -605,24 +605,24 @@ class Corticogram(object):
 #        X, Y = np.meshgrid(self.params['sv'], self.params['rv'])
         
         y = self.params['sv']
-        x = []
-        
-        for ind,r in enumerate(self.params['rv']):
-            x.append(r)
-            x.insert(0,-r)
+#        x = []
+#        
+#        for ind,r in enumerate(self.params['rv']):
+#            x.append(r)
+#            x.insert(0,-r)
             
         for i in range(cor.shape[0]):
-            for j in range(cor.shape[1]):                
-                plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
-                if j < cor.shape[1]/2:
-                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
-                else:
-                    plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r)
+            for j in range(cor.shape[1]/2):                
+                plt.subplot( cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + j+1)
+#                if j < cor.shape[1]/2:                    
+#                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
+#                else:
+                plt.imshow(np.abs(cor[i,j + cor.shape[1]/2,:,:]).T, origin='lower',cmap=cm.bone_r)
                 plt.xticks([])
                 plt.yticks([])
-                plt.subplot(cor.shape[0], cor.shape[1], j+1)
-                plt.title(str(x[j]))
-            plt.subplot(cor.shape[0], cor.shape[1], (i* cor.shape[1]) + 1)
+                plt.subplot(cor.shape[0], cor.shape[1]/2, j+1)
+                plt.title(str(self.params['rv'][j]))
+            plt.subplot(cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + 1)
             plt.ylabel(str(self.params['sv'][i]))
 #        plt.show()
         

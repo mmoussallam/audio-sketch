@@ -54,11 +54,19 @@ def gen_harmo_sig(freqs, L, fs):
     x = np.arange(0.0,float(L)/float(fs),1.0/float(fs))
     data = np.zeros(x.shape)
     for f in freqs:
-        data += np.sin(2.0*np.pi*f0*x)
+        data += np.sin(2.0*np.pi*f*x)
     return Signal(data, fs, normalize=True, mono=True)
 
 
-sig = gen_harmo_sig([440.0, 512.0, 880.0], L, fs)
+def gen_chirp_sig(freqs, L, fs, octave=2):
+    x = np.arange(0.0,float(L)/float(fs),1.0/float(fs))
+    data = np.zeros(x.shape)
+    for fbase in freqs:
+        f = np.linspace(fbase, fbase*(2**octave), L)
+        data += np.sin(2.0*np.pi*f*x)
+    return Signal(data, fs, normalize=True, mono=True)
+
+sig = gen_chirp_sig([440.0, 512.0], L, fs)
 sk = sketch.CorticoIHTSketch()
 sk.recompute(sig)
 sk.represent()
