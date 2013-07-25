@@ -589,7 +589,7 @@ class Corticogram(object):
         self.rec = _cor2aud(cor, **self.params) ** order
         return self.rec
 
-    def plot_cort(self,fig=None, cor=None, scale=True, Rate=True):
+    def plot_cort(self,fig=None, cor=None, scale=True, Rate=True, binary=False):
         """ gives a summarized view of a Scale-Rate evolution in time/frequency"""
         
         if cor is None:
@@ -617,7 +617,10 @@ class Corticogram(object):
 #                if j < cor.shape[1]/2:                    
 #                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
 #                else:
-                plt.imshow(np.abs(cor[i,j + cor.shape[1]/2,:,:]).T, origin='lower',cmap=cm.bone_r)
+                if not binary: 
+                    plt.imshow(np.abs(cor[i,j + cor.shape[1]/2,:,:]).T, origin='lower',cmap=cm.bone_r)
+                else:
+                    plt.spy(cor[i,j + cor.shape[1]/2,:,:].T)
                 plt.xticks([])
                 plt.yticks([])
                 plt.subplot(cor.shape[0], cor.shape[1]/2, j+1)

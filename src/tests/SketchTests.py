@@ -9,7 +9,12 @@ sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
 
-from classes import sketch
+import classes.sketches.base as base
+import classes.sketches.bench as bench
+import classes.sketches.misc as misc
+import classes.sketches.cochleo as cochleo
+import classes.sketches.cortico as cortico
+
 import matplotlib.pyplot as plt
 plt.switch_backend('Agg')
 audio_test_file = '/sons/jingles/panzani.wav'
@@ -18,7 +23,7 @@ class SketchTest(unittest.TestCase):
 
     def runTest(self):
                 
-        abstractSketch = sketch.AudioSketch()
+        abstractSketch = base.AudioSketch()
         print abstractSketch
         self.assertRaises(NotImplementedError,abstractSketch.represent)
         self.assertRaises(NotImplementedError,abstractSketch.recompute)
@@ -33,20 +38,29 @@ class SketchTest(unittest.TestCase):
         learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
         
         sketches_to_test = [
-#                            sketch.KNNSketch(**{'location':learned_base_dir,
+#                            misc.KNNSketch(**{'location':learned_base_dir,
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
-#                            sketch.SWSSketch(),
-#                            sketch.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
-#                            sketch.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-#                            sketch.CochleoPeaksSketch(),   
-                            sketch.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),                         
-#                            sketch.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+#                            misc.SWSSketch(),
+#                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+#                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
+#                            cochleo.CochleoPeaksSketch(),   
+#                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
+                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+                                                             'sub_slice':(0,6),'n_inv_iter':10}),
+                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+                                                             'sub_slice':(0,11),'n_inv_iter':10}),
+                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+                                                             'sub_slice':(4,6),'n_inv_iter':10}),
+                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+                                                             'sub_slice':(4,11),'n_inv_iter':10})
+                                                     
+#                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
-#                            sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-#                            sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
+#                            bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
+#                            bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
                             ]
         
         # for all sketches, we performe the same testing
@@ -61,19 +75,22 @@ class SketchTest(unittest.TestCase):
             sk.represent()
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
-            sk.sparsify(1000)                    
+            sk.sparsify(10000)                    
             
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)
             plt.title(sk.__class__)
             
+            # Remove the original signal
+            sk.orig_signal = None 
+            
             print "%s : Synthesize the sketch"%sk.__class__
             synth_sig = sk.synthesize(sparse=True)
             
             plt.figure()
-            plt.subplot(211)
-            plt.plot(sk.orig_signal.data)
-            plt.subplot(212)
+#            plt.subplot(211)
+#            plt.plot(sk.orig_signal.data)
+#            plt.subplot(212)
             plt.plot(synth_sig.data)
             
             
