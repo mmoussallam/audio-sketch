@@ -19,7 +19,7 @@ audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Han
 #audio_test_file = '/sons/tests/Bach_prelude_4s.wav'
 
 sig = Signal(audio_test_file, mono=True, normalize=True)
-#sig.downsample(8000)
+sig.downsample(8000)
 
 #gram = cochleo_tools.cochleogram(sig.data)
 #
@@ -36,23 +36,26 @@ filter_coeffs_path = '/home/manu/workspace/recup_angelique/Sketches/sketches/nsl
 #L = 8192
 data = sig.data
 import time
-gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+params = {'shift':-1,
+          'dec':8,
+          'frmlen':8}
+gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True, **params)
 gram.build_aud()
 
 #t = time.clock()
 init_rec_data = gram.init_inverse()
-#rec_data = gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)
+rec_data = gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)
 #print "Elapsed :", time.clock() -t
 
 cProfile.runctx('gram.invert(init_vec = init_rec_data, nb_iter=10, display=False)',
                 globals(), locals())
 
-#rec_sig = Signal(rec_data, sig.fs)
+rec_sig = Signal(rec_data, sig.fs, normalize=True)
 #rec_sig.write('/sons/resynth_aud_python_10.wav')
 #plt.figure()
 #plt.plot(rec_data)
 #plt.show()
-
+rec_sig.play()
 def debug_invert():
     # initialize
     dec = 8.0

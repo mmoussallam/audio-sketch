@@ -29,7 +29,7 @@ class staticMethodTest(unittest.TestCase):
         
         sig = Signal(audio_test_file, mono=True, normalize=True)                
         
-        gram = cochleo_tools.cochleogram(sig.data)
+        gram = cochleo_tools.Cochleogram(sig.data)
         
         gram._toy2()
         rec_data = gram.invert_y2()
@@ -52,12 +52,12 @@ class CochleoTest(unittest.TestCase):
         
         # test bad call
         sig = Signal(audio_test_file)
-        gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+        gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
         self.assertRaises(NotImplementedError, gram.build_aud)
         
         
         sig = Signal(audio_test_file, mono=True, normalize=True)                
-        gram = cochleo_tools.cochleogram(sig.data, load_coch_filt=True)
+        gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
         
         gram.build_aud()
         gram.plot_aud()
@@ -94,6 +94,37 @@ class CochleoTest(unittest.TestCase):
 #        aud, duration = cochleo_tools.auditory_spectrum(audio_test_file)
 
 #        cochleo_tools.plot_auditory(aud, duration)
+
+class CorticoTest(unittest.TestCase):
+    
+    def runTest(self):
+        """ Creating and manipulating a corticogram """
+        sig = Signal(audio_test_file, mono=True, normalize=True)
+        
+        # convert to auditory
+        gram = cochleo_tools.Cochleogram(sig.data, load_coch_filt=True)
+        gram.build_aud()
+        # Cortico-gram : 2D complex transform of y5
+        # we need to define y = gram.y5, para1= vector pf parameters, rv = rate vector, sv = scale vector
+        y = np.array(gram.y5).T
+        
+        cort = cochleo_tools.Corticogram(gram)
+        cort.build_cor()
+        cort.invert()
+        
+        rec_aud = cort.rec
+        
+        plt.figure()
+        plt.subplot(121)
+        plt.imshow(np.abs(rec_aud))
+        plt.subplot(122)
+        plt.imshow(np.abs(y))
+        plt.show()
+        rec_aud *= np.max(y)/np.max(rec_aud)
+        print np.linalg.norm(np.abs(y) - np.abs(rec_aud),'fro')
+        
+        self.assertTrue(np.linalg.norm(np.abs(y) - np.abs(rec_aud),'fro') < 0.8 * np.linalg.norm(y) )
+    
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

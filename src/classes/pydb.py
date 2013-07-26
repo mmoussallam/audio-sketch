@@ -15,6 +15,7 @@ from math import floor, ceil, log
 import struct
 import PyMP
 from PyMP.approx import Approx
+from tools import cochleo_tools
 
 
 class FgptHandle(object):
@@ -32,20 +33,23 @@ class FgptHandle(object):
         the db object
     persistent :  bool
         a boolean indicating whether the db is to be kept or destroy 
-        when object id deleted
+        when object is deleted
     
     '''    
     
     
     def __init__(self, dbName, 
                  load=False,                 
-                 persistent=True):
+                 persistent=True, dbenv=None):
         """ Common Constructor """
         if os.path.exists(dbName) and not load:
             os.remove(dbName)
         self.db_name = dbName
-        self.dbObj = db.DB()
-        
+        if dbenv is not None:
+            self.dbObj = db.DB(dbenv)
+        else:
+            self.dbObj = db.DB()
+        self.opened = False
         # allow multiple key entries
         # TODO :  mettre en DB_DUPSORT
         self.dbObj.set_flags(db.DB_DUP | db.DB_DUPSORT)
@@ -53,12 +57,17 @@ class FgptHandle(object):
         if not load:
             try:
                 self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
+                self.opened = True
             except:                
                 raise IOError('Failed to create %s ' % self.db_name)
         else:
             if self.db_name is None:
                 raise ValueError('No Database name provided')
-            self.dbObj.open(dbName, dbtype=db.DB_HASH)
+            if not os.path.exists(self.db_name):
+                self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
+            else:
+                self.dbObj.open(dbName, dbtype=db.DB_HASH)
+            self.opened = True
             print "Loaded DB:", dbName
     
         # keep in mind if the db is to be kept or destroy
@@ -66,7 +75,8 @@ class FgptHandle(object):
         # cursor object : might get instantiated later
         self.cursor = None
     
-    def __del__(self):
+    def __del__(self):        
+        self.dbObj.sync()
         self.dbObj.close()
         if not self.persistent:
             if os.path.exists(self.db_name):
@@ -117,19 +127,32 @@ class FgptHandle(object):
         estFileI = maxI % nbCandidates
         return estFileI, OffsetI
 
+#    def close(self):
+#        """ safely close the db object """
+#        if self.opened:
+#            self.dbObj.close()
+#            self.opened = False
+#    
+#    def reopen(self):
+#        if not self.opened:
+#            self.dbObj.open(self.db_name, dbtype=db.DB_HASH)
+#            self.opened = True
+
 class STFTPeaksBDB(FgptHandle):
     ''' handling the fingerprints based on a pairing of STFT peaks 
+    
+    A key is the triplet (f1, f2, delta_t) the value is the time of occurrence
     
     Attributes
     ----------
     params : dict
         a dictionary of parameters among which: *fmax*, *key_total_nbits*, *value_total_bits*
     '''    
-    def __init__(self, dbName, load=False, persistent=None,
+    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
                  **kwargs):
         # Call superclass constructor
         # Call superclass constructor
-        super(STFTPeaksBDB, self).__init__(dbName, load=load, persistent=persistent)
+        super(STFTPeaksBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)
         
         # default parameters
         self.params = {'delta_t_max':3.0,
@@ -141,7 +164,8 @@ class STFTPeaksBDB(FgptHandle):
                         'value_total_bits':32,
                         'file_index_n_bits':20,
                         'time_n_bits':12,
-                        'time_max':60.0* 20.0}
+                        'time_max':60.0* 20.0,
+                        'wall':True}
         
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -149,9 +173,11 @@ class STFTPeaksBDB(FgptHandle):
         # Formatting the key - FORMAT 1 : Absolute
         self.alpha = ceil((self.params['fmax'])/(2**self.params['f1_n_bits']-1))
         self.beta = ceil((self.params['fmax'])/(2**self.params['f2_n_bits']-1))
-        self.gamma = ceil(self.params['delta_t_max']/(2**self.params['dt_n_bits']-1))
-    
-    
+        
+        # BUGFIX remove the ceiling function cause it causes all values to be zeroes
+        self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
+#        self.gamma = ceil(self.params['delta_t_max']/(2**self.params['dt_n_bits']-1))        
+#        print self.alpha, self.beta, self.gamma, self.params['f1_n_bits'], self.params['f2_n_bits'], self.params['dt_n_bits']
 
     def format_value(self, fileIndex, t1):
         """ Format the value according to the parameters """
@@ -187,7 +213,8 @@ class STFTPeaksBDB(FgptHandle):
             try:
                 self.dbObj.put(Kbin, Bbin)
             except db.DBKeyExistError:
-                print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
+                if self.params['wall']:
+                    print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
     
     
     def get(self, key):
@@ -195,8 +222,9 @@ class STFTPeaksBDB(FgptHandle):
         Retrieve the values in the database associated with this key
         '''
         Bin_key = self.format_key(key)
+#        print key, Bin_key
         Kbin = struct.pack('<I4', Bin_key)
-
+        
         # retrieving in db
         # since multiple data can be retrieved for one key, use a cursor
         if self.cursor is None:
@@ -224,6 +252,7 @@ class STFTPeaksBDB(FgptHandle):
         given the parameters '''
         keys = []
         values = []
+        
         peak_indexes = np.nonzero(sparse_stft[0,:,:])
         f_target_width = 3*params['f_width']
         t_target_width = 3*params['t_width']
@@ -251,7 +280,8 @@ class STFTPeaksBDB(FgptHandle):
         """ populate by creating pairs of peaks """
         # get all non zero elements            
         keys, values = self._build_pairs(fgpt, params, offset)
-        
+        if self.params['wall']:
+            print " %d key/value pairs"%len(keys)
         Set = set(zip(keys, values))
         self.add(list(Set), file_index)
         
@@ -272,15 +302,134 @@ class STFTPeaksBDB(FgptHandle):
         # the corresponding value in histogram by one.
         results = map(self.get , keys)
         # or maybe we can just sum all the values in the desired dimension?
-        
+#        print keys[1:10]
 #        print results
-        for keyIdx in range(len(keys)):
+        for keyIdx in range(len(keys)): 
+#            if len(results[keyIdx][0])>1:
+#                print  results[keyIdx]          
             histogram[results[keyIdx]] +=1            
 
         # voting for best candidate
         return histogram
     
+class CochleoPeaksBDB(STFTPeaksBDB):
+    ''' handling the fingerprints based on a pairing of Cochleogram peaks 
+    
+    Most of the methods are the same as STFTPeaksBDB so inheritance is natural
+    Only the pairing may be different since the peak zones may not be TF squares
+            
+    '''    
+    
+    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
+                 **kwargs):
+        # Call superclass constructor        
+        super(CochleoPeaksBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)
+    
+        self.params = {'delta_t_max':3.0,
+                       'fmax': 8000.0,
+                       'key_total_nbits':32,
+                        'f1_n_bits': 10,
+                        'f2_n_bits': 10,
+                        'dt_n_bits': 10,
+                        'value_total_bits':32,
+                        'file_index_n_bits':20,
+                        'time_n_bits':12,
+                        'time_max':60.0* 20.0,
+                        'wall':True}
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        # Formatting the key - FORMAT 1 : Absolute
+        self.alpha = ceil((self.params['fmax'])/(2**self.params['f1_n_bits']-1))
+        self.beta = ceil((self.params['fmax'])/(2**self.params['f2_n_bits']-1))
+        
+        # BUGFIX remove the ceiling function cause it causes all values to be zeroes
+        self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
+    
+    def _build_pairs(self, sparse_stft, params, offset=0):
+        ''' internal routine to build key/value pairs from sparse STFT
+        given the parameters '''
+        keys = []
+        values = []
+        
+        peak_indexes = np.nonzero(sparse_stft[:,:])
+        
+        f_target_width = 3*params['f_width']
+        t_target_width = 3*params['t_width']            
+        
+#        freq_step = float(params['fs'])/float(params['scale'])
+        time_step = float(params['step'])/float(params['fs'])
+                
+        f_vec = cochleo_tools.get_freq_vec(sparse_stft.shape[0])
+        
+#        print "Params : ",f_target_width,t_target_width,time_step
+        # then for each of them look in the target zone for other
+        for pIdx in range(len(peak_indexes[0])):
+            peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])            
+            target_points_i, target_points_j = np.nonzero(sparse_stft[
+                                                        peak_ind[0]: peak_ind[0]+f_target_width,
+                                                        peak_ind[1]: peak_ind[1]+t_target_width])
+            
+            
+            # now we can build a pair of peaks , and thus a key
+            for i in range(1,len(target_points_i)):
+#                print f_vec[peak_ind[0]],f_vec.shape , peak_ind[0], target_points_i[i]
+                f1 = f_vec[peak_ind[0]]
+                f2 = f_vec[peak_ind[0]+target_points_i[i]]
+                t1 = float(peak_ind[1]) *time_step
+                delta_t = float(target_points_j[i]) *time_step
+#                print (f1, f2, delta_t) , t1
+                keys.append((f1, f2, delta_t))
+                values.append(t1 + offset)
+        return keys, values
+    
 
+class CorticoPeaksBDB(FgptHandle):
+    """ 4-D peaks of corticograms used directly as fingerprints 
+    
+    A key is now defined by each peak position in terms of scale x rate x freq x time
+    index. The time of occurrence being the value
+    It is interesting to test whether the frequency information should be discriminative 
+    or not. In the negative case, the frequency should be added to the value.
+    
+    """
+    
+    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
+                 **kwargs):
+        # Call superclass constructor        
+        super(CorticoPeaksBDB, self).__init__(dbName, load=load,
+                                              persistent=persistent,dbenv=dbenv)
+    
+        self.params = {'delta_t_max':3.0,
+                       'fmax': 8000.0,
+                       'key_total_nbits':32,
+                        'scale_n_bits': 5,
+                        'rate_n_bits': 5,
+                        'freq_n_bits': 10,
+                        'time_n_bits': 12,
+                        'value_total_bits':32,
+                        'file_index_n_bits':20,                        
+                        'time_max':60.0* 20.0,
+                        'wall':True}
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        
+        # Formatting the key - FORMAT 1 : Absolute
+        self.alpha = ceil((self.params['fmax'])/(2**self.params['freq_n_bits']-1))
+
+    def format_key(self, key):
+        """ Format the Key as [f1 , f2, delta_t] """
+        (scale, rate, freq, time) = key
+        return floor((f1 / self.alpha) * 2 ** (self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + floor((delta_t) / self.gamma)
+
+
+    def populate(self, fgpt, params, fileIndex, offset=0):
+        """ retrieve the non zero elements and use them as keys """
+        
+        # The keys are the indexes of the non-zero elements in the 4-D sparsified corticogram
+        indices = np.nonzero(fgpt)
 
 class XMDCTBDB(FgptHandle):
     '''
@@ -291,19 +440,20 @@ class XMDCTBDB(FgptHandle):
 #        self.dbObj.close();
 
     def __init__(self, dbName, load=False,                
-                 persistent=True, **kwargs):
+                 persistent=True,dbenv=None, **kwargs):
         '''
         Constructor
         '''
         # Call superclass constructor
-        super(XMDCTBDB, self).__init__(dbName, load=load, persistent=persistent)
+        super(XMDCTBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)
                     
         # DEFAULT VALUES
         self.params = {'total_n_bits':16, # total number of bits allowed for storing the key in base
                        'fmax': 8000.0,
                        'freq_n_bits':14,
                        'time_max':600.0, # 10 minutes is the biggest allowed time interval
-                       'time_res':1.0}
+                       'time_res':1.0,
+                       'wall':True}
         
         # populating optional parameters
         for karg in kwargs:
@@ -353,7 +503,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
             try:
                 self.dbObj.put(Kbin, Bbin)
             except db.DBKeyExistError:
-                print "Warning existing Key/Value pair " + str(key) + ' ' + str(value)
+                if self.params['wall']:
+                    print "Warning existing Key/Value pair " + str(key) + ' ' + str(value)
 
 
     def get(self, Key, const=0):        
@@ -417,7 +568,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 continue
             S.append(log(atom.length, 2))
             F.append(atom.reduced_frequency * fgpt.fs)
-            T.append((float(offset + atom.time_position) / float(fgpt.fs)))
+            T.append(( offset + (float(atom.time_position) / float(fgpt.fs))))
 
         # look for duplicates and removes them: construct a set of zipped elements
 #        print zip(F , T)
