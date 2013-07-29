@@ -42,20 +42,20 @@ class SketchTest(unittest.TestCase):
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
-#                            misc.SWSSketch(),
+                            misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoPeaksSketch(),   
 #                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
-                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-                                                             'sub_slice':(0,6),'n_inv_iter':10}),
-                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-                                                             'sub_slice':(0,11),'n_inv_iter':10}),
-                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-                                                             'sub_slice':(4,6),'n_inv_iter':10}),
-                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-                                                             'sub_slice':(4,11),'n_inv_iter':10})
-                                                     
+#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+#                                                             'sub_slice':(0,6),'n_inv_iter':10}),
+#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+#                                                             'sub_slice':(0,11),'n_inv_iter':10}),
+#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+#                                                             'sub_slice':(4,6),'n_inv_iter':10}),
+#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+#                                                             'sub_slice':(4,11),'n_inv_iter':10})
+#                                                     
 #                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),

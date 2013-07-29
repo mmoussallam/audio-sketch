@@ -63,6 +63,11 @@ plt.figure()
 plt.stem(bin_nnz,[1]*len(bin_nnz))
 plt.show()
 
+## Ok so let us load a previously computed cortiocogram
+#save_path = '/media/manu/TOURO/corticos/rwc-g-m01_1.wav_seg_0.npy'
+#loaded_cort = np.load(save_path)
+#sk.rep = loaded_cort
+
 #sig = Signal(sk.coch.invert(rec_auditory, sk.orig_signal.data, 
 #                              nb_iter=sk.params['n_inv_iter'], display=True),
 #            sk.orig_signal.fs, normalize=True)
@@ -88,7 +93,7 @@ sk.orig_signal = None
 #plt.show()
 
 sk.params['n_inv_iter'] = 10
-synth_sig_w = sk.synthesize(sparse=True)
+synth_sig_w = sk.synthesize(sparse=False)
 
 synth_sig_w.normalize()
 

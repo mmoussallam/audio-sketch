@@ -25,7 +25,7 @@ class SWSSketch(AudioSketch):
         
 
     def get_sig(self):
-        strret = '_nformants-%d' % (self.params['n_formants'])
+        strret = '_nformants-%d_step_%1.3f' % (self.params['n_formants'], self.params['time_step'])
         return strret
 
     def synthesize(self, sparse=False):
@@ -98,8 +98,8 @@ class SWSSketch(AudioSketch):
             # interprete as a ratio
             sparsity *= self.rep.length
 
-        new_tstep = float(
-            int(sparsity) / self.params['n_formants']) / float(self.rep.fs)
+        new_tstep = float(self.rep.get_duration() * self.params['n_formants'])/float(sparsity)
+#            int(sparsity) * self.params['n_formants']) / float(self.rep.fs)
         new_wsize = new_tstep * 2
         print "New time step of %1.3f seconds" % new_tstep
         self._extract_sws(self.current_sig, {'time_step':

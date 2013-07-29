@@ -22,8 +22,8 @@ class CochleoSketch(AudioSketch):
             self.params[key] = kwargs[key]
 
         if original_sig is not None:
-            self.orig_signal = original_sig
-            self.recompute()
+#            self.orig_signal = original_sig
+            self.recompute(original_sig)
         
 
     def get_sig(self):
@@ -170,8 +170,10 @@ class CochleoPeaksSketch(CochleoSketch):
         # naive implementation: cut in non-overlapping zone and get the max
         (n_bins, n_frames) = self.rep.shape
         (f, t) = (self.params['f_width'], self.params['t_width'])
+
         for x_ind in range(0, (n_frames / t) * t, t):
             for y_ind in range(0, (n_bins / f) * f, f):
+                
                 rect_data = self.rep[y_ind:y_ind + f, x_ind:x_ind + t]
 
                 if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):

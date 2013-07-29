@@ -14,7 +14,10 @@ sys.path.append('/home/manu/workspace/audio-sketch')
 sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
 
-from classes import pydb, sketch
+#from classes import pydb, sketch
+from classes.pydb import *
+from classes.sketches.cortico import CorticoSubPeaksSketch
+from classes.sketches.cochleo import CochleoPeaksSketch
 from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
@@ -51,8 +54,9 @@ fgpt_sketches = [
 #                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
 #                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
 #                                              'nature':'LOMDCT'})),         
-                 (pydb.CorticoPeaksBDB('CorticoPeaks.db', **{'wall':False}),
-                  sketch.CorticoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),                            
+                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
+#                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),                            
                     ]
 
 #@mem.cache
@@ -139,6 +143,8 @@ for (fgpthand, sk) in fgpt_sketches:
     true_file_index = 3
     true_offset = 11.5
     
+    
+    
     # get the fingerprint 
     true_file_path = op.join(audio_files_path, file_names[true_file_index])
     true_l_sig = LongSignal(true_file_path,  frame_duration=true_offset)
@@ -155,7 +161,8 @@ for (fgpthand, sk) in fgpt_sketches:
     assert estimated_index == true_file_index
     assert np.abs(estimated_offset - true_offset) <= 5
 
-    
+    plt.plot(hist.T)
+    plt.show()
 
 #if __name__ == "__main__":
 #    

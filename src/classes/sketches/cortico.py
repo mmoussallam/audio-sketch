@@ -46,22 +46,24 @@ class CorticoSketch(AudioSketch):
     def synthesize(self, sparse=False):
         ''' synthesize the sparse rep or the original rep?'''
         if sparse:
-            cor = self.cort
+#            cor = self.cort
             # sparse auditory spectrum should already have been computed
 #            if self.rec_aud is None:
             self.rec_aud = cochleo_tools._cor2aud(self.sp_rep, **self.params)
             v5 = np.abs(self.rec_aud).T
         else:
-            cor = self.cort
+            
             # inverting the corticogram
-            v5 = np.abs(cor.invert()).T                    
+            v5 = np.abs(self.rep.invert()).T                    
 
 
         # then do 20 iteration (TODO pass as a parameter)
         if self.orig_signal is not None:
             return Signal(
-            self.coch.invert(v5, self.orig_signal.data, nb_iter=self.params['n_inv_iter'], display=False),
-            self.orig_signal.fs)
+                          self.coch.invert(v5, self.orig_signal.data, 
+                             nb_iter=self.params['n_inv_iter'], 
+                             display=False),
+                          self.orig_signal.fs)
         else:
             # initialize invert        
             init_vec = self.coch.init_inverse(v5)
@@ -205,7 +207,7 @@ class CorticoSubPeaksSketch(CorticoSketch):
         # target sub graph
         (scaleIdx, rateIdx) = self.params['sub_slice']
         sub_rep = self.rep[scaleIdx,rateIdx,:,:].T
-        print sub_rep.shape
+#        print sub_rep.shape
         # naive implementation: cut in non-overlapping zone and get the max
         (n_bins, n_frames) = sub_rep.shape
         
@@ -214,16 +216,29 @@ class CorticoSubPeaksSketch(CorticoSketch):
         
         (f, t) = (self.params['f_width'], self.params['t_width'])
         
+#        print range(0, (n_frames / t) * t, t)
+#        print range(0, (n_bins / f) * f, f)
+        
         for x_ind in range(0, (n_frames / t) * t, t):
             for y_ind in range(0, (n_bins / f) * f, f):
                 rect_data = sub_rep[y_ind:y_ind + f, x_ind:x_ind + t]
-
-                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
-                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
-                    # add the peak to the sparse rep
-                    self.sp_rep[scaleIdx,rateIdx,x_ind + t_index,
-                                y_ind + f_index] = rect_data[f_index, t_index]
+                
+                
+#                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
+                f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                # add the peak to the sparse rep
+                self.sp_rep[scaleIdx,rateIdx,x_ind + t_index,
+                            y_ind + f_index] = rect_data[f_index, t_index]
         # no only keep the k biggest values
+
+    def fgpt(self, sparse=True):
+        """ return the 2-D sparsified representation (only the sub-scale/rate plot)"""
+        (scaleIdx, rateIdx) = self.params['sub_slice']
+        if sparse:
+            return np.abs(self.sp_rep[scaleIdx,rateIdx,:,:]).T
+        
+        else:
+            raise ValueError('Not intended for non sparse fpgt')
 
 #    def represent(self, fig=None, sparse=False):
 #        if fig is None:

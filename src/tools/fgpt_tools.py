@@ -14,9 +14,28 @@ from joblib import Parallel, delayed
 
 from PyMP import signals
 from classes import pydb, sketch
+from classes.sketches.base import AudioSketch
 
 audio_files_path = '/sons/rwc/rwc-g-m01/'
 default_db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
+
+
+def _process_seg_test(sk, sparsity,  resample, pad, l_sig, segIdx):
+    
+    sig_local = l_sig.get_sub_signal(segIdx, 1, 
+        mono=True, 
+        normalize=True, 
+        pad=pad)
+# run the decomposition
+    if resample > 0:
+        sig_local.resample(resample)
+# computing the local fingerprint
+    sk.recompute(sig_local)
+    sk.sparsify(sparsity)
+    fgpt = sk.fgpt()
+# now ask the handle what it estimates
+    
+    return (fgpt, segIdx)
 
 def db_test(fgpthandle,
             sk,
@@ -29,7 +48,8 @@ def db_test(fgpthandle,
             step=2.5,
             tolerance = 5.0,
             shuffle=True,
-            debug=False):
+            debug=False,
+            n_jobs=3):
     ''' Lets try to identify random segments from the files 
     using the pre-calculated database
     
@@ -80,6 +100,7 @@ def db_test(fgpthandle,
     countall = 0.0     # total number of segments
     t0 = time.time()
     i = 0
+    failures = []
     for fileIndex in sortedIndexes:
         i +=1
         # get file as a PyMP.LongSignal object
@@ -96,56 +117,39 @@ def db_test(fgpthandle,
             np.random.shuffle(segment_indexes)
         max_seg = int(test_seg_prop * l_sig.n_seg)
         
-        # Loop on random segments
-        for segIdx in segment_indexes[:max_seg]:
+        # Loop on random segments*              
+        fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
+                                                                   pad,l_sig, segIdx)
+                                    for segIdx in segment_indexes[:max_seg-1])
+        # Again ugly hack to counter the effects of joblib recopy of sketch object
+        fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[max_seg-1]))
+        
+        for fgpt, segIdx in fgpts:
             countall += 1.0
-            true_offset = segIdx*step
-            sig_local = l_sig.get_sub_signal(segIdx,
-                                             1,
-                                             mono=True,
-                                             normalize=True,
-                                             pad = pad)
-            # run the decomposition    
-            if resample > 0:
-                sig_local.resample(resample)
-
-            # computing the local fingerprint 
-            sk.recompute(sig_local)
-            sk.sparsify(sparsity)
-            fgpt = sk.fgpt()
-
-            # now ask the handle what it estimates
-            estimated_index, estimated_offset = fgpthandle.get_candidate(fgpt,sk.params,
-                                                                       nbCandidates=n_files,
-                                                                       smooth=1)
-#            # DEBUGGING
-#            hist  = fgpthandle.retrieve(fgpt,sk.params, nbCandidates=n_files)
-#            import matplotlib.pyplot as plt
-#            print len(fgpt)
-#            plt.figure()
-#            plt.plot(hist)
-#            plt.show()
-            
+            true_offset = segIdx * step
+            estimated_index, estimated_offset = fgpthandle.get_candidate(fgpt, sk.params, nbCandidates=n_files, 
+            smooth=1)
             if (fileIndex == estimated_index):
-                if debug : print "Correct answer, file %d"%fileIndex,
+                if debug:
+                    print "Correct answer, file %d" % fileIndex
                 if np.abs(estimated_offset - true_offset) < tolerance:
                     countokok += 1.0
-                    if debug : print "Correct offset %d"%int(estimated_offset)
-                else:                    
+                    if debug:
+                        print "Correct offset %d" % int(estimated_offset)
+                else:
                     countokbad += 1.0
-                    if debug:  print "Wrong offset %d instead of %d"%(int(estimated_offset),
-                                                                      int(segIdx*step))
-                         
+                    if debug:
+                        print "Wrong offset %d instead of %d" % (int(estimated_offset), int(segIdx * step))
             else:
                 countbadbad += 1.0
+                failures.append((file_names[fileIndex], true_offset, file_names[estimated_index], estimated_offset))
                 if debug:
-                    print " Wrong answer File %d offset %d instead of File %d offset %d" %(estimated_index,
-                                                                                           int(estimated_offset),
-                                                                                           fileIndex,int(segIdx*step))
-
-        estTime = (float(
-            (time.time() - t0)) / float(fileIndex + 1)) * (n_files - fileIndex)
-        print 'Elapsed ' + str(time.time() - t0) + ' sec . Estimated : ' + str(estTime / 60) + ' minutes'
+                    print " Wrong answer File %d offset %d instead of File %d offset %d" % (estimated_index, 
+                        int(estimated_offset), 
+                        fileIndex, int(segIdx * step))
+        
+        estTime = (float( (time.time() - t0)) / float(i)) * (n_files - i)
+        print 'Elapsed %2.2f  min . Estimated : %2.2f min'%((time.time() - t0)/60.0,(estTime / 60.0))
 
         print "Global Scores of %1.2f - %1.2f - %1.2f" %((countokok / countall,
                                                           countokbad / countall,
@@ -153,7 +157,7 @@ def db_test(fgpthandle,
     print "Final Scores of %1.2f - %1.2f - %1.2f" %((countokok / countall,
                                                           countokbad / countall,
                                                           countbadbad / countall))
-    return countokok / countall, countokbad / countall, countbadbad / countall
+    return (countokok / countall, countokbad / countall, countbadbad / countall), failures
 
 
 def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx):        
@@ -252,8 +256,8 @@ def db_creation(fgpthandle,
     if not isinstance(fgpthandle, pydb.FgptHandle):
         raise TypeError("First argument should be a pydb.FgptHandle but is a %s"%fgpthandle.__class__)
     
-    if not isinstance(sk, sketch.AudioSketch):
-        raise TypeError("Second argument should be a sketch.AudioSketch but is a %s"%fgpthandle.__class__)
+    if not isinstance(sk, AudioSketch):
+        raise TypeError("Second argument should be a AudioSketch but is a %s"%sk.__class__)
     
     # Checking the name parameter
     if db_name is None:
