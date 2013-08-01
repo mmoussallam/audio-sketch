@@ -14,7 +14,7 @@ db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
 
 file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
 nb_files = len(file_names)
-
+nb_segs = 0
 
 # dataset length in seconds
 dur = []
@@ -24,8 +24,8 @@ for fileIndex in range(nb_files):
         mono=True, 
         Noverlap=0)
     dur.append(l_sig.n_seg * 5.0)
-
+    nb_segs += l_sig.n_seg
 tot = np.sum(dur)
 hours = int(np.floor(tot / 3600))
 minutes =  int(np.floor((tot - (hours* 3600))/60))
-print "Dataset last %d hours and %d minutes"%(hours, minutes)
+print "Dataset last %d hours and %d minutes or %d segments of 5 secs"%(hours, minutes, nb_segs)

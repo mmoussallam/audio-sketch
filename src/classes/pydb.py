@@ -16,7 +16,9 @@ import struct
 import PyMP
 from PyMP.approx import Approx
 from tools import cochleo_tools
-
+from numpy.core.numeric import dtype
+from joblib import Parallel, delayed
+import itertools
 
 class FgptHandle(object):
     ''' Super class for Fingerprint 
@@ -42,8 +44,15 @@ class FgptHandle(object):
                  load=False,                 
                  persistent=True, dbenv=None):
         """ Common Constructor """
-        if os.path.exists(dbName) and not load:
-            os.remove(dbName)
+        
+        if dbName is None:
+            #Ok so we want a pure RAM-based DB, let's do it
+            self.pureRAM = True
+            load = False
+            persistent = False
+        else:
+            if os.path.exists(dbName) and not load:
+                os.remove(dbName)
         self.db_name = dbName
         if dbenv is not None:
             self.dbObj = db.DB(dbenv)
@@ -60,9 +69,11 @@ class FgptHandle(object):
                 self.opened = True
             except:                
                 raise IOError('Failed to create %s ' % self.db_name)
+            print "Created DB:", dbName
         else:
             if self.db_name is None:
-                raise ValueError('No Database name provided')
+                raise ValueError('No Database name provided for loading')
+                
             if not os.path.exists(self.db_name):
                 self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
             else:
@@ -276,14 +287,18 @@ class STFTPeaksBDB(FgptHandle):
                 values.append(t1 + offset)
         return keys, values
     
-    def populate(self, fgpt, params, file_index, offset=0):
+    def populate(self, fgpt, params, file_index, offset=0, debug=False, max_pairs=None):
         """ populate by creating pairs of peaks """
         # get all non zero elements            
         keys, values = self._build_pairs(fgpt, params, offset)
         if self.params['wall']:
             print " %d key/value pairs"%len(keys)
-        Set = set(zip(keys, values))
-        self.add(list(Set), file_index)
+        Set = list(set(zip(keys, values)))
+        
+        if max_pairs is not None:
+            Set = Set[:max_pairs]
+#            print "Limiting to %d key/value pairs"%len(Set)
+        self.add(Set, file_index)
         
     def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0):
         '''
@@ -361,7 +376,8 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         t_target_width = 3*params['t_width']            
         
 #        freq_step = float(params['fs'])/float(params['scale'])
-        time_step = float(params['step'])/float(params['fs'])
+        time_step = float(round(params['frmlen'] * 2 ** (4 + params['shift'])))/float(params['fs'])
+#        time_step = float(params['step'])/float(params['fs'])
                 
         f_vec = cochleo_tools.get_freq_vec(sparse_stft.shape[0])
         
@@ -401,53 +417,118 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         return keys, values
     
             
+#def _sub_populate(dblist, scaleIdx, fgpt, params, fileIndex, offset, debug):    
+#    for rateIdx in range(6):
+#        print (scaleIdx,rateIdx)
         
 
-class CorticoPeaksBDB(FgptHandle):
+class CorticoIndepSubPeaksBDB(FgptHandle):
     """ 4-D peaks of corticograms used directly as fingerprints 
     
-    A key is now defined by each peak position in terms of scale x rate x freq x time
-    index. The time of occurrence being the value
-    It is interesting to test whether the frequency information should be discriminative 
-    or not. In the negative case, the frequency should be added to the value.
-    
+    To use with a CorticoIndepSubPeaksSketch sketchifier:
+    - for each sub representaion (scale/rate plot) we handle an independant database
+    So this is rather a FgptHandle Collection
+
     """
     
-    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
+    def __init__(self, dbNameroot, handletype = CochleoPeaksBDB,
+                 load=False, persistent=None,dbenv=None,
                  **kwargs):
-        # Call superclass constructor        
-        super(CorticoPeaksBDB, self).__init__(dbName, load=load,
-                                              persistent=persistent,dbenv=dbenv)
-    
+        """ DO NOT Call superclass constructor since we need to instantiate a 
+        collection of handles
+        
+        parameters
+        ----------
+            dbNameroot : root name of the bdb
+            handletype : the type of BDB
+        """
+        
         self.params = {'delta_t_max':3.0,
-                       'fmax': 8000.0,
-                       'key_total_nbits':32,
-                        'scale_n_bits': 5,
-                        'rate_n_bits': 5,
-                        'freq_n_bits': 10,
-                        'time_n_bits': 12,
-                        'value_total_bits':32,
-                        'file_index_n_bits':20,                        
-                        'time_max':60.0* 20.0,
+                       'fmax': 8000.0,                       
+                        'n_sv': 5,
+                        'n_rv': 6,
+                        'n_jobs':4,
+                        'max_pairs':None,                        
                         'wall':True}
         
         for key in kwargs:
             self.params[key] = kwargs[key]
         
-        # Formatting the key - FORMAT 1 : Absolute
-        self.alpha = ceil((self.params['fmax'])/(2**self.params['freq_n_bits']-1))
-
-    def format_key(self, key):
-        """ Format the Key as [f1 , f2, delta_t] """
-        (scale, rate, freq, time) = key
-        return floor((f1 / self.alpha) * 2 ** (self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + floor((delta_t) / self.gamma)
-
-
-    def populate(self, fgpt, params, fileIndex, offset=0):
-        """ retrieve the non zero elements and use them as keys """
+        if dbenv is None:
+            dbenv = db.DBEnv(0)
         
-        # The keys are the indexes of the non-zero elements in the 4-D sparsified corticogram
-        indices = np.nonzero(fgpt)
+        if dbNameroot is None:
+            #Ok so we want a pure RAM-based DB, let's do it
+            self.pureRAM = True
+            load = False
+            persistent = False
+
+        self.db_root = dbNameroot
+        self.db_name = self.db_root
+        # We use 2D arrays for consistency, list could have been done also
+        self.db_names = np.empty((self.params['n_sv'],self.params['n_rv']), dtype=object)
+        self.dbObj = np.empty((self.params['n_sv'],self.params['n_rv']), dtype=object)
+        
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):        
+                 # For each scale/rate pair create a database
+                self.db_names[scaleIdx,rateIdx] = "%s_%d_%d.db"%(self.db_root, scaleIdx, rateIdx)                
+                self.dbObj[scaleIdx,rateIdx] = handletype(self.db_names[scaleIdx,rateIdx],
+                                                           load=load, persistent=persistent,
+                                                           dbenv=dbenv,
+                                                           **kwargs)                
+        
+    
+    def __del__(self):    
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):    
+                del self.dbObj[scaleIdx,rateIdx]
+
+
+    def __repr__(self):
+        return """ %s handler (based on Berkeley DB): %s""" % (self.__class__.__name__,
+                                                               self.db_name)    
+
+#    def sub_populate(self, coords, fgpt, params, fileIndex, offset, debug):
+#        (scaleIdx,rateIdx) = coords
+#        print coords
+#        self.dbObj[scaleIdx,rateIdx].populate(fgpt[scaleIdx,self.params['n_rv']+rateIdx,:,:],
+#                                                      params, fileIndex,
+#                                                      offset=offset, debug=debug)
+
+    def populate(self, fgpt, params, fileIndex, offset=0,debug=False,max_pairs=None):
+        """ populate each sub db independantly """        
+        
+        assert fgpt.shape[:2] == (self.params['n_sv'],2*self.params['n_rv'])
+#        # assign for each incoming fingerprint to the corresponding db
+#        Parallel(n_jobs=self.params['n_jobs'])(delayed(_sub_populate)([],scaleIdx, fgpt, params, fileIndex, offset, debug)
+#                                                    for scaleIdx in range(self.params['n_sv']))
+#        
+
+        if max_pairs is None:
+            max_pairs = self.params['max_pairs']
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):
+                self.dbObj[scaleIdx,rateIdx].populate(fgpt[scaleIdx,self.params['n_rv']+rateIdx,:,:],
+                                                      params, fileIndex,
+                                                      offset=offset, debug=debug,max_pairs=max_pairs)
+    
+    def retrieve(self, fgpt, params,  offset=0, nbCandidates=10, precision=1.0):
+        """ retrieve  """        
+        assert fgpt.shape[:2] == (self.params['n_sv'],2*self.params['n_rv'])
+        # assign for each incoming fingerprint to the corresponding db
+        
+        histograms = []
+        
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):
+                histograms.append(self.dbObj[scaleIdx,rateIdx].retrieve(fgpt[scaleIdx,
+                                                                             self.params['n_rv']+rateIdx,:,:],
+                                                                        params,
+                                                                        offset=offset,
+                                                                        nbCandidates=nbCandidates,
+                                                                        precision=precision))
+        return histograms
 
 class XMDCTBDB(FgptHandle):
     '''

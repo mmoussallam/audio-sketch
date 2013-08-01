@@ -2,7 +2,7 @@
 classes.sketches.corticosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
-
+import os.path as op
 from base import *
 from tools import  cochleo_tools
 
@@ -18,7 +18,8 @@ class CorticoSketch(AudioSketch):
         self.params = {'n_bands': 64,
                        'shift':0,                       
                        'rv':[1, 2, 4, 8, 16, 32],
-                       'sv':[0.5, 1, 2, 4, 8]}
+                       'sv':[0.5, 1, 2, 4, 8],
+                       'pre_comp':None}
         self.orig_signal = None
         self.rec_aud = None
         for key in kwargs:
@@ -38,9 +39,8 @@ class CorticoSketch(AudioSketch):
 #            raise TypeError("Object %s is neither a cochleogram nor a signal"%str(obj))
 
     def get_sig(self):
-        strret = '_bands-%d_%drates_%scales' % (self.params['n_bands'],
-                                                len(self.params['rv']),
-                                                len(self.params['sv']))
+        strret = '%drates_%scales' % (len(self.params['rv']),
+                                      len(self.params['sv']))
         return strret
 
     def synthesize(self, sparse=False):
@@ -90,6 +90,16 @@ class CorticoSketch(AudioSketch):
         ''' recomputing the cochleogram'''
         for key in kwargs:
             self.params[key] = kwargs[key]
+        
+        if self.params['pre_comp'] is not None:
+            in_name = "%s_seg_%d.%s"%(kwargs['sig_name'], kwargs['segIdx'], 'npy')
+            target = op.join(self.params['pre_comp'],in_name)
+#            print "Looking for %s"%target
+            if op.exists(target):
+                self.rep = np.load(target)                
+                return
+            else:
+                print " --- not Found"
         
         if signal is not None:
             if isinstance(signal, str):
@@ -249,6 +259,67 @@ class CorticoSubPeaksSketch(CorticoSketch):
 #        else:
 #            self.cort.plot_cort(fig= fig)
 
+class CorticoIndepSubPeaksSketch(CorticoSketch):
+    """ Independently sparsify in each of the sub representation (scale/rate plot)"""
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(CorticoIndepSubPeaksSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+                
+        self.params['n_inv_iter'] = 2   # number of reconstructive steps        
+        
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+
+    def sparsify(self, sparsity, **kwargs):
+        """ Sparfifying using plain peak picking """
+        
+        if self.rep is None:
+            self.rep = self.cort.cor
+        
+        if self.rep is None:
+            raise ValueError("Not computed yet!")
+
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= np.sum(self.rep.shape)
+#        else:
+            # otherwise the sparsity argument take over and we divide in
+            # the desired number of regions (preserving the bin/frame ratio)
+#            print self.rep.shape[1:]
+#            print self.params['f_width'], self.params['t_width']
+
+        self.sp_rep = np.zeros_like(self.rep)
+        
+        # For each target sub graph
+        for scaleIdx in range(self.sp_rep.shape[0]):
+            for rateIdx in range(self.sp_rep.shape[1]/2, self.sp_rep.shape[1]):        
+                                
+                
+                sub_rep = self.rep[scaleIdx,rateIdx,:,:].T        
+                # naive implementation: cut in non-overlapping zone and get the max
+                (n_bins, n_frames) = sub_rep.shape
+                
+                self.params['f_width'] = int(n_bins / np.sqrt(sparsity))
+                self.params['t_width'] = int(n_frames / np.sqrt(sparsity))
+                
+                (f, t) = (self.params['f_width'], self.params['t_width'])
+                
+                for x_ind in range(0, (n_frames / t) * t, t):
+                    for y_ind in range(0, (n_bins / f) * f, f):
+                        rect_data = sub_rep[y_ind:y_ind + f, x_ind:x_ind + t]
+                        
+                        f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                        # add the peak to the sparse rep
+                        self.sp_rep[scaleIdx,rateIdx,x_ind + t_index,
+                                    y_ind + f_index] = rect_data[f_index, t_index]
+                # no only keep the k biggest values
+        
 class CorticoIHTSketch(CorticoSketch):
     """ Iterative Hard Thresholding on a 4-D corticogram spectrum 
     

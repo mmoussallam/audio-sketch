@@ -16,8 +16,8 @@ sys.path.append('/home/manu/workspace/meeg_denoise')
 
 #from classes import pydb, sketch
 from classes.pydb import *
-from classes.sketches.cortico import CorticoSubPeaksSketch
-from classes.sketches.cochleo import CochleoPeaksSketch
+from classes.sketches.cortico import *
+from classes.sketches.cochleo import *
 from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
@@ -54,9 +54,11 @@ fgpt_sketches = [
 #                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
 #                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
 #                                              'nature':'LOMDCT'})),         
-                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
+#                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
 #                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),                            
+#                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),
+                    (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
+                     CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
                     ]
 
 #@mem.cache
@@ -119,7 +121,7 @@ for (fgpthand, sk) in fgpt_sketches:
     hist = fgpthand.retrieve(fgpt, params, nbCandidates=2)
 #    self.assertIsNotNone(hist)
     assert hist is not None
-    
+    print hist.shape
     print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
                                                           np.max(hist[:,1]))
     

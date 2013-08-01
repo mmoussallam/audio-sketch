@@ -42,10 +42,11 @@ class SketchTest(unittest.TestCase):
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
-                            misc.SWSSketch(),
+#                            misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-#                            cochleo.CochleoPeaksSketch(),   
+#                            cochleo.CochleoPeaksSketch(),
+                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),   
 #                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(0,6),'n_inv_iter':10}),
@@ -75,11 +76,11 @@ class SketchTest(unittest.TestCase):
             sk.represent()
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
-            sk.sparsify(10000)                    
+            sk.sparsify(1000)                    
             
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)
-            plt.title(sk.__class__)
+#            plt.title(sk.__class__)
             
             # Remove the original signal
             sk.orig_signal = None 

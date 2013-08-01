@@ -21,28 +21,28 @@ from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
 
-single_test_file1 = '/sons/sqam/voicemale.wav'
+single_test_file1 = '/sons/jingles/panzani.wav'
 
 sk = SWSSketch()
 sk.recompute(single_test_file1)
 
-sk.sparsify(3000)
-sk.represent(sparse=True)
-
-synth3000 = sk.synthesize(sparse=True)
-
-sk.sparsify(300)   
-sk.represent(sparse=True)
-synth300 = sk.synthesize(sparse=True)
+#sk.sparsify(3000)
+#sk.represent(sparse=True)
+#
+#synth3000 = sk.synthesize(sparse=True)
+#
+#sk.sparsify(300)   
+#sk.represent(sparse=True)
+#synth300 = sk.synthesize(sparse=True)
 
 sk.sparsify(30)   
 sk.represent(sparse=True)
 synth30 = sk.synthesize(sparse=True)
 
-sk.params['n_formants']=5
-sk.sparsify(30000)   
-sk.represent(sparse=True)
-synth30000 = sk.synthesize(sparse=True)
+#sk.params['n_formants']=5
+#sk.sparsify(30000)   
+#sk.represent(sparse=True)
+#synth30000 = sk.synthesize(sparse=True)
 
 plt.show()
 #x_vec = np.arange(0.0,sk.orig_signal.get_duration(),sk.orig_signal.get_duration()/float(A.shape[0]))

@@ -7,6 +7,7 @@ import os.path as op
 import bsddb.db as db
 import cProfile
 from classes import pydb, sketch
+from classes.sketches import cochleo
 from tools.fgpt_tools import db_creation, db_test
 
 audio_path = '/sons/rwc/Learn'
@@ -20,7 +21,7 @@ sparsity = 200
 seg_dur = 5.0
 fs = 16000
 
-sk = sketch.CochleoPeaksSketch(**{'fs':fs,'step':512})
+sk = cochleo.CochleoPeaksSketch(**{'fs':fs,'step':512})
 sk_id = sk.__class__.__name__[:-6]
 
 # construct a nice name for the DB object to be saved on disk
@@ -34,11 +35,17 @@ db_name = "%s_%s_k%d_%s_%dsec_%dfs.db"%(set_id, sk_id, sparsity, sk.get_sig(),
 
 # before anything happens, define the DB environment 
 env = db.DBEnv()
+#env.remove("")
+env.set_cachesize(0,2*1024*1024,0)
 env.open(None, db.DB_CREATE | db.DB_INIT_MPOOL)
 
-fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+print env.get_cachesize()
+
+fgpthandle = pydb.CochleoPeaksBDB(None,
                                load=True,
-                               persistent=True, dbenv=env, **{'wall':False})
+                               persistent=False, dbenv=env, **{'wall':False})
 
 commandStr =  'db_creation(fgpthandle, sk, sparsity, file_names[:2], force_recompute = True, seg_duration = seg_dur, resample = fs,files_path = audio_path, debug=True, n_jobs=3)'
 cProfile.runctx(commandStr, globals(), locals())
+env.remove("")
+env.close()

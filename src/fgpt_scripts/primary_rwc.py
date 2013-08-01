@@ -9,7 +9,8 @@ import os
 import os.path as op
 import time
 from scipy.io import savemat
-from classes import pydb, sketch
+from classes import pydb
+from classes.sketches.cortico import *
 from tools.fgpt_tools import db_creation, db_test
 
 # define a pair FgptHandle/Sketch 
@@ -32,31 +33,37 @@ nb_files = len(file_names)
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 sparsity = 300
 seg_dur = 5.0
-fs = 16000
+fs = 8000
 
 
 # Initialize the sketchifier
-sk = sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})
+#sk = sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = sketch.CochleoPeaksSketch(**{'fs':fs,'step':512})
+sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,'shift':0,'fac':-2,'BP':1})
 
 sk_id = sk.__class__.__name__[:-6]
 
 # construct a nice name for the DB object to be saved on disk
-db_name = "%s_%s_k%d_%s_%dsec_%dfs.db"%(set_id, sk_id, sparsity, sk.get_sig(),
+db_name = "%s_%s_k%d_%s_%dsec_%dfs"%(set_id, sk_id, sparsity, sk.get_sig(),
                                         int(seg_dur), int(fs))
+#db_name = "%s_%s_k%d_%s_%dsec_%dfs.db"%(set_id, sk_id, sparsity, sk.get_sig(),
+#                                        int(seg_dur), int(fs))
+
 
 # initialize the fingerprint Handler object
-fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-                               load=True,
-                               persistent=True, **{'wall':False})
+#fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+#                               load=True,
+#                               persistent=True, **{'wall':False})
 #fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
 #                               load=True,
 #                               persistent=True, **{'wall':False})
+fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
+                                           load=True, persistent=True ,**{'wall':True})
 ################# This is a complete experimental run given the setup ############## 
 # create the base:
 db_creation(fgpthandle, sk, sparsity,
             file_names, 
-            force_recompute = False,
+            force_recompute = True,
             seg_duration = seg_dur, resample = fs,
             files_path = audio_path, debug=True, n_jobs=4)
 

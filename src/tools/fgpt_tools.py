@@ -160,7 +160,7 @@ def db_test(fgpthandle,
     return (countokok / countall, countokbad / countall, countbadbad / countall), failures
 
 
-def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx):        
+def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, filename):        
     
     sig_local = l_sig.get_sub_signal(segIdx, 1, mono=True, 
         normalize=True, 
@@ -168,11 +168,11 @@ def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx):
 # run the decomposition
     if resample > 0:
         sig_local.resample(resample)
-    sk.recompute(sig_local)
+    sk.recompute(sig_local, **{'segIdx':segIdx,'sig_name':filename})
     sk.sparsify(sparsity)
     
     if debug:
-        print "Populating database with offset " + str(segIdx * step)
+        print "Populating database with offset %d " + str(segIdx * step)
     return sk.fgpt()
 
 def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
@@ -181,27 +181,27 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
     l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]), frame_duration=seg_duration, 
         mono=True, 
         Noverlap=(1.0 - float(step) / float(seg_duration)))
-    if debug:
-        print "Loaded file %s - with %d segments of %1.1f seconds" % (file_names[fileIndex], l_sig.n_seg, 
+#    if debug:
+    print "Loaded file %s - with %d segments of %1.1f seconds" % (file_names[fileIndex], l_sig.n_seg, 
             seg_duration)
     
     if n_jobs >1:
         # Loop on segments :  Sparsifying all of them
-        fgpt = Parallel(n_jobs=n_jobs)(delayed(_process_seg)(sk, sparsity, resample, step, debug, pad, l_sig, segIdx)
+        fgpt = Parallel(n_jobs=n_jobs)(delayed(_process_seg)(sk, sparsity, resample, step, debug, pad, l_sig, segIdx, file_names[fileIndex])
                                     for segIdx in range(l_sig.n_seg -1))
         
         # ugly hack: do the last segment without parallel so that the sketch object
         # is correctly modified
-        fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig, l_sig.n_seg-1))
+        fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig, l_sig.n_seg-1,file_names[fileIndex]))
 
     else:
         fgpt = []
         for segIdx in range(l_sig.n_seg):
-            fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx))
+            fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, file_names[fileIndex]))
 
     # Cannot parallelized this part though ... because of disk access
     for segIdx in range(l_sig.n_seg):
-        fgpthandle.populate(fgpt[segIdx], sk.params, fileIndex, offset=segIdx * step)
+        fgpthandle.populate(fgpt[segIdx], sk.params, fileIndex, offset=segIdx * step, debug=debug)
     
     estTime = (float((time.time() - t0)) / float(fileIndex + 1)) * (n_files - fileIndex)
     print 'Elapsed %2.2f seconds Estimated : %2.1f minutes' % ((time.time() - t0), (estTime / 60))
@@ -277,7 +277,7 @@ def db_creation(fgpthandle,
     
     # erase existing .db file if it already exists
     print db_name
-    if op.exists(db_name) and not force_recompute: 
+    if db_name is not None and op.exists(db_name) and not force_recompute: 
         print "Base already computed"
         return
     
@@ -287,7 +287,6 @@ def db_creation(fgpthandle,
         _process_file(fgpthandle, sk, sparsity, file_names,
                       seg_duration, resample, step, files_path,
                       debug, n_files, pad, t0, fileIndex, n_jobs)
-
 
 
 def xmdctfgpt_expe(file_names, n_atoms, scales,
