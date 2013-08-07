@@ -1,4 +1,8 @@
 '''
+fgpt_scripts.many_sparsities_cortico  -  Created on Aug 5, 2013
+@author: M. Moussallam
+'''
+'''
 fgpt_scripts.many_sparsities  -  Created on Jul 30, 2013
 @author: M. Moussallam
 
@@ -12,7 +16,7 @@ from classes.sketches.bench import *
 from classes.sketches.cochleo import *
 from classes.sketches.cortico import *
 from classes import pydb
-from tools.fgpt_tools import db_creation, db_test
+from tools.fgpt_tools import db_creation, db_test, db_test_cortico
 
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
 import bsddb.db as db
@@ -34,7 +38,7 @@ file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
 nb_files = len(file_names)
 # define experimental conditions
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
-sparsities = [100,50,30,10]
+sparsities = [100,50,20,10,5,4]
 seg_dur = 5.0
 fs = 8000
 
@@ -45,8 +49,10 @@ sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs})
 sk_id = sk.__class__.__name__[:-6]
 
-test = True
 
+
+test = True
+learn= False
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
     db_name = "%s_%s_k%d_%s_%dsec_%dfs/"%(set_id, sk_id, sparsity, sk.get_sig(),
@@ -54,7 +60,8 @@ for sparsity in sparsities:
         
     # initialize the fingerprint Handler object
     fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
-                                              load=True,persistent=True,dbenv=env,
+                                              load=True, persistent=True, dbenv=env,
+                                              rd_only=not learn,
                                                **{'wall':False,'max_pairs':500})
 #    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
 #                                   load=True,
@@ -64,11 +71,12 @@ for sparsity in sparsities:
 #                                   persistent=True, **{'wall':True})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
-#    db_creation(fgpthandle, sk, sparsity,
-#                file_names[1:], 
-#                force_recompute = False,
-#                seg_duration = seg_dur, resample = fs,
-#                files_path = audio_path, debug=False, n_jobs=1)
+    if learn:
+        db_creation(fgpthandle, sk, sparsity,
+                file_names[1:], 
+                force_recompute = True,
+                seg_duration = seg_dur, resample = fs,
+                files_path = audio_path, debug=False, n_jobs=1)
     
     
     # run a fingerprinting experiment
@@ -76,19 +84,20 @@ for sparsity in sparsities:
     
     if test:
         tstart = time.time()
-        scores, failures = db_test(fgpthandle, sk, sparsity,
-                         file_names, 
+        scores = db_test_cortico(fgpthandle, sk, sparsity,
+                         file_names[1:], 
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = 5.0, tolerance = 7.5, shuffle=True, debug=False,n_jobs=4)
+                         step = 5.0, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results
         score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
                                                 int(seg_dur), int(fs), int(100.0*test_proportion))
         
-        stats =  os.stat(op.join(db_path, db_name))
+        
+        stats =  fgpthandle.get_db_sizes()
         savemat(op.join(score_path,score_name), {'score':scores, 'time':ttest,
-                                                 'size':stats.st_size,'failures': failures})
+                                                 'size':stats})
         

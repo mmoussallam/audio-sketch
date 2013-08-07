@@ -160,6 +160,105 @@ def db_test(fgpthandle,
     return (countokok / countall, countokbad / countall, countbadbad / countall), failures
 
 
+def db_test_cortico(fgpthandle,
+            sk,
+            sparsity,
+            file_names,
+            files_path = '',            
+            test_seg_prop = 0.5,
+            seg_duration=5.0,
+            resample = -1,
+            step=2.5,
+            tolerance = 5.0,
+            shuffle=True,
+            debug=False,
+            n_jobs=3,
+            n_files=None):
+    ''' Same as above but evaluation on each of the sub plots
+    
+    '''
+    if test_seg_prop <= 0 or test_seg_prop >1:
+        raise ValueError("Unproper test_seg_prop parameter should be between 0 and 1 but got %1.1f"%test_seg_prop)
+
+    if n_files is None:
+        n_files = len(file_names)
+    
+    if fgpthandle.params.has_key('pad'):
+        pad = fgpthandle.params['pad']
+    else:
+        pad = False
+    
+    # change the order of the files for testing"
+    sortedIndexes = range(len(file_names))
+    if shuffle:
+        np.random.shuffle(sortedIndexes)
+
+    (n_scales, n_rates) = fgpthandle.params['n_sv'], fgpthandle.params['n_rv']
+    countokok = np.zeros((n_scales, n_rates))    # number of correctly retrieved segments
+    countokbad = np.zeros((n_scales, n_rates))   # number of segments retrieve in correct file but misplaced
+    countbadbad = np.zeros((n_scales, n_rates))  # number of segments in the wrong file
+    countall = 0.0     # total number of segments
+    t0 = time.time()
+    i = 0
+#    failures = []
+    for fileIndex in sortedIndexes:
+        i +=1
+        # get file as a PyMP.LongSignal object
+        l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]),
+                             frame_duration = seg_duration, 
+                             mono = True,
+                             Noverlap = (1.0 - float(step)/float(seg_duration)))
+
+        if debug: print "Loaded file %s - with %d segments of %1.1f seconds"%(file_names[fileIndex],
+                                                                               l_sig.n_seg,
+                                                                               seg_duration)
+        segment_indexes = range(int(l_sig.n_seg))
+        if shuffle:
+            np.random.shuffle(segment_indexes)
+        max_seg = int(test_seg_prop * l_sig.n_seg)
+        
+        # Loop on random segments*              
+        fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
+                                                                   pad,l_sig, segIdx)
+                                    for segIdx in segment_indexes[:max_seg-1])
+        # Again ugly hack to counter the effects of joblib recopy of sketch object
+        fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[max_seg-1]))
+        
+        for fgpt, segIdx in fgpts:
+            countall += 1.0
+            true_offset = segIdx * step
+            estimated_index, estimated_offset = fgpthandle.get_candidate(fgpt, sk.params, nbCandidates=n_files, 
+            smooth=1)
+            for scaleIdx in range(n_scales):
+                for rateIdx in range(n_rates):
+                    if (fileIndex == estimated_index[scaleIdx,rateIdx]):
+                        if debug:
+                            print "%d- %d : Correct answer, file %d" % (scaleIdx,rateIdx,fileIndex)
+                        if np.abs(estimated_offset[scaleIdx,rateIdx] - true_offset) < tolerance:
+                            countokok[scaleIdx,rateIdx] += 1.0
+                            if debug:
+                                print "%d- %d : Correct offset %d" % (scaleIdx,rateIdx,int(estimated_offset[scaleIdx,rateIdx]))
+                        else:
+                            countokbad[scaleIdx,rateIdx] += 1.0
+                            if debug:
+                                print "Wrong offset %d instead of %d" % (int(estimated_offset[scaleIdx,rateIdx]), int(segIdx * step))
+                    else:
+                        countbadbad[scaleIdx,rateIdx] += 1.0
+#                        failures.append((file_names[fileIndex], true_offset, file_names[estimated_index], estimated_offset[scaleIdx,rateIdx]))
+                        if debug:
+                            print "%d- %d Wrong answer File %d offset %d instead of File %d offset %d" % (scaleIdx,rateIdx,estimated_index[scaleIdx,rateIdx], 
+                                int(estimated_offset[scaleIdx,rateIdx]), 
+                                fileIndex, int(segIdx * step))
+                
+        estTime = (float( (time.time() - t0)) / float(i)) * (n_files - i)
+        print 'Elapsed %2.2f  min . Estimated : %2.2f min'%((time.time() - t0)/60.0,(estTime / 60.0))
+
+        print "Ok Scores :" ,(countokok / countall)
+    print "Final Ok Scores of " , (countokbad / countall)
+    
+    return (countokok / countall, countokbad / countall, countbadbad / countall)
+
+
 def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, filename):        
     
     sig_local = l_sig.get_sub_signal(segIdx, 1, mono=True, 
@@ -194,15 +293,19 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
         # is correctly modified
         fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig, l_sig.n_seg-1,file_names[fileIndex]))
 
+        for segIdx in range(l_sig.n_seg):
+            fgpthandle.populate(fgpt[segIdx], sk.params, fileIndex, offset=segIdx * step, debug=debug)
+    
     else:
         fgpt = []
         for segIdx in range(l_sig.n_seg):
-            fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, file_names[fileIndex]))
+            fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
+                                               l_sig,  segIdx, file_names[fileIndex]),
+                                  sk.params, fileIndex, offset=segIdx * step, debug=debug)        
+#            fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, file_names[fileIndex]))
 
     # Cannot parallelized this part though ... because of disk access
-    for segIdx in range(l_sig.n_seg):
-        fgpthandle.populate(fgpt[segIdx], sk.params, fileIndex, offset=segIdx * step, debug=debug)
-    
+
     estTime = (float((time.time() - t0)) / float(fileIndex + 1)) * (n_files - fileIndex)
     print 'Elapsed %2.2f seconds Estimated : %2.1f minutes' % ((time.time() - t0), (estTime / 60))
 

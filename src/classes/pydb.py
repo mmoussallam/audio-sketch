@@ -42,7 +42,7 @@ class FgptHandle(object):
     
     def __init__(self, dbName, 
                  load=False,                 
-                 persistent=True, dbenv=None):
+                 persistent=True, dbenv=None, rd_only=False):
         """ Common Constructor """
         
         if dbName is None:
@@ -77,7 +77,10 @@ class FgptHandle(object):
             if not os.path.exists(self.db_name):
                 self.dbObj.open(self.db_name, dbtype=db.DB_HASH, flags=db.DB_CREATE)
             else:
-                self.dbObj.open(dbName, dbtype=db.DB_HASH)
+                if rd_only:
+                    self.dbObj.open(dbName, dbtype=db.DB_HASH, flags=db.DB_RDONLY)
+                else:
+                    self.dbObj.open(dbName, dbtype=db.DB_HASH)
             self.opened = True
             print "Loaded DB:", dbName
     
@@ -190,15 +193,18 @@ class STFTPeaksBDB(FgptHandle):
 #        self.gamma = ceil(self.params['delta_t_max']/(2**self.params['dt_n_bits']-1))        
 #        print self.alpha, self.beta, self.gamma, self.params['f1_n_bits'], self.params['f2_n_bits'], self.params['dt_n_bits']
 
+        self.alpha_r = 2**self.params['file_index_n_bits']
+        self.beta_r = 2**self.params['time_n_bits']
+
     def format_value(self, fileIndex, t1):
         """ Format the value according to the parameters """
         return floor(((t1 / self.params['time_max']) * (2 ** self.params['time_n_bits'] - 1)) + fileIndex * (2 ** self.params['file_index_n_bits']))        
 
     def read_value(self, Bin_value):
-        songID = floor(Bin_value/2**self.params['file_index_n_bits'])                   
+        songID = floor(Bin_value/self.alpha_r)                   
         # and quantized time
-        timeofocc = Bin_value-songID*(2**self.params['file_index_n_bits'])        
-        timeofocc = float(timeofocc)/(2**self.params['time_n_bits']-1)*self.params['time_max'] 
+        timeofocc = Bin_value-songID*(self.alpha_r)        
+        timeofocc = float(timeofocc)/(self.beta_r-1)*self.params['time_max'] 
         return songID, timeofocc
 
     def format_key(self, key):
@@ -442,7 +448,8 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
             dbNameroot : root name of the bdb
             handletype : the type of BDB
         """
-        
+        self.db_names = []
+        self.dbObj = []
         self.params = {'delta_t_max':3.0,
                        'fmax': 8000.0,                       
                         'n_sv': 5,
@@ -454,8 +461,7 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
         for key in kwargs:
             self.params[key] = kwargs[key]
         
-        if dbenv is None:
-            dbenv = db.DBEnv(0)
+        
         
         if dbNameroot is None:
             #Ok so we want a pure RAM-based DB, let's do it
@@ -465,24 +471,34 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
 
         self.db_root = dbNameroot
         self.db_name = self.db_root
+        
+        if not os.path.exists(self.db_root):
+            os.mkdir(self.db_root)
+        
+        if dbenv is None:
+            dbenv = db.DBEnv()
+            print self.db_root
+            dbenv.open(None, db.DB_INIT_CDB | db.DB_INIT_MPOOL )
         # We use 2D arrays for consistency, list could have been done also
-        self.db_names = np.empty((self.params['n_sv'],self.params['n_rv']), dtype=object)
-        self.dbObj = np.empty((self.params['n_sv'],self.params['n_rv']), dtype=object)
+        
+        
         
         for scaleIdx in range(self.params['n_sv']):
+            self.db_names.append([])
+            self.dbObj.append([])
             for rateIdx in range(self.params['n_rv']):        
                  # For each scale/rate pair create a database
-                self.db_names[scaleIdx,rateIdx] = "%s_%d_%d.db"%(self.db_root, scaleIdx, rateIdx)                
-                self.dbObj[scaleIdx,rateIdx] = handletype(self.db_names[scaleIdx,rateIdx],
+                self.db_names[scaleIdx].append("%s_%d_%d.db"%(self.db_root, scaleIdx, rateIdx))                
+                self.dbObj[scaleIdx].append( handletype(self.db_names[scaleIdx][rateIdx],
                                                            load=load, persistent=persistent,
                                                            dbenv=dbenv,
-                                                           **kwargs)                
+                                                           **kwargs))                
         
     
     def __del__(self):    
         for scaleIdx in range(self.params['n_sv']):
             for rateIdx in range(self.params['n_rv']):    
-                del self.dbObj[scaleIdx,rateIdx]
+                del self.dbObj[scaleIdx][rateIdx]
 
 
     def __repr__(self):
@@ -509,7 +525,7 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
             max_pairs = self.params['max_pairs']
         for scaleIdx in range(self.params['n_sv']):
             for rateIdx in range(self.params['n_rv']):
-                self.dbObj[scaleIdx,rateIdx].populate(fgpt[scaleIdx,self.params['n_rv']+rateIdx,:,:],
+                self.dbObj[scaleIdx][rateIdx].populate(fgpt[scaleIdx,self.params['n_rv']+rateIdx,:,:],
                                                       params, fileIndex,
                                                       offset=offset, debug=debug,max_pairs=max_pairs)
     
@@ -522,7 +538,7 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
         
         for scaleIdx in range(self.params['n_sv']):
             for rateIdx in range(self.params['n_rv']):
-                histograms.append(self.dbObj[scaleIdx,rateIdx].retrieve(fgpt[scaleIdx,
+                histograms.append(self.dbObj[scaleIdx][rateIdx].retrieve(fgpt[scaleIdx,
                                                                              self.params['n_rv']+rateIdx,:,:],
                                                                         params,
                                                                         offset=offset,
@@ -530,6 +546,34 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
                                                                         precision=precision))
         return histograms
 
+    def get_candidate(self, fgpt, params, nbCandidates=10, smooth=1):
+        estFiles = np.empty((self.params['n_sv'],self.params['n_rv']))
+        Offsets = np.empty((self.params['n_sv'],self.params['n_rv']))
+        
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):
+                
+                x,y = self.dbObj[scaleIdx][rateIdx].get_candidate(fgpt[scaleIdx,
+                                                                        self.params['n_rv']+rateIdx,:,:],
+                                                                  params,
+                                                                  nbCandidates=nbCandidates,
+                                                                  smooth=smooth)
+                estFiles[scaleIdx,rateIdx]=x
+                Offsets[scaleIdx,rateIdx]=y
+                
+        return estFiles, Offsets
+
+    def get_db_sizes(self):
+        """ return the size of the dbs """
+        import os
+        sizes = np.empty((self.params['n_sv'],self.params['n_rv']))
+        for scaleIdx in range(self.params['n_sv']):
+            for rateIdx in range(self.params['n_rv']):
+                path = self.dbObj[scaleIdx][rateIdx].db_name
+                sizes[scaleIdx,rateIdx] = os.stat(path).st_size
+
+        return sizes
+    
 class XMDCTBDB(FgptHandle):
     '''
     PyMP approx berkeley database handle
