@@ -40,7 +40,7 @@ file_names = get_filepaths(audio_path, 0,  ext='.wav')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [30,10,8,6,4]
+sparsities = [10,8,6,4]
 seg_dur = -1
 fs = 8000
 
@@ -52,7 +52,7 @@ sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
-test = True
+test = False
 
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk

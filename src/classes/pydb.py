@@ -370,7 +370,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         # BUGFIX remove the ceiling function cause it causes all values to be zeroes
         self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -389,9 +389,11 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         
         if display:
             import matplotlib.pyplot as plt
-            import matplotlib.cm as cm        
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+            
             ax.spy(sparse_stft, cmap=cm.bone_r)
         
 #        print "Params : ",f_target_width,t_target_width,time_step
