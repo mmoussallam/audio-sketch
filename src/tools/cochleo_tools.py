@@ -16,8 +16,7 @@ from dear.spectrogram import plot_spectrogram
 from scipy.io import loadmat
 from scipy.signal import lfilter
 from numpy.fft import fft, ifft
-import dear.io as io
-decoder = io.get_decoder(name='audioread')
+
 filter_coeffs_path = '/home/manu/workspace/recup_angelique/Sketches/sketches/nsltools/aud24.mat'
 
 
@@ -681,7 +680,8 @@ def sigmoid(y1, fac):
 
 def auditory_spectrum(audio_file_path):
     ''' computes an auditory spectrogram based from an acoustic array '''
-
+    import dear.io as io
+    decoder = io.get_decoder(name='audioread')
     audio = decoder.Audio(audio_file_path)
     st = 0
     graph = 'Y5'

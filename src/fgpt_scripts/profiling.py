@@ -78,7 +78,7 @@ file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
 nb_files = len(file_names)
 # define experimental conditions
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
-sparsity = 100
+sparsity = 10
 seg_dur = 5.0
 fs = 8000
 

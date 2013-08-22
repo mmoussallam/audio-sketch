@@ -31,14 +31,15 @@ print env.get_cachesize()
 
 # The RWC subset path
 audio_path = '/sons/rwc/Learn'
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
 file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
 nb_files = len(file_names)
 # define experimental conditions
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
-sparsities = [100,50,20,10,5,4]
+
+sparsities = [10,9,8,7,6,5,4,3,2]
 seg_dur = 5.0
 fs = 8000
 
@@ -50,9 +51,8 @@ sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 sk_id = sk.__class__.__name__[:-6]
 
 
-
 test = True
-learn= False
+learn= True
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
     db_name = "%s_%s_k%d_%s_%dsec_%dfs/"%(set_id, sk_id, sparsity, sk.get_sig(),
@@ -76,7 +76,7 @@ for sparsity in sparsities:
                 file_names[1:], 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
-                files_path = audio_path, debug=False, n_jobs=1)
+                files_path = audio_path, debug=False, n_jobs=3)
     
     
     # run a fingerprinting experiment

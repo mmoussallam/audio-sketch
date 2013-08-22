@@ -188,7 +188,7 @@ def get_filepaths(audio_path, random_seed=None, forbid_list=[],ext='.wav'):
 
             sub_files = get_filepaths(op.join(audio_path,
                                               dir_list[dir_ind]),
-                                      forbid_list=forbid_list)
+                                      forbid_list=forbid_list, ext=ext)
             file_paths.extend(sub_files)
         else:
             if ext in dir_list[dir_ind]:

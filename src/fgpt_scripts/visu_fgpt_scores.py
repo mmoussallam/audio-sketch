@@ -11,14 +11,14 @@ from scipy.io import loadmat
 from PyMP import Signal
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
-test_proportion = 0.1
+test_proportion = 1.0
 
 setups = [
-           (STFTPeaksSketch(**{'scale':2048, 'step':512}),16000, [100, 50, 20,10,5,4,3,2], '-+'),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [100, 50, 20,10,5,4,3,2], '-o')   
+           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [100,50,30,10,5], '-+'),
+           #(CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [100, 50, 20,10,5,4,3,2], '-o')   
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})

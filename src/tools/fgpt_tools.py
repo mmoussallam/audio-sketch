@@ -112,17 +112,22 @@ def db_test(fgpthandle,
         if debug: print "Loaded file %s - with %d segments of %1.1f seconds"%(file_names[fileIndex],
                                                                                l_sig.n_seg,
                                                                                seg_duration)
+
+        if l_sig.n_seg < 1:
+            continue
+        
         segment_indexes = range(int(l_sig.n_seg))
         if shuffle:
             np.random.shuffle(segment_indexes)
         max_seg = int(test_seg_prop * l_sig.n_seg)
+        
         
         # Loop on random segments*              
         fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
                                                                    pad,l_sig, segIdx)
                                     for segIdx in segment_indexes[:max_seg-1])
         # Again ugly hack to counter the effects of joblib recopy of sketch object
-        fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[max_seg-1]))
+        fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
         
         for fgpt, segIdx in fgpts:
             countall += 1.0
@@ -271,20 +276,25 @@ def _process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, filen
     sk.sparsify(sparsity)
     
     if debug:
-        print "Populating database with offset %d " + str(segIdx * step)
+        print "Populating database with offset %d " %(segIdx * step)
     return sk.fgpt()
 
 def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
                   step, files_path, debug, n_files, pad, t0, fileIndex, n_jobs):
     # get file as a PyMP.LongSignal object
-    l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]), frame_duration=seg_duration, 
-        mono=True, 
-        Noverlap=(1.0 - float(step) / float(seg_duration)))
+    if seg_duration>0:
+        l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]), frame_duration=seg_duration, 
+                                   mono=True, 
+                                   Noverlap=(1.0 - float(step) / float(seg_duration)))
+        nbsegs = l_sig.n_seg
+    else:
+        l_sig = signals.Signal(op.join(files_path, file_names[fileIndex]), mono=True)
+        nbsegs = 1
 #    if debug:
-    print "Loaded file %s - with %d segments of %1.1f seconds" % (file_names[fileIndex], l_sig.n_seg, 
+    print "Loaded file %s - with %d segments of %1.1f seconds" % (file_names[fileIndex], nbsegs, 
             seg_duration)
     
-    if n_jobs >1:
+    if n_jobs >1 and nbsegs>1:
         # Loop on segments :  Sparsifying all of them
         fgpt = Parallel(n_jobs=n_jobs)(delayed(_process_seg)(sk, sparsity, resample, step, debug, pad, l_sig, segIdx, file_names[fileIndex])
                                     for segIdx in range(l_sig.n_seg -1))
@@ -297,11 +307,19 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
             fgpthandle.populate(fgpt[segIdx], sk.params, fileIndex, offset=segIdx * step, debug=debug)
     
     else:
-        fgpt = []
-        for segIdx in range(l_sig.n_seg):
-            fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
-                                               l_sig,  segIdx, file_names[fileIndex]),
-                                  sk.params, fileIndex, offset=segIdx * step, debug=debug)        
+        if nbsegs>1:
+#            fgpt = []
+            for segIdx in range(nbsegs):
+                fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
+                                                   l_sig,  segIdx, file_names[fileIndex]),
+                                      sk.params, fileIndex, offset=segIdx * step, debug=debug) 
+        else:
+            if resample > 0:
+                l_sig.resample(resample)
+            sk.recompute(l_sig, **{'segIdx':0,'sig_name':file_names[fileIndex]})
+            sk.sparsify(sparsity)
+            fgpthandle.populate(sk.fgpt(), sk.params, fileIndex, offset=0, debug=debug)
+
 #            fgpt.append(_process_seg(sk, sparsity, resample, step, debug, pad, l_sig,  segIdx, file_names[fileIndex]))
 
     # Cannot parallelized this part though ... because of disk access
