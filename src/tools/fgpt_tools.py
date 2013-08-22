@@ -724,6 +724,38 @@ def xmdctdb_hierarchical_test(ppdb,
             print "Global Score of " + str(countok / countall)
     return countok / countall
 
+def get_filepaths(audio_path, random_seed=None, forbid_list=[],ext='.wav'):
+    """function [file_paths] = get_filepaths(audio_path, random_seed)
+    % retrieves all the wav file names and relative path given the directory
+    % if random_seed is specified: it applies a random suffling of the files
+    % paths"""
+
+    import os
+    import os.path as op
+    file_paths = []
+    # root
+    dir_list = os.listdir(audio_path)
+    
+    # recursive search
+    for dir_ind in range(len(dir_list)):
+
+        if op.isdir(op.join(audio_path, dir_list[dir_ind])):
+
+            sub_files = get_filepaths(op.join(audio_path,
+                                              dir_list[dir_ind]),
+                                      forbid_list=forbid_list, ext=ext)
+            file_paths.extend(sub_files)
+        else:
+            if ext in dir_list[dir_ind]:
+                if not dir_list[dir_ind] in forbid_list:                                
+                    file_paths.append(op.join(audio_path, dir_list[dir_ind]))
+
+    if random_seed is not None:
+        # use the random_seed to initialize random state
+        np.random.seed(random_seed)
+        file_paths = np.random.permutation(file_paths)
+
+    return file_paths
 
 def create_sig_list(n_files, path='', filt=None):
     import cPickle

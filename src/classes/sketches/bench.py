@@ -4,7 +4,7 @@ classes.sketches.benchsketch  -  Created on Jul 25, 2013
 '''
 
 from base import *
-
+from tools import stft
 class STFTPeaksSketch(AudioSketch):
     ''' Sketch based on a single STFT with peak-picking as a
     sparsifying method '''
@@ -45,7 +45,7 @@ class STFTPeaksSketch(AudioSketch):
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
         self.params['fs'] = self.orig_signal.fs
-        import stft
+#         import stft
         self.rep = stft.stft(self.orig_signal.data,
                              self.params['scale'],
                              self.params['step'])

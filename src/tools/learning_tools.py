@@ -13,7 +13,7 @@ import sys
 import os
 sys.path.append('/home/manu/workspace/toolboxes/MSongsDB-master/PythonSrc')    
 #import hdf5_utils as HDF5
-import hdf5_getters    
+#import hdf5_getters    
 
 from tempfile import mkdtemp
 cachedir = mkdtemp()
@@ -203,12 +203,14 @@ def get_filepaths(audio_path, random_seed=None, forbid_list=[],ext='.wav'):
     return file_paths
 
 def get_track_info(h5file):
+    import hdf5_getters
     h5 = hdf5_getters.open_h5_file_read(h5file)
     title = hdf5_getters.get_title(h5)
     artist = hdf5_getters.get_artist_name(h5)
     return title, artist
     
 def get_ten_features_from_file(feats_all, segments_all, confidence_all, h5file):
+    import hdf5_getters
     h5 = hdf5_getters.open_h5_file_read(h5file)
     timbre = hdf5_getters.get_segments_timbre(h5)
     loudness_start = hdf5_getters.get_segments_loudness_start(h5)

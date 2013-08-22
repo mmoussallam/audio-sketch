@@ -13,7 +13,7 @@ from classes.sketches.cochleo import *
 from classes.sketches.cortico import *
 from classes import pydb
 from tools.fgpt_tools import db_creation, db_test
-from tools.learning_tools import get_filepaths
+from tools.fgpt_tools import get_filepaths
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
 import bsddb.db as db
 env = db.DBEnv()
@@ -40,15 +40,15 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [4,3]
+sparsities = [50,30,20,10,7,5,4,3]
 seg_dur = 5.0
 fs = 8000
 
 ## Initialize the sketchifier
-#sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
+sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 #                                   'shift':0,'fac':-2,'BP':1})
-sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
+#sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
@@ -63,12 +63,12 @@ for sparsity in sparsities:
 #    fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
 #                                              load=True,persistent=True,dbenv=env,
 #                                               **{'wall':False,'max_pairs':500})
-#    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-#                                   load=not learn,
-#                                   persistent=True, **{'wall':False})
-    fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
                                    load=not learn,
                                    persistent=True, **{'wall':False})
+#     fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+#                                    load=not learn,
+#                                    persistent=True, **{'wall':False})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
     if learn:
@@ -76,7 +76,7 @@ for sparsity in sparsities:
                 file_names, 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
-                files_path = audio_path, debug=False, n_jobs=4)
+                files_path = audio_path, debug=False, n_jobs=1)
     
     
     # run a fingerprinting experiment
