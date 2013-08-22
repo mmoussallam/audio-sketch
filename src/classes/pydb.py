@@ -198,12 +198,12 @@ class STFTPeaksBDB(FgptHandle):
 
     def format_value(self, fileIndex, t1):
         """ Format the value according to the parameters """
-        return floor(((t1 / self.params['time_max']) * (2 ** self.params['time_n_bits'] - 1)) + fileIndex * (2 ** self.params['file_index_n_bits']))        
+        return floor(((t1 / self.params['time_max']) * (2 ** self.params['time_n_bits'] - 1)) + fileIndex * (2 ** self.params['time_n_bits']))        
 
     def read_value(self, Bin_value):
-        songID = floor(Bin_value/self.alpha_r)                   
+        songID = floor(Bin_value/self.beta_r)                   
         # and quantized time
-        timeofocc = Bin_value-songID*(self.alpha_r)        
+        timeofocc = Bin_value-songID*(self.beta_r)        
         timeofocc = float(timeofocc)/(self.beta_r-1)*self.params['time_max'] 
         return songID, timeofocc
 
