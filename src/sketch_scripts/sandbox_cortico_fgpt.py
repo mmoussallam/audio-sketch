@@ -111,6 +111,7 @@ sig = Signal('/sons/jingles/panzani.wav', mono=True, normalize=True)
 sk = CorticoSubPeaksSketch(**{'downsample':8000, 'n_inv_iter':10})
 sk.recompute(sig)
 
+sk.sparsify(100)
 sk.represent()
 plt.show()
 

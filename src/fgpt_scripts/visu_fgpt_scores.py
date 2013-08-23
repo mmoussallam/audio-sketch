@@ -14,18 +14,18 @@ score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
-test_proportion = 1.0
+
 
 setups = [
-           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [100,50,30,10,5], '-+'),
-           #(CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [100, 50, 20,10,5,4,3,2], '-o')   
+           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [100,50,30,10,5], '-+', 1.0),
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [30,10,5,4,3], '-o', 0.25)   
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
 legends = []
 plt.figure()
 for setup in setups:
-    (sk, fs, sparsities, mark) = setup
+    (sk, fs, sparsities, mark, test_proportion) = setup
 
     sk_id = sk.__class__.__name__[:-6]
     

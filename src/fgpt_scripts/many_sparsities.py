@@ -31,17 +31,17 @@ bases = {'RWCLearn':'/sons/rwc/Learn/',
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'voxforge' # Choose a unique identifier for the dataset considered
 audio_path = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
-file_names = get_filepaths(audio_path, 0,  ext='.au')
+file_names = get_filepaths(audio_path, 0,  ext='.wav')
 
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [50,30,20,10,7,5,4,3]
-seg_dur = 5.0
+sparsities = [10,8,6,4]
+seg_dur = -1
 fs = 8000
 
 ## Initialize the sketchifier
@@ -52,7 +52,7 @@ sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
-test = True
+test = False
 
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
@@ -80,7 +80,7 @@ for sparsity in sparsities:
     
     
     # run a fingerprinting experiment
-    test_proportion = 0.25 # proportion of segments in each file that will be tested
+    test_proportion = 1.0 # proportion of segments in each file that will be tested
     print fgpthandle.dbObj.stat_print()
     if test:
         tstart = time.time()
@@ -89,7 +89,7 @@ for sparsity in sparsities:
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = 5.0, tolerance = 7.5, shuffle=True, debug=True,n_jobs=1)
+                         step = 5.0, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results

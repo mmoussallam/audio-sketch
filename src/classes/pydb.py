@@ -198,12 +198,12 @@ class STFTPeaksBDB(FgptHandle):
 
     def format_value(self, fileIndex, t1):
         """ Format the value according to the parameters """
-        return floor(((t1 / self.params['time_max']) * (2 ** self.params['time_n_bits'] - 1)) + fileIndex * (2 ** self.params['file_index_n_bits']))        
+        return floor(((t1 / self.params['time_max']) * (2 ** self.params['time_n_bits'] - 1)) + fileIndex * (2 ** self.params['time_n_bits']))        
 
     def read_value(self, Bin_value):
-        songID = floor(Bin_value/self.alpha_r)                   
+        songID = floor(Bin_value/self.beta_r)                   
         # and quantized time
-        timeofocc = Bin_value-songID*(self.alpha_r)        
+        timeofocc = Bin_value-songID*(self.beta_r)        
         timeofocc = float(timeofocc)/(self.beta_r-1)*self.params['time_max'] 
         return songID, timeofocc
 
@@ -370,7 +370,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         # BUGFIX remove the ceiling function cause it causes all values to be zeroes
         self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -389,9 +389,11 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         
         if display:
             import matplotlib.pyplot as plt
-            import matplotlib.cm as cm        
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+            
             ax.spy(sparse_stft, cmap=cm.bone_r)
         
 #        print "Params : ",f_target_width,t_target_width,time_step
