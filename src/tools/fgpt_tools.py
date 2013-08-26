@@ -103,32 +103,43 @@ def db_test(fgpthandle,
     failures = []
     for fileIndex in sortedIndexes:
         i +=1
-        # get file as a PyMP.LongSignal object
-        l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]),
+        if seg_duration > 0:
+            # get file as a PyMP.LongSignal object
+            l_sig = signals.LongSignal(op.join(files_path, file_names[fileIndex]),
                              frame_duration = seg_duration, 
                              mono = True,
                              Noverlap = (1.0 - float(step)/float(seg_duration)))
-
-        if debug: print "Loaded file %s - with %d segments of %1.1f seconds"%(file_names[fileIndex],
-                                                                               l_sig.n_seg,
-                                                                               seg_duration)
-
-        if l_sig.n_seg < 1:
-            continue
+            n_segs = l_sig.n_seg
+            if n_segs < 1:
+                continue
+            
+            if debug: print "Loaded file %s - with %d segments of %1.1f seconds"%(file_names[fileIndex],
+                                                                                   n_segs,
+                                                                                   seg_duration)
+                
+            segment_indexes = range(int(l_sig.n_seg))
+            if shuffle:
+                np.random.shuffle(segment_indexes)
+            max_seg = int(test_seg_prop * l_sig.n_seg)
+            
+            
+            # Loop on random segments*              
+            fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
+                                                                       pad,l_sig, segIdx)
+                                        for segIdx in segment_indexes[:max_seg-1])
+            # Again ugly hack to counter the effects of joblib recopy of sketch object
+            fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
         
-        segment_indexes = range(int(l_sig.n_seg))
-        if shuffle:
-            np.random.shuffle(segment_indexes)
-        max_seg = int(test_seg_prop * l_sig.n_seg)
-        
-        
-        # Loop on random segments*              
-        fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
-                                                                   pad,l_sig, segIdx)
-                                    for segIdx in segment_indexes[:max_seg-1])
-        # Again ugly hack to counter the effects of joblib recopy of sketch object
-        fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
-        
+        else:
+            l_sig = signals.Signal(op.join(files_path, file_names[fileIndex]), mono=True)
+            n_segs = 1
+            if resample > 0:
+                l_sig.resample(resample)
+                # computing the local fingerprint
+            sk.recompute(l_sig)
+            sk.sparsify(sparsity)
+            fgpts = ((sk.fgpt(),0),)
+            
         for fgpt, segIdx in fgpts:
             countall += 1.0
             true_offset = segIdx * step
