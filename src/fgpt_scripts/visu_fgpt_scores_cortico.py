@@ -15,9 +15,9 @@ set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
 test_proportion = 0.25
-
+step = 5
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
-sparsities = [30,10,8,6,4]
+sparsities =  [30,20,10,9,8,7,6,5,4,3]
 fs = 8000
 
 ## Initialize the sketchifier
@@ -42,8 +42,8 @@ for sp_ind, sparsity in enumerate(sparsities):
     # we just need a short adaptation
     sk.sparsify(sparsity)
     
-    sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                            int(seg_dur), int(fs), int(100.0*test_proportion))
+    sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
+                                            int(seg_dur), int(fs), int(100.0*test_proportion), step)
     D = loadmat(op.join(score_path,sc_name))
     
     db_name = "%s_%s_k%d_%s_%dsec_%dfs/"%(set_id, sk_id, sparsity, sk.get_sig(),
@@ -53,6 +53,7 @@ for sp_ind, sparsity in enumerate(sparsities):
         for m in range(M/2):
             
             sizes[n,m, sp_ind] = os.stat(op.join(path,"_%d_%d.db"%(n,m))).st_size/(1024.0*1024.0)  
+            
 
 #    sizes[:,:,sp_ind] = D['size']/(1024.0*1024.0)  
     
@@ -66,7 +67,7 @@ for n in range(N):
         plt.subplot(N, M/2, n*(M/2) + m +1)
 #         plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
         plt.semilogx(sizes[n,m,:], 100*np.array(cons_scores[n,m,:]),'g')
-        plt.ylim([95,98])
+        plt.ylim([90,98])
         plt.xlim([0.1,10])
         plt.grid()
 
