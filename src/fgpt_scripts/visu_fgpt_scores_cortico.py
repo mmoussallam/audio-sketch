@@ -14,10 +14,10 @@ score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
-test_proportion = 0.1
+test_proportion = 0.25
 
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
-sparsities = [10,9,8,7,6,5,4]
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+sparsities = [30,10,8,6,4]
 fs = 8000
 
 ## Initialize the sketchifier
@@ -64,8 +64,11 @@ plt.figure()
 for n in range(N):
     for m in range(M/2):
         plt.subplot(N, M/2, n*(M/2) + m +1)
-        plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
+#         plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
         plt.semilogx(sizes[n,m,:], 100*np.array(cons_scores[n,m,:]),'g')
+        plt.ylim([95,98])
+        plt.xlim([0.1,10])
+        plt.grid()
 
 plt.xlabel('DB size (Mbytes)')
 plt.ylabel('Recognition rate (\%)')
@@ -78,6 +81,6 @@ plt.ylabel('Recognition rate (\%)')
 #plt.xlabel('Comp. Time (s)')
 #plt.ylabel('Recognition rate (\%)')
 
-plt.grid()    
+# plt.grid()    
 #plt.legend(legends, loc='lower right')    
 plt.show()

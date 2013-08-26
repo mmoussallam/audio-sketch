@@ -44,7 +44,7 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [30,10,8,6,4,3]
+sparsities = [30,20,10,9,8,7,6,5,4,3]
 seg_dur = 5.0
 fs = 8000
 
@@ -78,7 +78,7 @@ for sparsity in sparsities:
     # create the base:
     if learn:
         db_creation(fgpthandle, sk, sparsity,
-                file_names[1:], 
+                file_names, 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
                 files_path = audio_path, debug=False, n_jobs=3)
@@ -86,20 +86,20 @@ for sparsity in sparsities:
     
     # run a fingerprinting experiment
     test_proportion = 0.25 # proportion of segments in each file that will be tested
-    
+    step = 5.0
     if test:
         tstart = time.time()
         scores = db_test_cortico(fgpthandle, sk, sparsity,
-                         file_names[1:], 
+                         file_names, 
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = 5.0, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
+                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results
-        score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                                int(seg_dur), int(fs), int(100.0*test_proportion))
+        score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
+                                                int(seg_dur), int(fs), int(100.0*test_proportion),int(step))
         
         
         stats =  fgpthandle.get_db_sizes()

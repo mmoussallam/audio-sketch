@@ -47,10 +47,10 @@ file_names = os.listdir(audio_files_path)
 #self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
 fgpt_sketches = [
-#                 (pydb.STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-#                  sketch.STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-#                 (pydb.CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-#                  sketch.CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
 #                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
 #                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
 #                                              'nature':'LOMDCT'})),         
