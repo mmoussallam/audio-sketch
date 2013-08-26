@@ -16,6 +16,7 @@ sys.path.append('/home/manu/workspace/meeg_denoise')
 
 #from classes import pydb, sketch
 from classes.pydb import *
+from classes.sketches.bench import *
 from classes.sketches.cortico import *
 from classes.sketches.cochleo import *
 from PyMP.signals import LongSignal, Signal
