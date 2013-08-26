@@ -12,10 +12,11 @@ import os
 import os.path as op
 import time
 from scipy.io import savemat
-from classes.sketches.bench import *
-from classes.sketches.cochleo import *
+# from classes.sketches.bench import *
+# from classes.sketches.cochleo import *
 from classes.sketches.cortico import *
 from classes import pydb
+from tools.fgpt_tools import get_filepaths
 from tools.fgpt_tools import db_creation, db_test, db_test_cortico
 
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
@@ -29,17 +30,21 @@ env.open(db_path, db.DB_INIT_MPOOL|db.DB_CREATE )
 print env.get_cachesize()
 # define a pair FgptHandle/Sketch 
 
+bases = {'RWCLearn':'/sons/rwc/Learn/',
+         'voxforge':'/sons/voxforge/main/Learn/',
+         'GTZAN':'/home/manu/workspace/databases/genres/'}
+
 # The RWC subset path
-audio_path = '/sons/rwc/Learn'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+audio_path = bases[set_id]
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
-file_names = [f for f in os.listdir(audio_path) if '.wav' in f]
+file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [10,9,8,7,6,5,4,3,2]
+sparsities = [30,10,8,6,4,3]
 seg_dur = 5.0
 fs = 8000
 
@@ -80,7 +85,7 @@ for sparsity in sparsities:
     
     
     # run a fingerprinting experiment
-    test_proportion = 0.1 # proportion of segments in each file that will be tested
+    test_proportion = 0.25 # proportion of segments in each file that will be tested
     
     if test:
         tstart = time.time()
