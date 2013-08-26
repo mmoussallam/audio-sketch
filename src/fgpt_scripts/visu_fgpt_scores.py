@@ -11,14 +11,14 @@ from scipy.io import loadmat
 from PyMP import Signal
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
-set_id = 'voxforge' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
-seg_dur = -1
-
+seg_dur = 5
+step = 3.0
 
 setups = [
-           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [10,8,6,4], '-+', 1.0),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [20,10,8,6,4], '-o', 1.0)    
+           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [700,500, 200,100,50,20,10,8,6,4], '-+', 1.0),
+#           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [20,10,8,6,4], '-o', 1.0)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
@@ -43,8 +43,8 @@ for setup in setups:
         # we just need a short adaptation
         if seg_dur>0:
             sk.sparsify(sparsity)
-            sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                                int(seg_dur), int(fs), int(100.0*test_proportion))
+            sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
+                                                int(seg_dur), int(fs), int(100.0*test_proportion), int(step))
         else:
             sc_root = "%s_%s_k%d"%(set_id, sk_id, sparsity)
             cands = [ f for f in os.listdir(op.join(score_path)) if sc_root in f]

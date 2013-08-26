@@ -7,6 +7,7 @@ import os
 import os.path as op
 import matplotlib.pyplot as plt
 from classes.sketches.cortico import *
+from classes import pydb
 from scipy.io import loadmat
 from PyMP import Signal
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
@@ -33,6 +34,7 @@ sk.recompute(Signal(np.random.randn(seg_dur*fs), fs, mono=True))
 
 (N,M) = sk.cort.cor.shape[:2]
 sizes = np.zeros((N,M/2, len(sparsities)))
+nkeys = np.zeros((N,M/2, len(sparsities)))
 scores = np.zeros((N,M/2, len(sparsities)))
 cons_scores = np.zeros((N,M/2, len(sparsities)))
 times = []
@@ -53,7 +55,10 @@ for sp_ind, sparsity in enumerate(sparsities):
         for m in range(M/2):
             
             sizes[n,m, sp_ind] = os.stat(op.join(path,"_%d_%d.db"%(n,m))).st_size/(1024.0*1024.0)  
-            
+            fgpthandle = pydb.CochleoPeaksBDB(op.join(path,"_%d_%d.db"%(n,m)),
+                                              load=True, persistent=True,
+                                              rd_only=True)
+            nkeys[n,m, sp_ind] = float(fgpthandle.dbObj.stat()['nkeys'])
 
 #    sizes[:,:,sp_ind] = D['size']/(1024.0*1024.0)  
     
@@ -72,6 +77,19 @@ for n in range(N):
         plt.grid()
 
 plt.xlabel('DB size (Mbytes)')
+plt.ylabel('Recognition rate (\%)')
+
+plt.figure()
+for n in range(N):
+    for m in range(M/2):
+        plt.subplot(N, M/2, n*(M/2) + m +1)
+#         plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
+        plt.plot(nkeys[n,m,:]/1000.0, 100*np.array(cons_scores[n,m,:]),'g')
+        plt.ylim([90,98])
+#        plt.xlim([0.1,10])
+        plt.grid()
+
+plt.xlabel('Number of keys in DB')
 plt.ylabel('Recognition rate (\%)')
 
 #legends.append(("%s hard"%sk_id))
