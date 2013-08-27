@@ -42,7 +42,8 @@ class FgptHandle(object):
     
     def __init__(self, dbName, 
                  load=False,                 
-                 persistent=True, dbenv=None, rd_only=False):
+                 persistent=True, dbenv=None,
+                 rd_only=False, cachesize=256):
         """ Common Constructor """
         
         if dbName is None:
@@ -57,11 +58,18 @@ class FgptHandle(object):
         if dbenv is not None:
             self.dbObj = db.DB(dbenv)
         else:
-            self.dbObj = db.DB()
+            env = db.DBEnv()
+            # default cache size is 200Mbytes
+            env.set_cachesize(0,cachesize*1024*1024,0)            
+            env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | db.DB_THREAD
+            env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
+            env.open(None, env_flags)
+            self.dbObj = db.DB(env)
         self.opened = False
         # allow multiple key entries
         # TODO :  mettre en DB_DUPSORT
         self.dbObj.set_flags(db.DB_DUP | db.DB_DUPSORT)
+#        self.dbObj.set_flags(db.DB_DUP)
 
         if not load:
             try:

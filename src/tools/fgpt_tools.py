@@ -395,7 +395,9 @@ def db_creation(fgpthandle,
     if db_name is None:
         db_name = fgpthandle.db_name
     
-    if debug: print "Starting work on %s"%db_name
+    if debug: 
+        print "Starting work on %s"%db_name
+        import time
     
     # checking the segment overlap
     if step<0:
