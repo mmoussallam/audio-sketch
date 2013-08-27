@@ -37,7 +37,7 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [500,300,100,50,30,10,5]
+sparsities = [500,]
 seg_dur = 5.0
 fs = 8000
 step = 3.0
@@ -64,7 +64,7 @@ for sparsity in sparsities:
 #                                   load=not learn,
 #                                   persistent=True, **{'wall':False})
     fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
-                                    load=not learn,
+                                    load=not learn,cachesize=512,
                                     persistent=True, **{'wall':False})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
@@ -73,7 +73,7 @@ for sparsity in sparsities:
                 file_names, 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
-                files_path = audio_path, debug=False, n_jobs=1)
+                files_path = audio_path, debug=False, n_jobs=4)
     
     
     # run a fingerprinting experiment

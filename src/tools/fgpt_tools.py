@@ -203,7 +203,7 @@ def db_test_cortico(fgpthandle,
         pad = fgpthandle.params['pad']
     else:
         pad = False
-    
+    import time
     # change the order of the files for testing"
     sortedIndexes = range(len(file_names))
     if shuffle:
@@ -397,7 +397,7 @@ def db_creation(fgpthandle,
     
     if debug: 
         print "Starting work on %s"%db_name
-        import time
+    import time
     
     # checking the segment overlap
     if step<0:
