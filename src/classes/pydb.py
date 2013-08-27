@@ -43,7 +43,7 @@ class FgptHandle(object):
     def __init__(self, dbName, 
                  load=False,                 
                  persistent=True, dbenv=None,
-                 rd_only=False, cachesize=256):
+                 rd_only=False, cachesize=512):
         """ Common Constructor """
         
         if dbName is None:
@@ -448,7 +448,7 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
     """
     
     def __init__(self, dbNameroot, handletype = CochleoPeaksBDB,
-                 load=False, persistent=None,dbenv=None,
+                 load=False, persistent=None,dbenv=None,cachesize=512,
                  **kwargs):
         """ DO NOT Call superclass constructor since we need to instantiate a 
         collection of handles
@@ -487,8 +487,11 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
         
         if dbenv is None:
             dbenv = db.DBEnv()
-            print self.db_root
-            dbenv.open(None, db.DB_INIT_CDB | db.DB_INIT_MPOOL )
+            # default cache size is 200Mbytes
+            dbenv.set_cachesize(10,cachesize*1024*1024,0)            
+            env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | db.DB_THREAD
+            dbenv.log_set_config(db.DB_LOG_IN_MEMORY, 1)
+            dbenv.open(None, env_flags)
         # We use 2D arrays for consistency, list could have been done also
         
         

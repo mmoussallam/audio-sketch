@@ -15,10 +15,10 @@ score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
-test_proportion = 0.25
-step = 5
+test_proportion = 1.0
+step = 3
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
-sparsities =  [30,20,10,9,8,7,6,5,4,3]
+sparsities =  [200,100,]
 fs = 8000
 
 ## Initialize the sketchifier
@@ -72,7 +72,7 @@ for n in range(N):
         plt.subplot(N, M/2, n*(M/2) + m +1)
 #         plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
         plt.semilogx(sizes[n,m,:], 100*np.array(cons_scores[n,m,:]),'g')
-        plt.ylim([90,98])
+#         plt.ylim([90,98])
         plt.xlim([0.1,10])
         plt.grid()
 
@@ -85,7 +85,7 @@ for n in range(N):
         plt.subplot(N, M/2, n*(M/2) + m +1)
 #         plt.semilogx(sizes[n,m,:], 100*np.array(scores[n,m,:]), 'b')
         plt.plot(nkeys[n,m,:]/1000.0, 100*np.array(cons_scores[n,m,:]),'g')
-        plt.ylim([90,98])
+#         plt.ylim([90,98])
 #        plt.xlim([0.1,10])
         plt.grid()
 
