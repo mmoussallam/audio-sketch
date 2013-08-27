@@ -57,7 +57,7 @@ sk_id = sk.__class__.__name__[:-6]
 
 
 test = True
-learn= True
+learn= False
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
     db_name = "%s_%s_k%d_%s_%dsec_%dfs/"%(set_id, sk_id, sparsity, sk.get_sig(),
@@ -85,8 +85,8 @@ for sparsity in sparsities:
     
     
     # run a fingerprinting experiment
-    test_proportion = 0.25 # proportion of segments in each file that will be tested
-    step = 5.0
+    test_proportion = 1.0 # proportion of segments in each file that will be tested
+    step = 3.0
     if test:
         tstart = time.time()
         scores = db_test_cortico(fgpthandle, sk, sparsity,
