@@ -16,6 +16,7 @@ sys.path.append('/home/manu/workspace/meeg_denoise')
 
 #from classes import pydb, sketch
 from classes.pydb import *
+from classes.sketches.misc import *
 from classes.sketches.bench import *
 from classes.sketches.cortico import *
 from classes.sketches.cochleo import *
@@ -29,7 +30,7 @@ plt.switch_backend('Agg')
 
 learn_dir = '/sons/rwc/Learn/'
 test_dir = '/sons/rwc/Test/'
-single_test_file1 = '/sons/sqam/voicemale.wav'
+single_test_file1 = '/sons/jingles/panzani.wav'
 single_test_file2 = '/sons/sqam/voicefemale.wav'
 
 audio_files_path = '/sons/rwc/rwc-p-m07'
@@ -48,18 +49,20 @@ file_names = os.listdir(audio_files_path)
 #self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
 fgpt_sketches = [
-                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+                 (SWSBDB('SWSdeltas.db', **{'wall':False}),
+                 SWSSketch(**{'n_formants':7})), 
+#                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+#                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+#                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+#                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
 #                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
 #                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
 #                                              'nature':'LOMDCT'})),         
 #                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
 #                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
 #                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),
-                    (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-                     CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
+#                    (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
+#                     CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
                     ]
 
 #@mem.cache

@@ -43,7 +43,7 @@ class FgptHandle(object):
     def __init__(self, dbName, 
                  load=False,                 
                  persistent=True, dbenv=None,
-                 rd_only=False, cachesize=512):
+                 rd_only=False, cachesize=(0,512)):
         """ Common Constructor """
         
         if dbName is None:
@@ -60,7 +60,7 @@ class FgptHandle(object):
         else:
             env = db.DBEnv()
             # default cache size is 200Mbytes
-            env.set_cachesize(0,cachesize*1024*1024,0)            
+            env.set_cachesize(cachesize[0],cachesize[1]*1024*1024,0)            
             env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | db.DB_THREAD
             env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
             env.open(None, env_flags)
@@ -782,37 +782,47 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         return int(floor(key) * 2 ** (self.params['freq_n_bits']) + floor(float(key) / float(self.beta)))
 
 
+class SWSBDB(FgptHandle):
+    """  A handle class for SineWave Speech based fingerprinting
+    
+    FGPT is built out of the frequency delta of the formants
+     
+    """
+    def __init__(self, dbName, load=False,
+                 persistent=None,dbenv=None,
+                 **kwargs):
+        # Call superclass constructor
+        # Call superclass constructor
+        super(SWSBDB, self).__init__(dbName, load=load,
+                                     persistent=persistent,
+                                     dbenv=dbenv)
+    
+    def add(self, Pairs, fileIndex):
+        ''' add all key/value pairs to base '''
+        for key, value in Pairs:
+            # @TODO this is SHAZAM's format : parameterize            
+            t1 = value                                                
+            
+            Bin_value = int(self.format_value(fileIndex, t1))
+            Bin_key = int(self.format_key(key))
+            
+            # To retrieve each element
+            Bbin = struct.pack('<I4', Bin_value)
+            Kbin = struct.pack('<I4', Bin_key)
+            
+            try:
+                self.dbObj.put(Kbin, Bbin)
+            except db.DBKeyExistError:
+                if self.params['wall']:
+                    print "Warning existing Key/Value pair " + str(Bin_key) + ' ' + str(Bin_value)
+    
+    def get(self, key):
+        ''' retrieve all values associated with key '''
+        raise NotImplementedError("Not Implemented")
 
+    def populate(self, fgpt, params, fileIndex, offset=0):
+        ''' Populate the database using the given fingerprint and parameters '''
+        raise NotImplementedError("Not Implemented")
 
-# class ppBDBSegment(XMDCTBDB):
-#    ''' Subclass to encode signature segments by segments
-#    '''
-#
-#    numSeg = 0;
-#
-#    def add(self, Pairs, segIndex):
-#        '''
-#        Putting the values in the database
-#        '''
-#        for key,value in Pairs:
-#
-#            if value > self.params['time_max']]:
-##                print value
-#                print 'Warning: Tried to add a value bigger than maximum'
-#                continue
-#
-#            Tbin = floor(value/(self.params['time_max']])*(self.total_n_bits-1));  #Coding over 16bits, max time offset = 10min
-#
-#            B = int(segIndex*self.total_n_bits+Tbin);
-#
-##            K = int(floor(key)*2**(self.params['freq_n_bits'])+floor(float(key)/float(self.beta)));
-#            K = self.format(key)
-#            Bbin = struct.pack('<I4',B);
-#            Kbin = struct.pack('<I4',K);
-#
-##            print key , K , value , B
-#            try:
-#                self.dbObj.put(Kbin, Bbin)
-#            except db.DBKeyExistError:
-#                print "Warning existing Key/Data pair " + str(key) +' ' + str(value);
-#
+    def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0):
+        raise NotImplementedError("Not Implemented")
