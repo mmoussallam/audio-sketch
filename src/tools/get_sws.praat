@@ -1,4 +1,4 @@
-# Usage:  praat getsinewavespeech.praat filename.wav timeStep nFormants maxFormant windowSize preEmphasis 
+# Usage:  praat get_sws.praat filename.wav timeStep nFormants maxFormant windowSize preEmphasis 
 # written by M. Moussallam
  
 # output:
@@ -23,14 +23,18 @@ snd = selected("Sound", 1)
 
 # HARD CODED FOR NOW
 upperf = 8000
-basef = 500
+basef = 300
 formant_1=1
 formant_2=1
 formant_3=1
+formant_4=1
+formant_5=1
+formant_6=1
+formant_7=1
 low_pass=1
 formant_low_pass_freq=20
 amp_low_pass_freq=50
-add_them=1
+add_them=0
 
 #create wide-band spectrogram for finding formant amplitudes
 To Spectrogram... 0.003 'upperf' 0.001 40 Gaussian
@@ -39,7 +43,7 @@ To Spectrogram... 0.003 'upperf' 0.001 40 Gaussian
 select 'snd'
 To Formant (burg)... 'timeStep' 'nFormants'  'upperf' 'windowSize' 'preEmphasis'
 Rename... untrack
-Track... 2 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
+Track... nFormants-2 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
 Rename... 'snd$'
 select Formant untrack
 Remove
@@ -57,7 +61,7 @@ sf = Get sample rate
 #NB this Sound object is the formant TRACK
 #then back into a Matrix object for sound synthesis
 
-for i from 1 to 3
+for i from 1 to nFormants
 if formant_'i' 
 # make a matrix from Fi
 select Formant 'snd$'
@@ -113,8 +117,8 @@ endfor
 
 #add-up the three sine components
 #first select them
-if (formant_1 + formant_2 + formant_3) > 1 and add_them
-for i from 1 to 3
+if add_them
+for i from 1 to nFormants
 if formant_'i' 
 plus Sound sin'i'
 endif
@@ -122,11 +126,12 @@ endfor
 #then call Add_dynamic to add them up
 call add_dynamic 0 2 1
 Rename... 'snd$'SWS
-endif
+
 
 Scale peak... 0.95
 Write to WAV file... 'path$'_sws.wav
 
+endif
 #echo writing Praat Formant file: 'path$'.Formant
 #Write to short text file... 'path$'.Formant
 

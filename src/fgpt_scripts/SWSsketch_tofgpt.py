@@ -23,8 +23,16 @@ import matplotlib.pyplot as plt
 
 single_test_file1 = '/sons/jingles/panzani.wav'
 
-sk = SWSSketch()
+sk = SWSSketch(**{'n_formants':7})
+import time
+import cProfile
+t = time.time()
+
 sk.recompute(single_test_file1)
+
+sk = SWSSketch(**{'n_formants':5})
+cProfile.runctx('sk.recompute(single_test_file1)', globals(), locals())
+print time.time() - t
 
 #sk.sparsify(3000)
 #sk.represent(sparse=True)
@@ -33,9 +41,10 @@ sk.recompute(single_test_file1)
 #
 #sk.sparsify(300)   
 #sk.represent(sparse=True)
-#synth300 = sk.synthesize(sparse=True)
 
-sk.sparsify(3000)
+
+sk.sparsify(5000)
+synth = sk.synthesize(sparse=False)
 print sk.params   
 y_vec = sk.formants[1]
 print y_vec.shape
@@ -45,19 +54,19 @@ sig = Signal(single_test_file1, mono=True)
 #wsize= floor(sk.params['windowSize']*sig.fs)
 #tstep = floor(sk.params['time_step']*sig.fs)
 #X = sig.spectrogram(4096, 512,log=False, cbar=False)
-wsize = 1024
-tstep = 512
+wsize = 256
+tstep = 128
 X = stft.stft(sig.data, wsize, tstep)
 
 mask = np.zeros_like(X)
-deg = 10
+deg = 100
 appmask = np.zeros_like(X)
 binappmask = np.zeros_like(X)
 #
 
 plt.figure()
 ax2 = plt.imshow(np.abs(X[0,:,:]), extent=[0,y_vec.shape[0],0,sig.fs/2], origin='lower')
-for n_form in range(3):
+for n_form in range(sk.params['n_formants']-1):
     y_vec = sk.formants[n_form]
     x_vec = np.arange(0.0,sk.orig_signal.get_duration(),sk.orig_signal.get_duration()/len(y_vec))
     plt.plot(y_vec, linewidth=3.0)
@@ -80,10 +89,14 @@ for n_form in range(3):
 #plt.imshow(np.abs(mask[0,:,:]))
 #plt.show()
 
-plt.figure()
-plt.plot(sk.formants[2]-sk.formants[1])
-plt.plot(sk.formants[1]-sk.formants[0],'r')
-plt.show()
+
+
+#plt.figure()
+#plt.plot(sk.formants[4]-sk.formants[3])
+#plt.plot(sk.formants[3]-sk.formants[2],'r')
+#plt.plot(sk.formants[2]-sk.formants[1],'g')
+#plt.plot(sk.formants[1]-sk.formants[0],'c')
+#plt.show()
 
 rec = stft.istft(appmask, tstep)
 rec_sig = Signal(rec[0,:], sig.fs, mono=True, normalize=True)
@@ -99,7 +112,11 @@ binrec_sig = Signal(binrec[0,:], sig.fs, mono=True, normalize=True)
 #
 #plt.show()
 #
-#plt.figure()
+plt.figure()
+ax1 = plt.subplot(121)
+rec_sig.spectrogram(wsize, tstep, order=2, log=True,ax=ax1, cbar=False)
+ax2 = plt.subplot(122)
+binrec_sig.spectrogram(wsize, tstep, order=2, log=True,ax=ax2, cbar=False)
 #for formIdx in range(3):
 #    y_vec = sk.formants[formIdx]
 #    x_vec = np.arange(0.0,sk.orig_signal.get_duration(),sk.orig_signal.get_duration()/len(y_vec))    
@@ -113,4 +130,4 @@ binrec_sig = Signal(binrec[0,:], sig.fs, mono=True, normalize=True)
         
 #    plt.plot(x_vec, y_vec)
 #    plt.plot(x_vec, rec)
-#plt.show()
+plt.show()

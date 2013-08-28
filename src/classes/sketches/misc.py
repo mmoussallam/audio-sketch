@@ -18,7 +18,7 @@ class SWSSketch(AudioSketch):
 
         for key in kwargs:
             self.params[key] = kwargs[key]
-        self.call_str = 'praat %s/getsinewavespeech.praat' % self.params[
+        self.call_str = 'praat %s/get_sws.praat' % self.params[
             'script_path']
         if orig_sig is not None:
             self.recompute(orig_sig, **kwargs)
@@ -54,9 +54,8 @@ class SWSSketch(AudioSketch):
                          self.params['time_step'] * self.rep.fs)),
                 order=1, log=True, ax=ax)
 
-    def fgpt(self):
-        raise NotImplementedError(
-            "NOT IMPLEMENTED: ABSTRACT CLASS METHOD CALLED")
+    def fgpt(self, sparse=False):        
+        return self.formants 
 
     def _extract_sws(self, signal, kwargs):
         """ internal routine to extract the sws"""
@@ -73,7 +72,7 @@ class SWSSketch(AudioSketch):
                                                self.params['preEmphasis']))
     # Now retrieve the coefficients and the resulting audio
         self.formants = []
-        for forIdx in range(1, 4):
+        for forIdx in range(1, self.params['n_formants']+1):
             formant_file = signal[:-4] + '_formant' + str(forIdx) + '.mtxt'
             fid = open(formant_file, 'rU')
             vals = fid.readlines()
