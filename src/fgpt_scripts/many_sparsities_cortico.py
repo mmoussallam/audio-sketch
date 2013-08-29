@@ -44,7 +44,7 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities =  [200,100,]
+sparsities =  [50,30,10]
 seg_dur = 5.0
 fs = 8000
 
@@ -85,7 +85,7 @@ for sparsity in sparsities:
     
     
     # run a fingerprinting experiment
-    test_proportion = 1.0 # proportion of segments in each file that will be tested
+    test_proportion = 0.25 # proportion of segments in each file that will be tested
     step = 3.0
     if test:
         tstart = time.time()
@@ -94,7 +94,7 @@ for sparsity in sparsities:
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
+                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=4)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results
