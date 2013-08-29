@@ -31,8 +31,9 @@ plt.switch_backend('Agg')
 learn_dir = '/sons/rwc/Learn/'
 test_dir = '/sons/rwc/Test/'
 single_test_file1 = '/sons/jingles/panzani.wav'
-single_test_file2 = '/sons/sqam/voicefemale.wav'
+single_test_file2 = '/sons/sqam/voicemale.wav'
 
+#audio_files_path = '/sons/rwc/rwc-p-m07'
 audio_files_path = '/sons/rwc/rwc-p-m07'
 file_names = os.listdir(audio_files_path)
 
@@ -49,8 +50,8 @@ file_names = os.listdir(audio_files_path)
 #self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
 fgpt_sketches = [
-                 (SWSBDB('SWSdeltas.db', **{'wall':False}),
-                 SWSSketch(**{'n_formants':7})), 
+                 (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
+                 SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
 #                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
 #                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
 #                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
@@ -88,68 +89,68 @@ def populate(sk, fgpthand):
         print 'Working on ' + str(RandomAudioFilePath) + ' with ' + str(nbSeg) + ' segments'
         for segIdx in range(min(nbSeg, max_seg_num)):
             pySigLocal = pySig.get_sub_signal(
-                segIdx, 1, True, True, channel=0, pad=0, fast_create=True)
-            print "sketchify the segment %d" % segIdx
+                segIdx, 1, True, True, channel=0, pad=0, fast_create=False)
+                                        
+            print "sketchify the segment %d" % segIdx 
             # run the decomposition                        
             sk.recompute(pySigLocal)
-            sk.sparsify(300)
+#            sk.sparsify(300)
             fgpt = sk.fgpt()
             print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
             fgpthand.populate(fgpt, sk.params, fileIndex, offset=segIdx*segDuration)
 
 # for all sketches, we performe the same testing
+Full = False
 for (fgpthand, sk) in fgpt_sketches:
     print fgpthand
-    print sk
-    
-    # Initialize the sketch
-    sk.recompute(single_test_file1)
-    sk.sparsify(300)
-    # convert it to a fingeprint compatible with associated handler
-    fgpt = sk.fgpt(sparse=True)
-    params = sk.params
-#            print fgpt
-    # check that the handler is able to process the fingerprint            
-    print "Here the params: ",sk.params
-    fgpthand.populate(fgpt, sk.params, 0)
-    
-    # Do the same with the second file
-    sk.recompute(single_test_file2)
-    sk.sparsify(300)    
-    fgpthand.populate(sk.fgpt(sparse=True), sk.params, 1)
-    
-    # check that the handler can recover the first one
-    # does it build a coherent histogram matrix
-#    self.assertNotEqual(fgpt, sk.fgpt(sparse=True))
-    assert not fgpt==sk.fgpt(sparse=True)
-    hist = fgpthand.retrieve(fgpt, params, nbCandidates=2)
-#    self.assertIsNotNone(hist)
-    assert hist is not None
-    print hist.shape
-    print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
-                                                          np.max(hist[:,1]))
-    
-    plt.figure()
-    from scipy.ndimage.filters import median_filter            
-    plt.plot(median_filter(hist, (3, 1)))
-    plt.title(fgpthand.__class__)
-    # is the best candidate the good one
-    estimated_index, estimated_offset  = fgpthand.get_candidate(fgpt,sk.params,
-                                                                nbCandidates=2, smooth=3)
-    print "Guessed %d with offset %1.1f s"%(estimated_index, estimated_offset)
-#    self.assertEqual(0, estimated_index)
-#    self.assertGreater(5.0, estimated_offset)
-    assert estimated_index == 0
-    assert estimated_offset < 6.0
+    print sk    
+    if Full:
+        # Initialize the sketch
+        sk.recompute(single_test_file1)
+        sk.sparsify(300)
+        # convert it to a fingeprint compatible with associated handler
+        fgpt = sk.fgpt(sparse=True)
+        params = sk.params
+    #            print fgpt
+        # check that the handler is able to process the fingerprint            
+        print "Here the params: ",sk.params
+        fgpthand.populate(fgpt, sk.params, 0)
+        
+        # Do the same with the second file
+        sk.recompute(single_test_file2)
+        sk.sparsify(300)    
+        fgpthand.populate(sk.fgpt(sparse=True), sk.params, 1)
+        
+        # check that the handler can recover the first one
+        # does it build a coherent histogram matrix
+    #    self.assertNotEqual(fgpt, sk.fgpt(sparse=True))
+        assert not fgpt==sk.fgpt(sparse=True)
+        hist = fgpthand.retrieve(fgpt, params, nbCandidates=2)
+    #    self.assertIsNotNone(hist)
+        assert hist is not None
+        print hist.shape
+        print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
+                                                              np.max(hist[:,1]))
+        
+        plt.figure()
+        from scipy.ndimage.filters import median_filter            
+        plt.plot(median_filter(hist, (3, 1)))
+        plt.title(fgpthand.__class__)
+        # is the best candidate the good one
+        estimated_index, estimated_offset  = fgpthand.get_candidate(fgpt,sk.params,
+                                                                    nbCandidates=2, smooth=3)
+        print "Guessed %d with offset %1.1f s"%(estimated_index, estimated_offset)
+    #    self.assertEqual(0, estimated_index)
+    #    self.assertGreater(5.0, estimated_offset)
+        assert estimated_index == 0
+        assert estimated_offset < 6.0
     
     # Now the last of the test: populate a base of a few dozens musical samples
     populate(sk, fgpthand)
     
     # and retrieve a segment in the base
     true_file_index = 3
-    true_offset = 11.5
-    
-    
+    true_offset = 11.5    
     
     # get the fingerprint 
     true_file_path = op.join(audio_files_path, file_names[true_file_index])
@@ -157,8 +158,8 @@ for (fgpthand, sk) in fgpt_sketches:
     true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
     true_sig.crop(0, 5.0*true_sig.fs)
     sk.recompute(true_sig)
-    sk.sparsify(300)    
-    test_fgpt = sk.fgpt(sparse=True)
+#    sk.sparsify(300)    
+    test_fgpt = sk.fgpt(sparse=False)
 
     hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=8)
     estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
@@ -167,7 +168,15 @@ for (fgpthand, sk) in fgpt_sketches:
     assert estimated_index == true_file_index
     assert np.abs(estimated_offset - true_offset) <= 5
 
-    plt.plot(hist.T)
+    plt.plot(hist[:,2])
+    plt.show()
+    
+    # bourrinade
+    fgpthand.populate(test_fgpt, sk.params, 9)
+    test_hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=10)
+    estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
+                                                                nbCandidates=10, smooth=1)
+    plt.plot(test_hist)
     plt.show()
 
 #if __name__ == "__main__":
