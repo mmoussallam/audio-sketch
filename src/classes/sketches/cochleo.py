@@ -16,7 +16,7 @@ class CochleoSketch(AudioSketch):
     def __init__(self, original_sig=None, **kwargs):
         # add all the parameters that you want        
         
-        self.params = {'n_bands': 64, 'shift':0, 'fac':-2,'n_inv_iter':5}
+        self.params = {'n_bands': 64, 'shift':0, 'fac':-2,'n_inv_iter':5, 'frmlen':8}
         self.cochleogram = None
         for key in kwargs:
             self.params[key] = kwargs[key]

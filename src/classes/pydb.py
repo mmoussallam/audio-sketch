@@ -272,12 +272,19 @@ class STFTPeaksBDB(FgptHandle):
 
         return estTime, fileIdx
     
-    def _build_pairs(self, sparse_stft, params, offset=0):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False,ax=None):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
         values = []
-        
+        if display:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111)            
+            ax.spy(sparse_stft[0,:,:], cmap=cm.bone_r, aspect='auto')
+            
         peak_indexes = np.nonzero(sparse_stft[0,:,:])
         f_target_width = 3*params['f_width']
         t_target_width = 3*params['t_width']
@@ -297,6 +304,9 @@ class STFTPeaksBDB(FgptHandle):
                 t1 = float(peak_ind[1]) *time_step
                 # HACK HERE: rounding at 1 decimals to robustify
                 delta_t = np.round(float(target_points_j[i]) *time_step, decimals=1)
+                if display:                    
+                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
+#                
 #                print (f1, f2, delta_t) , t1
                 keys.append((f1, f2, delta_t))
                 values.append(t1 + offset)
@@ -341,6 +351,10 @@ class STFTPeaksBDB(FgptHandle):
 
         # voting for best candidate
         return histogram
+    
+    def draw_fgpt(self, fgpt, params, ax=None):
+        """ Draw the fingerprint """
+        self._build_pairs(fgpt, params, 0, display=True, ax=ax)
     
 class CochleoPeaksBDB(STFTPeaksBDB):
     ''' handling the fingerprints based on a pairing of Cochleogram peaks 
@@ -403,7 +417,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
                 fig = plt.figure()
                 ax = fig.add_subplot(111)
             
-            ax.spy(sparse_stft, cmap=cm.bone_r)
+            ax.spy(sparse_stft, cmap=cm.bone_r, aspect='auto')
         
 #        print "Params : ",f_target_width,t_target_width,time_step
         # then for each of them look in the target zone for other
@@ -588,6 +602,25 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
 
         return sizes
     
+    def draw_fgpt(self, fgpt, params, ax=None):
+        """ Draw the fingerprint """
+#        self._build_pairs(fgpt, params, 0, display=True, ax=ax)
+        
+        import matplotlib.pyplot as plt
+        fig = plt.figure() 
+        for n in range(self.params['n_sv']):
+            for m in range(self.params['n_rv']):
+                ax = plt.subplot(self.params['n_sv'], self.params['n_rv'],
+                                 (n* self.params['n_rv']) + m+1)
+                self.dbObj[n][m]._build_pairs(fgpt[n,self.params['n_rv']+m,:,:],
+                                              params, display=True, ax=ax)
+                plt.xticks([])
+                plt.yticks([])
+                plt.subplot(self.params['n_sv'], self.params['n_rv'], m+1)
+                plt.title(str(params['rv'][m]))
+            plt.subplot(self.params['n_sv'], self.params['n_rv'], (n* self.params['n_rv']) + 1)
+            plt.ylabel(str(params['sv'][n]))
+        plt.subplots_adjust(left=0.06, bottom=0.05, top=0.92,right=0.96)
 class XMDCTBDB(FgptHandle):
     '''
     PyMP approx berkeley database handle
@@ -705,7 +738,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 
 
 
-    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False):
+    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False, max_pairs=None):
         ''' Populate the database using the given fingerprint and parameters
         
         Here the fingerprint object is the PyMP.approx class
@@ -782,6 +815,9 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         # defaut case
         return int(floor(key) * 2 ** (self.params['freq_n_bits']) + floor(float(key) / float(self.beta)))
 
+    def draw_fgpt(self, fgpt, params, ax=None):
+        """ Draw the fingerprint """
+        fgpt.plot_tf()
 
 class SWSBDB(FgptHandle):
     """  A handle class for SineWave Speech based fingerprinting
@@ -893,13 +929,13 @@ class SWSBDB(FgptHandle):
             keys.append(diffmatrix[:,t].tolist())
         return keys, values
     
-    def populate(self, fgpt, params, fileIndex, offset=0):
+    def populate(self, fgpt, params, fileIndex, offset=0, max_pairs=None):
         ''' Populate the database using the given fingerprint and parameters 
         
         Here each column of the fgpt matrix will serve as a key and the value is the time 
         stamp associated (uniformly sampled on the time axis)
         '''
-        keys, values = self._build_pairs(fgpt, params, offset)
+        keys, values = self._build_pairs(fgpt, params, offset)        
                 
         self.add(zip(keys, values), fileIndex)
 
@@ -923,3 +959,14 @@ class SWSBDB(FgptHandle):
 
         # voting for best candidate
         return histogram
+
+    def draw_fgpt(self, fgpt, params, ax=None):
+        """ illustrate the fingerprint considered"""
+        diffmatrix = np.abs(np.diff(fgpt, 1, axis=0))
+        import matplotlib.pyplot as plt
+        if ax is None:
+            fig = plt.figure()
+            ax = plt.subplot(111)
+        ax.plot(diffmatrix.T,'+')
+        plt.xlabel('Time')
+        plt.ylabel('Formants differences')

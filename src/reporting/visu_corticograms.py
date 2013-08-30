@@ -29,6 +29,8 @@ sk.recompute(sig)
 sk.sparsify(10)
 sk.represent()
 
+
+
 env = db.DBEnv()
 env.open("/home/manu/workspace/audio-sketch/src/reporting", db.DB_INIT_MPOOL|db.DB_CREATE )
 fgpthandle = pydb.CorticoIndepSubPeaksBDB("temp.db",dbenv=env,                                         

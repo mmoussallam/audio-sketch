@@ -13,7 +13,7 @@ from classes import pydb
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
-
+figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
@@ -90,4 +90,6 @@ for setup in setups:
 
 plt.grid()    
 plt.legend(legends, loc='lower right')    
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
 plt.show()
