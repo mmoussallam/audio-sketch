@@ -23,7 +23,7 @@ snd = selected("Sound", 1)
 
 # HARD CODED FOR NOW
 upperf = 8000
-basef = 300
+basef = 500
 formant_1=1
 formant_2=1
 formant_3=1
@@ -43,7 +43,7 @@ To Spectrogram... 0.003 'upperf' 0.001 40 Gaussian
 select 'snd'
 To Formant (burg)... 'timeStep' 'nFormants'  'upperf' 'windowSize' 'preEmphasis'
 Rename... untrack
-Track... nFormants-2 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
+Track... 4 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
 Rename... 'snd$'
 select Formant untrack
 Remove

@@ -4,13 +4,14 @@ classes.sketches.MiscSketches  -  Created on Jul 25, 2013
 '''
 
 from base import *
-
+tempdir = '/home/manu/workspace/audio-sketch'
 class SWSSketch(AudioSketch):
     """ Sine Wave Speech """
 
     def __init__(self, orig_sig=None, **kwargs):
 
-        self.params = {'n_formants': 5,
+        self.params = {'n_formants_max': 7,
+                       'n_formants': 3,
                        'time_step': 0.01,
                        'windowSize': 0.025,
                        'preEmphasis': 50,
@@ -30,9 +31,9 @@ class SWSSketch(AudioSketch):
 
     def synthesize(self, sparse=False):
         if not sparse:
-            return self.rep
+            return self.recsig
         else:
-            return self.sp_rep
+            return self.sp_recsig
 
     def represent(self, fig=None, sparse=False):
         """ plotting the sinewave speech magnitude spectrogram"""
@@ -41,33 +42,60 @@ class SWSSketch(AudioSketch):
             ax = fig.add_subplot(111)
         else:
             ax = plt.gca()
-        if not sparse:
-            self.rep.spectrogram(
-                2 ** int(np.log2(self.params['windowSize'] * self.rep.fs)),
+        if not sparse:            
+            self.recsig.spectrogram(
+                2 ** int(np.log2(self.params['windowSize'] * self.recsig.fs)),
                 2 ** int(np.log2(
-                         self.params['time_step'] * self.rep.fs)),
+                         self.params['time_step'] * self.recsig.fs)),
                 order=1, log=True, ax=ax)
         else:
-            self.sp_rep.spectrogram(
-                2 ** int(np.log2(self.params['windowSize'] * self.rep.fs)),
+            self.sp_recsig.spectrogram(
+                2 ** int(np.log2(self.params['windowSize'] * self.sp_recsig.fs)),
                 2 ** int(np.log2(
-                         self.params['time_step'] * self.rep.fs)),
+                         self.params['time_step'] * self.sp_recsig.fs)),
                 order=1, log=True, ax=ax)
 
     def fgpt(self, sparse=False):        
-        return self.formants 
+        if sparse:
+            return self.sp_rep
+        else: 
+            return self.rep
 
-    def _extract_sws(self, signal, kwargs):
+    def _extract_sws(self, signal, reconstruct=False, **kwargs):
         """ internal routine to extract the sws"""
         for key in kwargs:
             self.params[key] = kwargs[key]
+        
+        clean = False
+        if isinstance(signal, Signal):
+            saved_sig = signal 
+            saved_sig.normalize()       
+            saved_sig.write(os.path.join(tempdir,'temp.wav'))
+            signal = os.path.join(tempdir,'temp.wav')
+            clean = True
 
-        if signal is None or not os.path.exists(signal):
+        if not isinstance(signal,str) or not os.path.exists(signal):
+            print signal
             raise ValueError("A valid path to a wave file must be provided")
-        self.current_sig = signal        
+        self.current_sig = signal
+        
+        if not reconstruct:
+            print "callin get_sws"
+            self.call_str = 'praat %s/get_sws.praat' % self.params[
+            'script_path']
+        else:
+            print "callin getsinewavespeech"
+            self.call_str = 'praat %s/getsinewavespeech.praat' % self.params[
+            'script_path']                
+        
+        for forIdx in range(1, self.params['n_formants_max']+1):
+            if os.path.exists(signal[:-4] + '_formant' + str(forIdx) + '.mtxt'):
+                #print "Removing %s"%(signal[:-4] + '_formant' + str(forIdx) + '.mtxt')
+                os.remove(signal[:-4] + '_formant' + str(forIdx) + '.mtxt') 
+              
         os.system('%s %s %1.3f %d %1.3f %d' % (self.call_str, signal,
                                                self.params['time_step'],
-                                               self.params['n_formants'],
+                                               self.params['n_formants_max'],
                                                self.params['windowSize'],
                                                self.params['preEmphasis']))
     # Now retrieve the coefficients and the resulting audio
@@ -78,17 +106,24 @@ class SWSSketch(AudioSketch):
             vals = fid.readlines()
             fid.close()  # remove first 3 lines and convert to numpy
             self.formants.append(np.array(vals[3:], dtype='float'))
+        
+#        if clean:
+#            os.remove(os.path.join(tempdir,'temp.wav'))
+        return signal
 
-    def recompute(self, signal=None, **kwargs):
-        self._extract_sws(signal, kwargs)
+    def recompute(self, signal=None, reconstruct=False, **kwargs):
+        signal = self._extract_sws(signal, reconstruct = reconstruct, **kwargs)
 
         # save as the original signal if it's not already set
         if self.orig_signal is None:
             self.orig_signal = Signal(signal, normalize=True)
+        
         # and the audio we said
-        self.rep = Signal(signal[:-4] + '_sws.wav', normalize=True)
+        if os.path.exists(signal[:-4] + '_sws.wav'):
+            self.recsig = Signal(signal[:-4] + '_sws.wav', normalize=True)
+        self.rep = np.array(self.formants)
 
-    def sparsify(self, sparsity):
+    def sparsify(self, sparsity, reconstruct=False):
         """ use sparsity to determine the number of formants and window size/steps """
 
         if sparsity <= 0:
@@ -97,15 +132,16 @@ class SWSSketch(AudioSketch):
             # interprete as a ratio
             sparsity *= self.rep.length
 
-        new_tstep = float(self.rep.get_duration() * self.params['n_formants'])/float(sparsity)
+#        new_tstep = float(self.orig_signal.get_duration() * self.params['n_formants'])/float(sparsity)
+        new_tstep = float(self.orig_signal.get_duration())/float(sparsity)
 #            int(sparsity) * self.params['n_formants']) / float(self.rep.fs)
         new_wsize = new_tstep * 2
-        print "New time step of %1.3f seconds" % new_tstep
-        self._extract_sws(self.current_sig, {'time_step':
-                          new_tstep, 'windowSize': new_wsize})
-        self.sp_rep = Signal(
-            self.current_sig[:-4] + '_sws.wav', normalize=True)
-
+#        print "New time step of %1.3f seconds" % new_tstep
+        self._extract_sws(self.current_sig, reconstruct = reconstruct,
+                          **{'time_step': new_tstep, 'windowSize': new_wsize})
+        if os.path.exists(self.current_sig[:-4] + '_sws.wav'):
+            self.sp_recsig = Signal(self.current_sig[:-4] + '_sws.wav', normalize=True)
+        self.sp_rep = np.array(self.formants)
 
 class KNNSketch(AudioSketch):
     """ Reconstruct the target audio from most similar

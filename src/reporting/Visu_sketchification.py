@@ -18,22 +18,25 @@ from PyMP import Signal
 import stft
 from scipy.signal import lfilter, hann
 #audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Hand-made Toolbox/forAngelique/61_sadness.wav'
-audio_test_file = '/sons/jingles/surprise.wav'
-from classes import sketch
+audio_test_file = '/sons/jingles/panzani.wav'
+from classes.sketches.bench import *
+from classes.sketches.misc import *
+from classes.sketches.cochleo import *
+from classes.sketches.cortico import *
 figure_output_path = '/home/manu/workspace/audio-sketch/src/reporting/figures/'
 audio_output_path = '/home/manu/workspace/audio-sketch/src/reporting/audio/'
 
 learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'    
 
-sketches_to_test = [sketch.SWSSketch(),
-                    sketch.KNNSketch(**{'location':learned_base_dir,
+sketches_to_test = [SWSSketch(),
+                    KNNSketch(**{'location':learned_base_dir,
                                                 'shuffle':13,
                                                 'n_frames':100000,
                                                 'n_neighbs':1}),
-                    sketch.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-                    sketch.CochleoPeaksSketch(),
-                    sketch.XMDCTSparseSketch(**{'scales':[64,512,4096], 'n_atoms':100}),
-                    sketch.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),
+                    STFTPeaksSketch(**{'scale':2048, 'step':256}),
+                    CochleoPeaksSketch(),
+                    CorticoIndepSubPeaksSketch(),
+                    XMDCTSparseSketch(**{'scales':[64,512,4096], 'n_atoms':100}),                    
                             ]
 
 for sk in sketches_to_test:

@@ -28,7 +28,7 @@ bases = {'RWCLearn':'/sons/rwc/Learn/',
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'voxforge' # Choose a unique identifier for the dataset considered
 audio_path = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
@@ -37,8 +37,8 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [5,200]
-seg_dur = 5.0
+sparsities = [300,]
+seg_dur = -1
 fs = 8000
 step = 3.0
 ## Initialize the sketchifier
