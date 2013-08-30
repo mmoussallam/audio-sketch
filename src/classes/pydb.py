@@ -738,7 +738,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 
 
 
-    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False, max_pairs=None):
+    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False, max_pairs=None, debug=False):
         ''' Populate the database using the given fingerprint and parameters
         
         Here the fingerprint object is the PyMP.approx class
