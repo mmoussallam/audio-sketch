@@ -44,7 +44,7 @@ file_names = get_filepaths(audio_path, 0,  ext='.au')
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities =  [50,30,10]
+sparsities =  [100,]
 seg_dur = 5.0
 fs = 8000
 

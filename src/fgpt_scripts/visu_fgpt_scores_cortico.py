@@ -15,10 +15,10 @@ score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 
 seg_dur = 5.0
-test_proportion = 1.0
+test_proportion = 0.25
 step = 3
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
-sparsities =  [200,100,]
+sparsities =  [200,100, 50,30,10]
 fs = 8000
 
 ## Initialize the sketchifier
