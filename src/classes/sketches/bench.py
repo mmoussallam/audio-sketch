@@ -104,7 +104,10 @@ class STFTPeaksSketch(AudioSketch):
         # naive implementation: cut in non-overlapping zone and get the max
         (n_bins, n_frames) = self.rep.shape[1:]
         (f, t) = (self.params['f_width'], self.params['t_width'])
+                        
+        
         for x_ind in range(0, (n_frames / t) * t, t):
+            
             for y_ind in range(0, (n_bins / f) * f, f):
                 rect_data = self.rep[0, y_ind:y_ind + f, x_ind:x_ind + t]
 

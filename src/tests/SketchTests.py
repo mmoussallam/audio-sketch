@@ -45,7 +45,7 @@ class SketchTest(unittest.TestCase):
                             misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-#                            cochleo.CochleoPeaksSketch(),
+                            cochleo.CochleoPeaksSketch(**{'fs':8000}),
 #                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),   
 #                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -57,7 +57,7 @@ class SketchTest(unittest.TestCase):
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(4,11),'n_inv_iter':10})
 #                                                     
-#                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
 #                            bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
@@ -83,7 +83,7 @@ class SketchTest(unittest.TestCase):
 #            plt.title(sk.__class__)
             
             # Remove the original signal
-            sk.orig_signal = None 
+#            sk.orig_signal = None 
             
             print "%s : Synthesize the sketch"%sk.__class__
             synth_sig = sk.synthesize(sparse=True)
