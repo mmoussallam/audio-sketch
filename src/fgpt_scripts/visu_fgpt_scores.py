@@ -12,19 +12,19 @@ from PyMP import Signal
 from classes import pydb
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
 setups = [
-           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [700,500, 200,100,50,20,10,8,6,4], 'b-+', 1.0),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [200, 100,50,30,10, 5], 'r-o', 0.25)    
+           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [300,200,50,30,20,10,5], 'b-+', .25),
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [300,200,50,30,20,10,5], 'r-o', 0.25)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
 legends = []
-plt.figure()
+plt.figure(figsize=(12,6))
 for setup in setups:
     (sk, fs, sparsities, mark, test_proportion) = setup
 
@@ -43,16 +43,16 @@ for setup in setups:
     for sparsity in sparsities:
         
         # we just need a short adaptation
-        if seg_dur>0:
-            sk.sparsify(sparsity)
-            sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                                int(seg_dur), int(fs), int(100.0*test_proportion), int(step))
-        else:
-            sc_root = "%s_%s_k%d_"%(set_id, sk_id, sparsity)
-            cands = [ f for f in os.listdir(op.join(score_path)) if sc_root in f]
-            # filter again with fs and proportion
-            subcands = [f for f in cands if '%dfs_test%d.mat'%(int(fs), int(100.0*test_proportion)) in f]
-            sc_name = subcands[0]
+#        if seg_dur>0:
+#            sk.sparsify(sparsity)
+#            sc_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
+#                                                int(seg_dur), int(fs), int(100.0*test_proportion), int(step))
+#        else:
+        sc_root = "%s_%s_k%d_"%(set_id, sk_id, sparsity)
+        cands = [ f for f in os.listdir(op.join(score_path)) if sc_root in f]
+        # filter again with fs and proportion
+        subcands = [f for f in cands if '%dfs_test%d_step%d.mat'%(int(fs), int(100.0*test_proportion), int(step)) in f]
+        sc_name = subcands[0]
             
         
         D = loadmat(op.join(score_path,sc_name))
@@ -75,9 +75,13 @@ for setup in setups:
 #        fgpthandle.dbObj.close()
     #plt.subplot(211)
 #    plt.plot(nkeys, 100*np.array(scores), mark)
-    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark)
-    
+    plt.subplot(121)
+    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark)    
     plt.xlabel('DB size (Mbytes)')
+    plt.ylabel('Recognition rate (\%)')
+    plt.subplot(122)
+    plt.semilogx(np.array(times), 100*np.array(cons_scores),mark)    
+    plt.xlabel('Computation Times (s)')
     plt.ylabel('Recognition rate (\%)')
     
     legends.append(("%s "%sk_id))
@@ -87,9 +91,12 @@ for setup in setups:
     #plt.grid()
     #plt.xlabel('Comp. Time (s)')
     #plt.ylabel('Recognition rate (\%)')
-
+plt.subplot(121)
+plt.grid()
+plt.subplot(122)
 plt.grid()    
 plt.legend(legends, loc='lower right')    
+plt.subplots_adjust(left=0.06,right=0.96, top=0.96)
 plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
 plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
 plt.show()

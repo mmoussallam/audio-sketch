@@ -1,0 +1,1428 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 3cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Getting started with Sketches and Fingerprint Experiments
+\end_layout
+
+\begin_layout Author
+M.
+ Moussallam
+\end_layout
+
+\begin_layout Section
+Introduction and notations
+\end_layout
+
+\begin_layout Standard
+This document summarizes the experimental setups built as part of the Sketch
+ 2 (a.k.a.
+ Ghost Sounds) project.
+ The primary objective is to evaluate the fingerprinting capabilities of
+ a variety of Audio sketches.
+ With this in mind, let us define the elementary objects that we may manipulate
+ and their properties:
+\end_layout
+
+\begin_layout Description
+Sounds Any audio signal, as the discrete sampling of an acoustic wave.
+ For simplicity's sake, the spatial properties may be discarded and only
+ mono-channel signals may be considered.
+ Among properties one may find the sampling frequency and the length or
+ duration.
+\end_layout
+
+\begin_layout Description
+Track An audio track is a long sound (in the order of several minutes) that
+ may for instance be a musical interpretation.
+ Among properties one may find the title, artist name, duration, musical
+ genre or speaker id.
+\end_layout
+
+\begin_layout Description
+Scene An audio scene is a short sound, e.g.
+ a single sentence uttered by a speaker or an environmental sound such as
+ a car passing, or a precise part in an audio track (e.g.
+ chorus or verse)
+\end_layout
+
+\begin_layout Description
+DataSet A collection of sounds (or tracks) properties: number of elements
+\end_layout
+
+\begin_layout Description
+Sketch A simplified version of an audio scene.
+ By simplify we mean any way to approximate the original object via dimensionali
+ty reduction.
+ We assume the reader is aware of the Sketch 1 paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Suied2013"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+Fingerprint A hash version of a sketch, that can be stored and retrieved
+ efficiently from a fingerprint database
+\end_layout
+
+\begin_layout Subsection*
+Notations
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $x\in\mathbb{R}^{N}$
+\end_inset
+
+ be the original signal.
+ A sketch 
+\begin_inset Formula $sketch(x)$
+\end_inset
+
+ is a simplified version of 
+\begin_inset Formula $x$
+\end_inset
+
+ that can be inverted.
+ Before computing a sketch, one usually use a representation 
+\begin_inset Formula $Rep(x)$
+\end_inset
+
+ and we will use the sketch to build fingerprints 
+\begin_inset Formula $fgpt(x)$
+\end_inset
+
+.
+ The usual process will thus look like:
+\begin_inset Formula 
+\[
+x\rightarrow Rep(x)\rightarrow sketch(x)\rightarrow fgpt(x)
+\]
+
+\end_inset
+
+ Quite naturally, let us now introduce the typical representations, then
+ the sketches and finally the fingerprints.
+\end_layout
+
+\begin_layout Subsection
+Representations
+\end_layout
+
+\begin_layout Enumerate
+Spectrograms
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+The standard short-term Fourier Transform, nothing remarkable about it.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/exemple_stft.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Spectrogram (Absolute value of the Short Time Fourier Transform) of an audio
+ excerpt.
+ Darker regions are more energetic.
+ The Time/Frequency resolution obeys a compromise that is controlled by
+ the analysis window size.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Cochleogram
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A log-frequency transform similar to the CQT but using real auditory response
+ filters (from the cochlea) as frequency filter banks.
+ Cochleograms somewhat emphasize the TF regions that are perceptually stimulated.
+ More information should be seeked directly in the papers 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Yang1992,Wang1995"
+
+\end_inset
+
+ (and other by D.
+ Pressnitzer and S.
+ Shamma) on which these are based.
+ The cochleogram computation is a direct transcription of the one performed
+ in the NSL Toolbox
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Doc and download at http://www.isr.umd.edu/Labs/NSL/Downloads.html
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/exemple_cochleogram.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Cochleogram (absolute value) of an audio excerpt.
+ Darker regions are more energetic.
+ The frequency scale is logarithmic and the Time/Frequency resolution compromise
+ is frequency dependent.
+ The filter bank models the first step of the human auditory system.
+ Low and high frequencies are typically lowered while frequencies in the
+ 500-2000Hz range are emphasized.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Corticogram
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Even deeper into the human auditory system is the primary area of the cortex.
+ The output of the cochlear system is processed by neuron layers whose action
+ can be approximately modeled by 2D wavelet transforms.
+ The corticogram is a 4D representation indexed as a scale/rate/time/frequency
+ matrix.
+ As such it can be figured as a matrix of TF transforms.
+ As for above: one should read the paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang1995"
+
+\end_inset
+
+ for more details and look into the NSL toolbox.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/exemple_corticogram.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Corticogram visualization as a matrix of time-frequency representations.
+ Each of the plots can be understood as a cochleogram that has been filtered
+ in 2D.
+ Filter characteristics are controlled by the scale and rate parameters.
+ In the Top-Left corner, one can see a TF plot that is very smooth both
+ in time and frequency.
+ Increasing the scale parameters lead to lower plots.
+ The Bottom-Left corner plot depicts energy with a good frequency resolution
+ but is highly smooth in time.
+ At the opposite, the Top-Right corner plots is smooth in frequency but
+ sharp in time.
+ The Bottom-Right corner somehow presents the high frequencies of the 
+\begin_inset Quotes eld
+\end_inset
+
+wavelet transform
+\begin_inset Quotes erd
+\end_inset
+
+ and looks much more like the Cochleogram
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Sparse Multi-Resolution Approximation
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Multi-resolution representations use a union of overcomplete basis (e.g.
+ MDCT) to approximate a target audio signal.
+ The sparse nature is achieved through selection mechanism such as thresholding
+ or greedy algorithms.
+ It is a synthesis-based view of the sparse problem.
+ There is a huge litterature on these methods, but for practical purposes,
+ one can look into the PyMP tutorials
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://manuel.moussallam.net/PyMP/
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/sketchified_panzani_XMDCTSparseSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Example_3atoms_mdct.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Left: Spectrogram of the resynthesis of a sparse approximation in a union
+ of 3 MDCT basis.
+ Red regions are more energetic.
+ Right: the 3 types of basic components (or atoms) that are used.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As one can notice, here the representation is in itself a sketchification
+ process.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+SineWave Speech
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+The sine wave speech synthesis is obtained by tracking formants (resonant
+ frequencies of the vocal track) along time.
+ The simplified sound surprisingly reminds of the original.
+ This representation is obtained by first finding the formants in the spectrogra
+m, then using a Viterbi algorithm for the tracking.
+\end_layout
+
+\begin_layout Standard
+There is a very good introductory article on sinewave speech on 
+\begin_inset CommandInset href
+LatexCommand href
+name "scholarpedia"
+target "http://www.scholarpedia.org/article/Sine-wave_speech"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/sketchified_panzani_SWSSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Spectrogram of a SineWave Speech reconstruction of an audio excerpt.
+ red regions are more energetic.
+ The signal is sliced in evenly spaced time frames.
+ In each frame, the formants (resonant frequencies of the vocal track) are
+ searched for.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Feature vector
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Any feature extraction process can be used, (MFCC, chroma, LPC, etc..) any
+ feature combination can be thought of as a representation of the signal.
+ The synthesis can then be obtained by concatenating sounds from a database
+ based on nearest neighbors search in the feature space.
+ This is for example used in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Muller2005"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Sketches
+\end_layout
+
+\begin_layout Standard
+A sketch is a simplified version of an audio signal.
+ Usually a sketch is obtained by reducing the dimensionality in a transform
+ domain.
+ Therefore, any combination of a Sparse Approximation algorithm and a specific
+ representation (e.g.
+ dictionary) constitute a sketch.
+ Among such algorithms one can cite:
+\end_layout
+
+\begin_layout Itemize
+Greedy algorithms such as Matching Pursuit.
+ These algorithm alternate the selection of a component of the representation
+ and a reprojection of the residual.
+\end_layout
+
+\begin_layout Itemize
+Thresholding algorithm, (Iterative Hard Thresholding, Soft etc..)
+\end_layout
+
+\begin_layout Subsection
+Fingerprints
+\end_layout
+
+\begin_layout Standard
+There is quite a large literature on fingerprinting problems and systems.
+ The PhD thesis of J.
+ Pinquier 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Pinquier_phD"
+
+\end_inset
+
+ is a good place to start but a bit old.
+ An updated information can be found in S.
+ Fenet PhD Thesis that is to be defended quite soon.
+ Among very classical fingerprint systems is the one proposed by Haitsma
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Haitsma"
+
+\end_inset
+
+, the very famous Shazam system 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang_com"
+
+\end_inset
+
+ and the Phillips one 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Philips_DCT,Philips_noise"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Families of fingerprints
+\end_layout
+
+\begin_layout Standard
+There are two families of fingerprinting systems:
+\end_layout
+
+\begin_layout Enumerate
+The ones that build a single identifier out of an audio signal (e.g.
+ a feature vector) and compare audio signals through their computed identifiers.
+ (see the review of all such - prior to 2002 - techniques in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cano_review"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Enumerate
+The ones that use several 
+\emph on
+Keys 
+\emph default
+for each
+\emph on
+ 
+\emph default
+audio signal
+\emph on
+.
+ 
+\emph default
+Comparison between two signals is performed by measuring the amount of Keys
+ that they have in common.
+\end_layout
+
+\begin_layout Standard
+The second approach has proven to be more robust.
+ Actually, distortions such as noise, pitch-shifting, compression etc can
+ affect the construction of the fingerprints.
+ In the first case, if the distortion affects the construction of the identifier
+, then recognition would fail.
+ 
+\end_layout
+
+\begin_layout Standard
+In the second case, although distortions will certainly modify some 
+\emph on
+Keys
+\emph default
+, the usual hypothesis is that 
+\emph on
+some of them
+\emph default
+ would remain the same, and sufficiently so as to still be able to identify
+ the audio segment.
+ This second approach is the one that now prevails in industrials solutions
+ such as Shazam and so we shall adopt it here.
+\end_layout
+
+\begin_layout Subsubsection
+Building Keys
+\end_layout
+
+\begin_layout Standard
+There are different ways to build 
+\emph on
+keys, 
+\emph default
+some of them are listed below:
+\end_layout
+
+\begin_layout Enumerate
+Peaks and Thresholded values indexes
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Whatever the chosen representation (STFT 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+, CQT
+\begin_inset CommandInset citation
+LatexCommand cite
+key "gretsi"
+
+\end_inset
+
+ or Cochleogram) local maxima can be selected and directly used as fingerprint
+ keys.
+ Nonetheless it's absolute time localization can not serve as a reference
+ if shift-invariance is required (which is the case for most fingerprinting
+ schemes).
+ This is an approach investigated in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Moussallam2012c"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/fingerprint_panzani_XMDCTSparseSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Visualization of sketch as a sparse collection of Time-Frequency Peaks.
+ Each of these dots defines a key.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Pairs of Time-Frequency Peaks
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Much more robust than isolated Peaks, Pairs of Peaks have been introduced
+ by Wang in the Shazam standard 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com,ismir,gretsi"
+
+\end_inset
+
+.
+ The key is now defined by the relative information: 
+\begin_inset Formula $(f1,\Delta f,\Delta t)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/fingerprint_panzani_STFTPeaksSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Visualization of Pairs of Peaks in a TF plane.
+ Each of the line specifies a key.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Feature vectors
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Along with their binarization (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Haitsma,Muller2005"
+
+\end_inset
+
+)
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Formant differences
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A fingerprint specifically dedicated to the SineWave Speech (NEW ONE)
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/fingerprint_panzani_SWSSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Novel type of key.
+ At each time step, the differences between formants F2-F1 and F1-F0 are
+ computed.
+ This gives a pair of frequency differences that are used as a key.
+ In the graph, a key is a combination of the blue and green cross at a given
+ time position.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To be explained when will give satisfactory results....
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Experiments
+\end_layout
+
+\begin_layout Subsection
+Criteria
+\end_layout
+
+\begin_layout Standard
+Fingerprinting systems are evaluated on the following criteria:
+\end_layout
+
+\begin_layout Itemize
+Robustness: To Noise and distortion.
+ The inability of a system to detect an excerpt as being part of the database
+ is a False Negative
+\end_layout
+
+\begin_layout Itemize
+Reliability: How often is an excerpt incorrectly identified: this is referred
+ to as False Positive 
+\end_layout
+
+\begin_layout Itemize
+Size: The number of bits required to encode a fingerprint
+\end_layout
+
+\begin_layout Itemize
+Speed: Or the complexity, measured by Flops or CPU time
+\end_layout
+
+\begin_layout Itemize
+Scalability: Will the system continue to perform if the database is about
+ million songs
+\end_layout
+
+\begin_layout Subsection
+Noise Robustness
+\end_layout
+
+\begin_layout Standard
+Here we measure the amount of keys that are not affected by additive white
+ noise:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k50.pdf
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k200.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Key Robustness to additive white noise.
+ Left k=200, Right k=50
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Results on recognition tasks
+\end_layout
+
+\begin_layout Itemize
+Setup: GTZAN dataset (1000 songs of 30 seconds each 
+\begin_inset Formula $\sim$
+\end_inset
+
+8.3 hours).
+ Segments of 5 seconds.
+\end_layout
+
+\begin_layout Standard
+We run a recognition experiment with various levels of sparsities in the
+ sketch, leading to various number of keys.
+ These keys are stored in specific Hash Tables for highly efficient search
+ and retrieval.
+ The size of the hash table is here used to illustrate the performances.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/GTZAN_Scores_2fgpts_dur5.pdf
+	width 12cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Recognition score on the GTZAN dataset with STFT and Cochleograms pairs
+ of peaks.
+ Cochleograms seems to allow for slightly better recognition score for a
+ given sketch sparsity level.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Setup: RWC sub dataset (80 songs of a few minutes each 
+\begin_inset Formula $\sim$
+\end_inset
+
+ 5.5 hours).
+ Segments of 5 seconds.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/RWCLearn_Scores_2fgpts_dur5.pdf
+	width 12cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Recognition score on a subset of the RWC pop dataset with STFT and Cochleograms
+ pairs of peaks.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Experiments still to make
+\end_layout
+
+\begin_layout Itemize
+We have yet many sketches (with many parameters) to try for fingerprinting
+\end_layout
+
+\begin_layout Itemize
+Results on Speech dataset of tens of thousands of short speech: we may also
+ want to know distance to same phrase by different locutor..
+\end_layout
+
+\begin_layout Itemize
+Other types of distortions should be investigated:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+time shift
+\end_layout
+
+\begin_layout Itemize
+frequency shift
+\end_layout
+
+\begin_layout Itemize
+compression
+\end_layout
+
+\begin_layout Itemize
+echo
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Find an equivalent of priming in the fingerprinting problem
+\end_layout
+
+\begin_layout Itemize
+Find a robust fgpt with sinewave speech 
+\end_layout
+
+\begin_layout Section
+Implementation details
+\end_layout
+
+\begin_layout Subsection
+Language and libraries
+\end_layout
+
+\begin_layout Standard
+A unified framework has been developed in Python (2.0 syntax).
+ It has been tested on linux and windows and should straightforwardly work
+ on mac also.
+ The manipulation of audio signals, spectrogram construction, and sparse
+ greedy algorithms are performed through the use of the PyMP
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Download at https://github.com/mmoussallam/PyMP
+\end_layout
+
+\end_inset
+
+ library, for which I have written some tutorials
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+At: http://manuel.moussallam.net/PyMP/
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+PyMP installation is relatively easy once the following Python packages
+ have been installed:
+\end_layout
+
+\begin_layout Itemize
+Numpy/Scipy 
+\end_layout
+
+\begin_layout Itemize
+Matplotlib
+\end_layout
+
+\begin_layout Itemize
+scikits.audiolab
+\end_layout
+
+\begin_layout Itemize
+scikits.learn
+\end_layout
+
+\begin_layout Standard
+On any platform, all of these can be easily installed using easy_install
+ software of pip.
+\end_layout
+
+\begin_layout Standard
+In order to work properly, additional (but quite standard and definitely
+ cross platform) libraries will be required:
+\end_layout
+
+\begin_layout Itemize
+fftw3 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Doc and Download at http://www.fftw.org/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+libsndfile 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Doc and download at http://www.mega-nerd.com/libsndfile/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Versionning
+\end_layout
+
+\begin_layout Standard
+All the source code developed in this project so far is versioned using
+ 
+\emph on
+git 
+\emph default
+and is stored in a (private and secured) repository on github.
+ The code is object-oriented as much as possible, which means the sounds,
+ sketches, representation, fingerprints and databases are Python objects.
+ Experiments are plain python scripts.
+\end_layout
+
+\begin_layout Paragraph
+Tests
+\end_layout
+
+\begin_layout Standard
+Some tests have been written.
+ Mainly to guarantee back compatibility.
+ They are located in the tests package.
+\end_layout
+
+\begin_layout Paragraph
+Speech analysis
+\end_layout
+
+\begin_layout Standard
+For computing the sws, we use the praat
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Doc and download at http://www.fon.hum.uva.nl/praat/
+\end_layout
+
+\end_inset
+
+ software since it has a built-in formant tracking algorithm.
+ It is not very handy to use but it might be the fastest way for now.
+ If Sws appears to be more interesting in the future we may have to re-implement
+ this part.
+ Praat is stable on linux based system but I haven't tried it on windows
+ platforms so far.
+\end_layout
+
+\begin_layout Subsection
+Sketches
+\end_layout
+
+\begin_layout Standard
+All sketches inherit from an abstract interface AudioSketch as the following
+ figure shows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/classes/classes_Sketches.png
+	lyxscale 20
+	width 16cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+UML diagram of the sketches objects.
+ There is a unique abstract interface for audio sketches.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A nice way to discover the different sketches is by launching the test script
+ SketchTest.py
+\end_layout
+
+\begin_layout Subsection
+Fingerprints
+\end_layout
+
+\begin_layout Standard
+All fingerprinting systems uses the same interface as depicted below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/classes/classes_FgptHand.png
+	lyxscale 20
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+UML diagram of the fingerprint handler objects.
+ There is a unique abstract interface that deals with the low level hash
+ table system.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+More explanations to come
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "/home/manu/Documents/Global-Fingerprint,/home/manu/Documents/Global-Fingerprint-sketch,/home/manu/Documents/Global-Perception,/home/manu/Documents/Global-Own"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

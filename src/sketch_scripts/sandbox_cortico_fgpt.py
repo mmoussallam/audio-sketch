@@ -106,6 +106,7 @@ def expe2():
     plt.plot(np.sum(np.abs(sk.cort.cor[0,-1,:,:]), axis=1))
     plt.show()
 
+
 sig = Signal('/sons/jingles/panzani.wav', mono=True, normalize=True)
 #sig.crop(0, 2*sig.fs)
 sk = CorticoSubPeaksSketch(**{'downsample':8000, 'n_inv_iter':10})
@@ -114,6 +115,9 @@ sk.recompute(sig)
 sk.sparsify(100)
 sk.represent()
 plt.show()
+
+
+
 
 #combis = [(0,6),(4,6),(0,11),(4,11)]
 #for combi in combis:

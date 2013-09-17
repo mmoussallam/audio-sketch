@@ -22,6 +22,7 @@ env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | d
 env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
 env.open(None, env_flags)
 
+
 bases = {'RWCLearn':('/home/manu/workspace/databases/rwc/Learn/','.wav'),
          'voxforge':('/sons/voxforge/main/Learn/','.wav'),
          'GTZAN':('/home/manu/workspace/databases/genres/','.au')}
@@ -29,7 +30,8 @@ bases = {'RWCLearn':('/home/manu/workspace/databases/rwc/Learn/','.wav'),
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
-audio_path, ext = bases[set_id]
+
+audio_path,ext = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
 file_names = get_filepaths(audio_path, 0,  ext=ext)
@@ -42,7 +44,9 @@ seg_dur = 5
 fs = 8000
 step = 3.0
 ## Initialize the sketchifier
-#sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
+
+sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
+#sk = XMDCTSparseSketch(**{'scales':[ 2048, 4096],'n_atoms':150,'nature':'LOMDCT'})
 #sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 #                                   'shift':0,'fac':-2,'BP':1})
 sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
@@ -60,12 +64,15 @@ for sparsity in sparsities:
 #    fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
 #                                              load=True,persistent=True,dbenv=env,
 #                                               **{'wall':False,'max_pairs':500})
-#     fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-#                                    load=not learn,
-#                                    persistent=True, **{'wall':False})
-    fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
-                                    load=not learn, cachesize=(1,256),
-                                    persistent=True, **{'wall':False})
+#    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
+#                                   load=not learn,
+#                                   persistent=True, **{'wall':False})
+    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+                                   load=not learn,
+                                   persistent=True, **{'wall':False})
+#     fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+#                                     load=not learn, cachesize=(1,256),
+#                                     persistent=True, **{'wall':False})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
     if learn:

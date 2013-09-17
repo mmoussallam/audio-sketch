@@ -104,11 +104,14 @@ class STFTPeaksSketch(AudioSketch):
         # naive implementation: cut in non-overlapping zone and get the max
         (n_bins, n_frames) = self.rep.shape[1:]
         (f, t) = (self.params['f_width'], self.params['t_width'])
+        
+        
         for x_ind in range(0, (n_frames / t) * t, t):
+            
             for y_ind in range(0, (n_bins / f) * f, f):
                 rect_data = self.rep[0, y_ind:y_ind + f, x_ind:x_ind + t]
-
-                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
+                
+                if len(rect_data) > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
                     f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
                     # add the peak to the sparse rep
                     self.sp_rep[0, y_ind + f_index,
