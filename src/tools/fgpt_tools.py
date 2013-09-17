@@ -123,13 +123,17 @@ def db_test(fgpthandle,
             max_seg = int(test_seg_prop * l_sig.n_seg)
             
             
-            # Loop on random segments*              
-            fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
+            # Loop on random segments*
+            if n_jobs>1:              
+                fgpts = Parallel(n_jobs=n_jobs)(delayed(_process_seg_test)(sk, sparsity,  resample,
                                                                        pad,l_sig, segIdx)
                                         for segIdx in segment_indexes[:max_seg-1])
-            # Again ugly hack to counter the effects of joblib recopy of sketch object
-            fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
-        
+                # Again ugly hack to counter the effects of joblib recopy of sketch object
+                fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
+            else:
+                for segIdx in segment_indexes[:max_seg-1]:
+                    fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segIdx))
+                     
         else:
             l_sig = signals.Signal(op.join(files_path, file_names[fileIndex]), mono=True)
             n_segs = 1
