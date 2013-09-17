@@ -131,6 +131,7 @@ def db_test(fgpthandle,
                 # Again ugly hack to counter the effects of joblib recopy of sketch object
                 fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
             else:
+                fgpts = []
                 for segIdx in segment_indexes[:max_seg-1]:
                     fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segIdx))
                      
@@ -325,9 +326,12 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
         if nbsegs>1:
 #            fgpt = []
             for segIdx in range(nbsegs):
-                fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
+                try:
+                    fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
                                                    l_sig,  segIdx, file_names[fileIndex]),
-                                      sk.params, fileIndex, offset=segIdx * step, debug=debug) 
+                                      sk.params, fileIndex, offset=segIdx * step, debug=debug)
+                except:
+                    continue 
         else:
             if resample > 0:
                 l_sig.resample(resample)
