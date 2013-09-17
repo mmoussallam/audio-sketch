@@ -131,6 +131,7 @@ def db_test(fgpthandle,
                 # Again ugly hack to counter the effects of joblib recopy of sketch object
                 fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segment_indexes[-1]))
             else:
+                fgpts = []
                 for segIdx in segment_indexes[:max_seg-1]:
                     fgpts.append(_process_seg_test(sk, sparsity, resample, pad, l_sig, segIdx))
                      
