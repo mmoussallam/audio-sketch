@@ -22,14 +22,17 @@ env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | d
 env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
 env.open(None, env_flags)
 
-
 bases = {'RWCLearn':('/home/manu/workspace/databases/rwc/Learn/','.wav'),
          'voxforge':('/sons/voxforge/main/Learn/','.wav'),
          'GTZAN':('/home/manu/workspace/databases/genres/','.au')}
 
+# bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
+#          'voxforge':('/sons/voxforge/main/Learn/','.wav'),
+#          'GTZAN':('/home/manu/workspace/databases/genres/','.au')}
+
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
 audio_path,ext = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
@@ -49,7 +52,7 @@ sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = XMDCTSparseSketch(**{'scales':[ 2048, 4096],'n_atoms':150,'nature':'LOMDCT'})
 #sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 #                                   'shift':0,'fac':-2,'BP':1})
-sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
+# sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
