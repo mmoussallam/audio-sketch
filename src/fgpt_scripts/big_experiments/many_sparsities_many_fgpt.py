@@ -27,7 +27,7 @@ bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
@@ -36,7 +36,7 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [150,100,50,30,20,10]
+sparsities = [200,150,100,50,30,20,15,10,7,5,3]
 seg_dur = 5
 fs = 8000
 step = 3.0
@@ -49,7 +49,7 @@ setups = [((XMDCTBDB,{'wall':False}),1,
                                                   'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),4,
+                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
                      ((CochleoPeaksBDB,{'wall':False}),4,
                      CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
@@ -88,7 +88,8 @@ for (fgpthandlename, fgptparams),n_jobs,sk in setups:
                              files_path = audio_path,
                              test_seg_prop = test_proportion,
                              seg_duration = seg_dur, resample =fs,
-                             step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=n_jobs)
+                             step = step, tolerance = 7.5, shuffle=True, debug=False,
+                             n_jobs=n_jobs)
             ttest = time.time() - tstart
             ################### End of the complete run #####################################
             # saving the results
