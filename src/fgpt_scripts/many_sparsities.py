@@ -37,16 +37,16 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [300,200,100,50,30,20,10,5]
+sparsities = [200,100,50,30,20,10,5]
 seg_dur = 5
 fs = 8000
 step = 3.0
 ## Initialize the sketchifier
-sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
+#sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = XMDCTSparseSketch(**{'scales':[ 2048, 4096],'n_atoms':150,'nature':'LOMDCT'})
 #sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
 #                                   'shift':0,'fac':-2,'BP':1})
-# sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
+sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
@@ -64,12 +64,12 @@ for sparsity in sparsities:
 #    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
 #                                   load=not learn,
 #                                   persistent=True, **{'wall':False})
-    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-                                   load=not learn,
-                                   persistent=True, **{'wall':False})
-#     fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
-#                                     load=not learn, cachesize=(1,256),
-#                                     persistent=True, **{'wall':False})
+#    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+#                                   load=not learn,
+#                                   persistent=True, **{'wall':False})
+    fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+                                     load=not learn, cachesize=(1,256),
+                                     persistent=True, **{'wall':False})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
     if learn:
