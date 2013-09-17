@@ -19,7 +19,7 @@ step = 3.0
 
 setups = [
            (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, [300,200,50,30,20,10,5], 'b-+', .25),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [300,200,50,30,20,10,5], 'r-o', 0.25)    
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, [200,100,50,30,20,10,5], 'r-o', 0.25)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
@@ -97,6 +97,6 @@ plt.subplot(122)
 plt.grid()    
 plt.legend(legends, loc='lower right')    
 plt.subplots_adjust(left=0.06,right=0.96, top=0.96)
-#plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
-#plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
 plt.show()
