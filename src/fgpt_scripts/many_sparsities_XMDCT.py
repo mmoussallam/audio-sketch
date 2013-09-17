@@ -48,11 +48,8 @@ fs = 8000
 step = 3.0
 ## Initialize the sketchifier
 
-sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
-#sk = XMDCTSparseSketch(**{'scales':[ 2048, 4096],'n_atoms':150,'nature':'LOMDCT'})
-#sk = CorticoIndepSubPeaksSketch(**{'fs':fs,'downsample':fs,'frmlen':8,
-#                                   'shift':0,'fac':-2,'BP':1})
-# sk = CochleoPeaksSketch(**{'fs':fs,'step':512,'downsample':fs,'frmlen':8})
+# sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
+sk = XMDCTSparseSketch(**{'scales':[ 2048, 4096],'n_atoms':150,'nature':'LOMDCT'})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
@@ -64,18 +61,10 @@ for sparsity in sparsities:
                                             int(seg_dur), int(fs))
         
     # initialize the fingerprint Handler object
-#    fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
-#                                              load=True,persistent=True,dbenv=env,
-#                                               **{'wall':False,'max_pairs':500})
-#    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
-#                                   load=not learn,
-#                                   persistent=True, **{'wall':False})
-#    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-#                                   load=not learn,
-#                                   persistent=True, **{'wall':False})
-    fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
-                                     load=not learn, cachesize=(1,256),
-                                     persistent=True, **{'wall':False})
+    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
+                                   load=not learn,
+                                   persistent=True, **{'wall':False})
+
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
     if learn:
@@ -83,7 +72,7 @@ for sparsity in sparsities:
                 file_names, 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
-                files_path = audio_path, debug=False, n_jobs=4)
+                files_path = audio_path, debug=False, n_jobs=1)
     
     
     # run a fingerprinting experiment
@@ -96,7 +85,7 @@ for sparsity in sparsities:
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=3)
+                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results

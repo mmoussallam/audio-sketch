@@ -27,7 +27,7 @@ bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
@@ -41,21 +41,21 @@ seg_dur = 5
 fs = 8000
 step = 3.0
 learn = True
-test = False
+test = True
 
 ## Initialize the sketchifier
-setups = [((XMDCTBDB,{'wall':False}),
+setups = [((XMDCTBDB,{'wall':False}),1,
                       XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
                                                   'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),
+                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),4,
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
-                     ((CochleoPeaksBDB,{'wall':False}),
+                     ((CochleoPeaksBDB,{'wall':False}),4,
                      CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
                  ]
 
-for (fgpthandlename, fgptparams),sk in setups:
+for (fgpthandlename, fgptparams),n_jobs,sk in setups:
     
     sk_id = sk.__class__.__name__[:-6]
 #    print fgpthandlename, sk
@@ -75,7 +75,7 @@ for (fgpthandlename, fgptparams),sk in setups:
                     file_names, 
                     force_recompute = True,
                     seg_duration = seg_dur, resample = fs,
-                    files_path = audio_path, debug=False, n_jobs=4)
+                    files_path = audio_path, debug=False, n_jobs=n_jobs)
         
         
         # run a fingerprinting experiment
@@ -88,7 +88,7 @@ for (fgpthandlename, fgptparams),sk in setups:
                              files_path = audio_path,
                              test_seg_prop = test_proportion,
                              seg_duration = seg_dur, resample =fs,
-                             step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=3)
+                             step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=n_jobs)
             ttest = time.time() - tstart
             ################### End of the complete run #####################################
             # saving the results
