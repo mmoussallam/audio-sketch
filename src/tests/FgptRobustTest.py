@@ -94,7 +94,7 @@ def NoiseTest(sigmas):
 
 
 def TimeShiftTest(shifts):    
-    falseOffset = 10
+    falseOffset = 0
     
     legends = []
     plt.figure()
@@ -106,12 +106,17 @@ def TimeShiftTest(shifts):
         orig_sig.write(op.join(tempdir, 'orig.wav'))
         sk.recompute(op.join(tempdir, 'orig.wav'))
         sk.sparsify(sparsity)
-        fgpt = sk.fgpt(sparse=True)    
-        fgpthand.populate(fgpt, sk.params, 0,falseOffset,)
+        fgpt = sk.fgpt(sparse=True)   
+#        sk.represent(sparse=True)
+#        print sk.params 
+#        keys, values = fgpthand._build_pairs(fgpt, sk.params, 0,display=True)
+#        print keys
+        fgpthand.populate(fgpt, sk.params, 0, falseOffset)
         anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1))
         
         orig_data = np.copy(orig_sig.data)        
         shiftscores = []
+        
         
         for shift in shifts:
             shifted = orig_sig.copy()
@@ -125,8 +130,13 @@ def TimeShiftTest(shifts):
             except:
                 shifted.write(shifted_name)
                 sk.recompute(shifted_name)
-    #        print sk.params
-            shifted_fgpt = sk.fgpt(sparse=True)    
+    
+            shifted_fgpt = sk.fgpt(sparse=True)   
+#            sk.represent(sparse=True) 
+#            plt.figure()
+#            keys, values = fgpthand._build_pairs(shifted_fgpt, sk.params, 0,display=True)
+#            print keys
+#            plt.show()
             hist = fgpthand.retrieve(shifted_fgpt, sk.params, nbCandidates=1)
             shiftscores.append(float(np.sum(hist))/float(anchor))
             print shift, shiftscores[-1], anchor
@@ -144,14 +154,14 @@ def TimeShiftTest(shifts):
 #if __name__ == "__main__":
 #     parameters
 fs = 11025
-sparsity = 50
+sparsity = 100
 # systems to test    
 fgpt_sketches = [
                      (XMDCTBDB(None, load=False,**{'wall':False}),
                       XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
                                                   'nature':'LOMDCT'})),     
-                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
-                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
+#                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
+#                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
                 (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
                      (CochleoPeaksBDB(None, **{'wall':False}),
@@ -159,8 +169,8 @@ fgpt_sketches = [
                  ]
 
 # tests
-NoiseTest(np.logspace(-6, 0, 20))
-#TimeShiftTest([0,10])
+#NoiseTest(np.logspace(-6, 0, 20))
+TimeShiftTest(np.linspace(0,3*fs, 50))
 # plotting
 plt.show()
 

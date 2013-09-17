@@ -1349,7 +1349,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename C:/home/manu/workspace/audio-sketch/src/classes/classes_Sketches.png
+	filename ../classes/classes_Sketches.png
 	lyxscale 20
 	width 16cm
 
@@ -1403,7 +1403,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename C:/home/manu/workspace/audio-sketch/src/classes/classes_FgptHand.png
+	filename ../classes/classes_FgptHand.png
 	lyxscale 20
 	width 8cm
 
