@@ -42,7 +42,7 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [300,200,100,50,30,20,10,5]
+sparsities = [200,100,50,30,20,10,5]
 seg_dur = 5
 fs = 8000
 step = 3.0
@@ -70,12 +70,12 @@ for sparsity in sparsities:
 #    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
 #                                   load=not learn,
 #                                   persistent=True, **{'wall':False})
-    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
-                                   load=not learn,
-                                   persistent=True, **{'wall':False})
-#     fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
-#                                     load=not learn, cachesize=(1,256),
-#                                     persistent=True, **{'wall':False})
+#    fgpthandle = pydb.STFTPeaksBDB(op.join(db_path, db_name),
+#                                   load=not learn,
+#                                   persistent=True, **{'wall':False})
+    fgpthandle = pydb.CochleoPeaksBDB(op.join(db_path, db_name),
+                                     load=not learn, cachesize=(1,256),
+                                     persistent=True, **{'wall':False})
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
     if learn:

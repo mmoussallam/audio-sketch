@@ -176,7 +176,7 @@ class CochleoPeaksSketch(CochleoSketch):
                 
                 rect_data = self.rep[y_ind:y_ind + f, x_ind:x_ind + t]
 
-                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
+                if len(rect_data) > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
                     f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
                     # add the peak to the sparse rep
                     self.sp_rep[y_ind + f_index,
