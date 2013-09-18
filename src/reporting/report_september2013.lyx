@@ -82,17 +82,24 @@ LatexCommand tableofcontents
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section*
-Introduction and notations
+Context of this study
 \end_layout
 
 \begin_layout Standard
 This document summarizes the technical details of the framework built as
  part of the Sketch 2 (a.k.a.
  Ghost Sounds) project.
- This work is the direct application of the projects work-packages (WP)
- 1.1 and 1.2.
- This report is intended to be 
+ More precisely, it is part of the work-packages (WP) 1.1 and 1.2.
+ For the sake of readability and clarity, the amount of technical details
+ is limited to what is necessary for apprehending the basics concepts.
 \end_layout
 
 \begin_layout Subsection*
@@ -100,15 +107,29 @@ Goals and Tasks
 \end_layout
 
 \begin_layout Standard
-The task consists in implementing a large number of 
+The first phase of the project aims at building a 
 \begin_inset Quotes eld
 \end_inset
 
-simplification
+sketchifying
 \begin_inset Quotes erd
 \end_inset
 
- of sounds (or 
+ process tailored for priming experiments.
+ The deliverable should take the form of a reusable piece of software that
+ is able to build a 
+\begin_inset Quotes eld
+\end_inset
+
+sketch
+\begin_inset Quotes erd
+\end_inset
+
+ from any given audio scene.
+\end_layout
+
+\begin_layout Itemize
+WP 1.1 consists in the definition and characterization of audio 
 \begin_inset Quotes eld
 \end_inset
 
@@ -116,11 +137,21 @@ sketches
 \begin_inset Quotes erd
 \end_inset
 
- by analogy with images) and evaluate their usability in an automatic recognitio
-n problem.
+ via a signal and/or a statistical model.
+ We are interested in finding not only the main features of sounds, but
+ more importantly their peculiar ones.
+ In order to do so, one must first decide of a feature space on which to
+ project the signals, and second, distinguish which of these feature (or
+ sets of features) are discriminative.
+\end_layout
+
+\begin_layout Itemize
+WP 1.2 addresses the problem of validation via an automatic recognition task.
  The recognition is performed by means of acoustic fingerprints comparison.
- We shall define the objects and concepts before describing the experiment
- conducted so far.
+ This research field being a mature one, the objective can not be to compete
+ with existing industrial solution.
+ Nonetheless, those should serve as a basis for benchmarking any proposed
+ fingerprint scheme.
 \end_layout
 
 \begin_layout Standard
@@ -164,7 +195,8 @@ Object and concept definitions
 \end_layout
 
 \begin_layout Description
-Sounds Any audio signal, as the discrete sampling of an acoustic wave.
+Sounds Any digital audio signal, as the discrete sampling of an acoustic
+ wave.
  For simplicity's sake, the spatial properties may be discarded and only
  mono-channel signals may be considered.
  Among properties one may find the sampling frequency and the length or
@@ -208,44 +240,29 @@ Fingerprint A hash version of a sketch, that can be stored and retrieved
  efficiently from a fingerprint database
 \end_layout
 
+\begin_layout Description
+Fingerprint
+\begin_inset space ~
+\end_inset
+
+Database A hashtable of key/value pairs built from the acoustic fingerprints
+ of an entire DataSet.
+ The storing and retrieval is facilitated either by an efficient hash indexing
+ or a tree structure.
+ 
+\end_layout
+
 \begin_layout Subsection*
-Notations
+Participants
 \end_layout
 
 \begin_layout Standard
-Let 
-\begin_inset Formula $x\in\mathbb{R}^{N}$
-\end_inset
-
- be the original signal.
- A sketch 
-\begin_inset Formula $sketch(x)$
-\end_inset
-
- is a simplified version of 
-\begin_inset Formula $x$
-\end_inset
-
- that can be inverted.
- Before computing a sketch, one usually use a representation 
-\begin_inset Formula $Rep(x)$
-\end_inset
-
- and we will use the sketch to build fingerprints 
-\begin_inset Formula $fgpt(x)$
-\end_inset
-
-.
- The usual process will thus look like:
-\begin_inset Formula 
-\[
-x\rightarrow Rep(x)\rightarrow sketch(x)\rightarrow fgpt(x)
-\]
-
-\end_inset
-
- Quite naturally, let us now introduce the typical representations, then
- the sketches and finally the fingerprints.
+The project officially started in march 2013.
+ WP 1.1 and 1.2 are conducted by Pr.
+ L.
+ Daudet and Dr.
+ M.
+ Moussallam.
 \end_layout
 
 \begin_layout Standard
@@ -259,15 +276,91 @@ x\rightarrow Rep(x)\rightarrow sketch(x)\rightarrow fgpt(x)
 Building Sound Sketches
 \end_layout
 
+\begin_layout Standard
+Let 
+\begin_inset Formula $x\in\mathbb{R}^{N}$
+\end_inset
+
+ be a digital signal of finite length 
+\begin_inset Formula $N$
+\end_inset
+
+.
+ A sketch 
+\begin_inset Formula $sketch(x)$
+\end_inset
+
+ of 
+\begin_inset Formula $x$
+\end_inset
+
+ is a simplified version of 
+\begin_inset Formula $x$
+\end_inset
+
+ that can be inverted.
+ By simplification, we usually mean that 
+\begin_inset Formula $sketch(x)$
+\end_inset
+
+ lives in a manifold of a lower dimension than 
+\begin_inset Formula $N$
+\end_inset
+
+ or that it has a sparse expression in a higher dimensional space.
+ Before computing a sketch, one usually uses a representation 
+\begin_inset Formula $Rep(x)$
+\end_inset
+
+ to transpose the signal in such 
+\emph on
+feature space
+\emph default
+.
+ A popular choice of representations are the ones that define a mapping
+ onto a Time-Frequency plane.
+ 
+\end_layout
+
+\begin_layout Standard
+A sketch is thus typically the result of a processing of a representation
+ of 
+\begin_inset Formula $x$
+\end_inset
+
+ (for instance, the selection of the most prominent elements in the feature
+ space).
+ In a final stage, sketches will be used to build fingerprints 
+\begin_inset Formula $fgpt(x)$
+\end_inset
+
+.
+ Those are designed so as to capture the specificity of a sketch and most
+ importantly allow fast and robust comparisons between the sketches of two
+ sounds.
+\end_layout
+
+\begin_layout Standard
+The usual process will thus look like:
+\begin_inset Formula 
+\[
+x\rightarrow Rep(x)\rightarrow sketch(x)\rightarrow fgpt(x)
+\]
+
+\end_inset
+
+ Quite naturally, let us now introduce the typical representations, then
+ the sketches and finally the fingerprints.
+\end_layout
+
 \begin_layout Subsection
 Representations
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Spectrograms
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 The standard Short-Term Fourier Transform (STFT) is a lapped transform using
  a standard Fourier transform on overlapping (often windowed) segments.
@@ -354,6 +447,7 @@ The STFT is perfectly invertible, provided the Constant Overlap-Add condition
 ).
 \end_layout
 
+\begin_deeper
 \begin_layout Standard
 \align center
 \begin_inset Float figure
@@ -399,11 +493,10 @@ Spectrogram (Logarithm of the magnitude of the Short Time Fourier Transform)
 \end_layout
 
 \end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Constant Q transform
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 The Constant Q transform (CQT) is a TF representation in which the frequency
  scale is logarithmic.
@@ -437,7 +530,19 @@ R_{CQT}(x)[k]=\frac{1}{L_{k}}\sum_{n=0}^{L_{k}-1}w_{k}[n]\cdot x[n]\exp\left(-2j
 
 \end_inset
 
+where 
+\begin_inset Formula $w_{k}$
+\end_inset
 
+ is a frequency-dependent kernel window, 
+\begin_inset Formula $f_{k}$
+\end_inset
+
+ are the center frequencies of the filters and 
+\begin_inset Formula $f_{s}$
+\end_inset
+
+ is the sampling rate.
 \end_layout
 
 \begin_layout Standard
@@ -460,15 +565,21 @@ midi(f)=69+12\log_{2}\left(\frac{f}{440}\right)
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Cochleogram
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
-A log-frequency transform similar in spirit to the CQT but using real auditory
- response filters (from the cochlea) as the filter banks.
+Also known as auditory spectrum 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Yang1992,Wang1995"
+
+\end_inset
+
+, the cochleogram is the magnitude of a log-frequency transform similar
+ in spirit to the CQT but using real auditory response filters (from the
+ cochlea) as the filter banks.
  Cochleograms somewhat emphasize the TF regions that are perceptually stimulated.
  More information should be seeked directly in the papers 
 \begin_inset CommandInset citation
@@ -537,12 +648,10 @@ Cochleogram (absolute value) of an audio excerpt.
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Corticogram
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Even deeper into the human auditory system is the primary area of the cortex.
  The output of the cochlear system is processed by neuron layers whose action
@@ -619,12 +728,10 @@ wavelet transform
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Sparse Multi-Resolution Approximation
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Multi-resolution representations use a union of overcomplete basis (e.g.
  MDCT) to approximate a target audio signal.
@@ -700,12 +807,10 @@ As one can notice, here the representation is in itself a sketchification
  process.
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 SineWave Speech
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 The sine wave speech synthesis is obtained by tracking formants (resonant
  frequencies of the vocal track) along time.
@@ -770,12 +875,10 @@ Spectrogram of a SineWave Speech reconstruction of an audio excerpt.
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Feature vector
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Any feature extraction process can be used, (MFCC, chroma, LPC, etc..) any
  feature combination can be thought of as a representation of the signal.
@@ -791,7 +894,6 @@ key "Muller2005"
 .
 \end_layout
 
-\end_deeper
 \begin_layout Subsection
 Sketches
 \end_layout
@@ -1209,7 +1311,7 @@ Here we measure the amount of keys that are not affected by additive white
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
