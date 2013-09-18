@@ -45,7 +45,7 @@ test = True
 
 ## Initialize the sketchifier
 setups = [((XMDCTBDB,{'wall':False}),1,
-                      XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
+                      XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':3,
                                                   'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 

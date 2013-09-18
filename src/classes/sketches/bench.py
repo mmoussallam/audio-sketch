@@ -210,6 +210,8 @@ class XMDCTSparseSketch(AudioSketch):
 
         if original_sig is not None:
             self.orig_signal = original_sig
+            if self.params.has_key('fs'):
+                self.orig_signal.resample(self.params['fs'])
             self.recompute()
         
 
@@ -230,7 +232,15 @@ class XMDCTSparseSketch(AudioSketch):
             mdct_dico = Dico(self.params['scales'])
         
         elif self.params['nature'] == 'SpreadMDCT':
-            mdct_dico = SpreadDico(self.params['scales'])
+            if 'penalty' in self.params:
+                penalty = self.params['penalty']
+            else:
+                penalty=0.5
+            if 'mask_size' in self.params:
+                mask_size = self.params['mask_size']
+            else:
+                mask_size=1
+            mdct_dico = SpreadDico(self.params['scales'],penalty=penalty,maskSize=mask_size)
         else:
             raise ValueError("Unrecognized nature %s" % self.params['nature'])
         return mdct_dico
@@ -247,6 +257,8 @@ class XMDCTSparseSketch(AudioSketch):
 
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
+        if self.params.has_key('fs'):            
+            self.orig_signal.resample(self.params['fs'])
         self.params['fs'] = self.orig_signal.fs
         mdct_dico = self._get_dico()
 
@@ -310,7 +322,7 @@ class XMDCTSparseSketch(AudioSketch):
             self.sp_rep = self.rep[:int(sparsity)]
 
         self.nnz = self.sp_rep.atom_number
-        print "Sparse rep of %d element computed" % self.nnz
+#        print "Sparse rep of %d element computed" % self.nnz
 
     def synthesize(self, sparse=False):
         if not sparse:

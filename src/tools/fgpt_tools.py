@@ -344,7 +344,7 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
     # Cannot parallelized this part though ... because of disk access
 
     estTime = (float((time.time() - t0)) / float(fileIndex + 1)) * (n_files - fileIndex)
-    print 'Elapsed %2.2f seconds Estimated : %2.1f minutes' % ((time.time() - t0), (estTime / 60))
+    print 'Elapsed %d seconds Estimated : %d minutes and %d seconds' % ((time.time() - t0), (estTime / 60), estTime - (int(estTime / 60)*60))
 
 def db_creation(fgpthandle,
                 sk,
