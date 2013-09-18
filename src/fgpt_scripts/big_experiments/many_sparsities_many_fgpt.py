@@ -27,7 +27,7 @@ bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
@@ -37,6 +37,7 @@ nb_files = len(file_names)
 # define experimental conditions
 
 sparsities = [200,150,100,50,30,20,15,10,7,5,3]
+# sparsities = [20,15,10,7,5,3]
 seg_dur = 5
 fs = 8000
 step = 3.0
