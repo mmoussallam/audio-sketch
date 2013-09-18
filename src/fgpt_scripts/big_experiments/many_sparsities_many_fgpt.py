@@ -49,10 +49,10 @@ setups = [((XMDCTBDB,{'wall':False}),1,
                                                   'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
-                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
-                     ((CochleoPeaksBDB,{'wall':False}),4,
-                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+#                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
+#                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
+#                     ((CochleoPeaksBDB,{'wall':False}),4,
+#                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
                  ]
 
 for (fgpthandlename, fgptparams),n_jobs,sk in setups:

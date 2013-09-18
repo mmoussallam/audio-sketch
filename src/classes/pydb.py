@@ -621,6 +621,8 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
             plt.subplot(self.params['n_sv'], self.params['n_rv'], (n* self.params['n_rv']) + 1)
             plt.ylabel(str(params['sv'][n]))
         plt.subplots_adjust(left=0.06, bottom=0.05, top=0.92,right=0.96)
+        
+        
 class XMDCTBDB(FgptHandle):
     '''
     PyMP approx berkeley database handle
@@ -683,6 +685,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 
 # K = int(floor(key)*2**(self.params['freq_n_bits'])+floor(float(key)/float(self.beta)));
             K = self.format(key)
+#            print key, value
             Bbin = struct.pack('<I4', B)
             Kbin = struct.pack('<I4', K)
 
@@ -759,7 +762,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
             S.append(log(atom.length, 2))
             F.append(atom.reduced_frequency * fgpt.fs)
             T.append(( offset + (float(atom.time_position) / float(fgpt.fs))))
-
+            
         # look for duplicates and removes them: construct a set of zipped elements
 #        print zip(F , T)
         if self.keyformat is None:
