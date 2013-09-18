@@ -1,9 +1,8 @@
 '''
-fgpt_scripts.many_sparsities  -  Created on Jul 30, 2013
+fgpt_scripts.many_sparsities_sws  -  Created on Sep 18, 2013
 @author: M. Moussallam
-
-Now let us see how performances evolve with the sparsity
 '''
+
 import os
 import os.path as op
 import time
@@ -14,6 +13,7 @@ from classes.sketches.cortico import *
 from classes import pydb
 from tools.fgpt_tools import db_creation, db_test
 from tools.fgpt_tools import get_filepaths
+from classes.sketch import SWSSketch
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
 import bsddb.db as db
 env = db.DBEnv()
@@ -42,27 +42,27 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [300,]
+sparsities = [10,5]
 seg_dur = 5
-fs = 11025
+fs = 8000
 step = 3.0
 ## Initialize the sketchifier
 
 # sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
-sk = XMDCTSparseSketch(**{'scales':[1024, 4096,],'n_atoms':5,'nature':'LOMDCT',
-                          'penalty':0.9,'mask_size':1})
+sk = SWSSketch(**{'n_formants_max':7,'time_step':0.01})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
 test = True
-subset = 50
+subset = 10
+
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
-    db_name = "%s_%s_k%d_%s_%dsec_%dfs_subset%d.db"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                            int(seg_dur), int(fs),subset)
+    db_name = "%s_%s_k%d_%s_%dsec_%dfs.db"%(set_id, sk_id, sparsity, sk.get_sig(),
+                                            int(seg_dur), int(fs))
         
     # initialize the fingerprint Handler object
-    fgpthandle = pydb.XMDCTBDB(op.join(db_path, db_name),
+    fgpthandle = pydb.SWSBDB(op.join(db_path, db_name),
                                    load=not learn,
                                    persistent=True, **{'wall':False})
 
@@ -90,10 +90,9 @@ for sparsity in sparsities:
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results
-        score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d_subset%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
-                                                int(seg_dur), int(fs), int(100.0*test_proportion),int(step),subset)
+        score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
+                                                int(seg_dur), int(fs), int(100.0*test_proportion),int(step))
         
-        del fgpthandle # useful to make sure the dump to disk has been done
         stats =  os.stat(op.join(db_path, db_name))
         savemat(op.join(score_path,score_name), {'score':scores, 'time':ttest,
                                                  'size':stats.st_size,'failures': failures})

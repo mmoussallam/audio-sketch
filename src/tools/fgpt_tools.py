@@ -170,7 +170,7 @@ def db_test(fgpthandle,
                         fileIndex, int(segIdx * step))
         
         estTime = (float( (time.time() - t0)) / float(i)) * (n_files - i)
-        print 'Elapsed %2.2f  min . Estimated : %2.2f min'%((time.time() - t0)/60.0,(estTime / 60.0))
+        print 'Elapsed %d  min . Estimated : %d min and %d seconds'%((time.time() - t0)/60.0,(estTime / 60.0), estTime - (int(estTime / 60.0)*60) )
 
         print "Global Scores of %1.2f - %1.2f - %1.2f" %((countokok / countall,
                                                           countokbad / countall,
@@ -326,9 +326,12 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
         if nbsegs>1:
 #            fgpt = []
             for segIdx in range(nbsegs):
-                fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
+                try:
+                    fgpthandle.populate(_process_seg(sk, sparsity, resample, step, debug, pad,
                                                    l_sig,  segIdx, file_names[fileIndex]),
-                                      sk.params, fileIndex, offset=segIdx * step, debug=debug) 
+                                      sk.params, fileIndex, offset=segIdx * step, debug=debug)
+                except:
+                    continue 
         else:
             if resample > 0:
                 l_sig.resample(resample)
@@ -341,7 +344,7 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
     # Cannot parallelized this part though ... because of disk access
 
     estTime = (float((time.time() - t0)) / float(fileIndex + 1)) * (n_files - fileIndex)
-    print 'Elapsed %2.2f seconds Estimated : %2.1f minutes' % ((time.time() - t0), (estTime / 60))
+    print 'Elapsed %d seconds Estimated : %d minutes and %d seconds' % ((time.time() - t0), (estTime / 60), estTime - (int(estTime / 60)*60))
 
 def db_creation(fgpthandle,
                 sk,
