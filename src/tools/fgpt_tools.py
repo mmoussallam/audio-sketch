@@ -170,7 +170,7 @@ def db_test(fgpthandle,
                         fileIndex, int(segIdx * step))
         
         estTime = (float( (time.time() - t0)) / float(i)) * (n_files - i)
-        print 'Elapsed %2.2f  min . Estimated : %2.2f min'%((time.time() - t0)/60.0,(estTime / 60.0))
+        print 'Elapsed %d  min . Estimated : %d min and %d seconds'%((time.time() - t0)/60.0,(estTime / 60.0), estTime - (int(estTime / 60.0)*60) )
 
         print "Global Scores of %1.2f - %1.2f - %1.2f" %((countokok / countall,
                                                           countokbad / countall,
