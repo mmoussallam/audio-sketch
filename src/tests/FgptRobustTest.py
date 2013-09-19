@@ -29,7 +29,7 @@ file_names = os.listdir(audio_files_path)
 def SNR(noisy, orig):
     return 10*np.log10(np.linalg.norm(orig)/np.linalg.norm(orig-noisy))
 
-def NoiseTest(sigmas):
+def NoiseTest(sigmas, sparsity, ntest=1):
     falseOffset = 10    
     legends = []
     plt.figure()
@@ -56,31 +56,32 @@ def NoiseTest(sigmas):
         anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1))
         
         orig_data = np.copy(orig_sig.data)
-        snrs = []
-        noisescores = []
-        for sigma in sigmas:
-            noisy = Signal(orig_data + sigma*np.random.randn(len(orig_data)), orig_sig.fs, normalize=False)      
-                    
-            snrs.append(SNR(noisy.data,orig_data))
-            noisy_name = op.join(tempdir, 'noisy%d.wav'%int(snrs[-1])) 
-    #        noisy.normalize()
-    #        noisy.write(noisy_name)
-            
-    #        noisy_reread = Signal(noisy_name, mono=True, normalize=True)        
-            
-            try:
-                sk.recompute(noisy)
-                sk.sparsify(sparsity)
-            except:
-                noisy.write(noisy_name)
-                sk.recompute(noisy_name)
-    #        print sk.params
-            noisy_fgpt = sk.fgpt(sparse=True)    
-            hist = fgpthand.retrieve(noisy_fgpt, sk.params, nbCandidates=1)
-            noisescores.append(float(np.sum(hist))/float(anchor))
-            print snrs[-1],noisescores[-1], fgpthand.dbObj.stat()['nkeys']
+        snrs = np.zeros((len(sigmas), ntest))
+        noisescores = np.zeros((len(sigmas), ntest))
+        for isg, sigma in enumerate(sigmas):
+            for itest in range(ntest):
+                noisy = Signal(orig_data + sigma*np.random.randn(len(orig_data)), orig_sig.fs, normalize=False)      
+                        
+                snrs[isg,itest] = SNR(noisy.data,orig_data)
+                noisy_name = op.join(tempdir, 'noisy%d.wav'%int(snrs[isg,itest])) 
+        #        noisy.normalize()
+        #        noisy.write(noisy_name)
+                
+        #        noisy_reread = Signal(noisy_name, mono=True, normalize=True)        
+                
+                try:
+                    sk.recompute(noisy)
+                    sk.sparsify(sparsity)
+                except:
+                    noisy.write(noisy_name)
+                    sk.recompute(noisy_name)
+        #        print sk.params
+                noisy_fgpt = sk.fgpt(sparse=True)    
+                hist = fgpthand.retrieve(noisy_fgpt, sk.params, nbCandidates=1)
+                noisescores[isg,itest] = float(np.sum(hist))/float(anchor)
+            print np.mean(snrs,axis=1),np.mean(noisescores,axis=1), fgpthand.dbObj.stat()['nkeys']
         
-        plt.plot(snrs,noisescores, linewidth=i+1)
+        plt.plot( np.mean(snrs,axis=1),np.mean(noisescores,axis=1), linewidth=i+1)
         legends.append(sk.__class__.__name__[:-6])
         # second test : amplitude
         
@@ -93,7 +94,7 @@ def NoiseTest(sigmas):
 
 
 
-def TimeShiftTest(shifts):    
+def TimeShiftTest(shifts, sparsity):    
     falseOffset = 0
     
     legends = []
@@ -147,7 +148,10 @@ def TimeShiftTest(shifts):
         
     plt.legend(legends)    
     plt.xlabel('seconds')
+    plt.ylabel('Keys Overlap Ratio')
     plt.grid()
+    plt.savefig(op.join(figuredir,'ShiftRobustness_k%d.pdf'%sparsity))
+    plt.savefig(op.join(figuredir,'ShiftRobustness_k%d.png'%sparsity))
     
 
 ##########
@@ -160,8 +164,8 @@ fgpt_sketches = [
                      (XMDCTBDB(None, load=False,**{'wall':False}),
                       XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
                                                   'nature':'LOMDCT'})),     
-#                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
-#                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
+                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
+                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
                 (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
                      (CochleoPeaksBDB(None, **{'wall':False}),
@@ -169,8 +173,10 @@ fgpt_sketches = [
                  ]
 
 # tests
-#NoiseTest(np.logspace(-6, 0, 20))
-TimeShiftTest(np.linspace(0,3*fs, 50))
+for sparsity in [10,50,100,200]:
+#    NoiseTest(np.logspace(-5, 0, 20), sparsity, ntest=5)
+    TimeShiftTest(np.linspace(0,3*fs, 50), sparsity)
+    
 # plotting
 plt.show()
 
@@ -181,9 +187,9 @@ plt.show()
 
 
 ############""
-(keys, values) = fgpthand._build_pairs(fgpt, sk.params, 0) 
-#(noisy_keys, noisy_values) = fgpthand._build_pairs(noisy_fgpt, sk.params, 0)
-(shifted_keys, shifted_values) = fgpthand._build_pairs(shifted_fgpt, sk.params, 0)
+#(keys, values) = fgpthand._build_pairs(fgpt, sk.params, 0) 
+##(noisy_keys, noisy_values) = fgpthand._build_pairs(noisy_fgpt, sk.params, 0)
+#(shifted_keys, shifted_values) = fgpthand._build_pairs(shifted_fgpt, sk.params, 0)
 #
 #formatted_keys = map(fgpthand.format_key,keys)
 #formatted_noisy_keys = map(fgpthand.format_key,noisy_keys)
@@ -192,6 +198,6 @@ plt.show()
 #noisy_results = map(fgpthand.get ,noisy_keys)
 #
 ##plt.plot(formatted_keys);plt.plot(formatted_noisy_keys,':');plt.show()
-#
-plt.plot(keys);plt.plot(shifted_keys,':');plt.show()
-plt.plot(values);plt.plot(shifted_values,':');plt.show()
+##
+#plt.plot(keys);plt.plot(shifted_keys,':');plt.show()
+#plt.plot(values);plt.plot(shifted_values,':');plt.show()

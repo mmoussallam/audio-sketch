@@ -17,12 +17,12 @@ seg_dur = 5
 step = 3.0
 
 sparsities = [200,150,100,50,30,20,10,5,3]
-sparsities = [200,150]
+#sparsities = [200,150]
 setups = [
-          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
-                                                  'nature':'LOMDCT'}),8000,sparsities,'k-s',.25),
-           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b-+', .25),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'r-o', 0.25)    
+#          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
+#                                                  'nature':'LOMDCT'}),8000,sparsities,'k-s',.25),
+           (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b+', .25),
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ro', 0.25)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
@@ -73,17 +73,19 @@ for setup in setups:
         db_name = subcands[0]
         
         fgpthandle = pydb.FgptHandle(op.join(db_path, db_name), load=True, persistent=True, rd_only=True)
-        nkeys.append(float(fgpthandle.dbObj.stat()['nkeys']))
+        nkeys.append(float(fgpthandle.dbObj.stat()['ndata']))
         sizes.append(float(os.stat(op.join(db_path, db_name)).st_size))
 #        fgpthandle.dbObj.close()
     #plt.subplot(211)
 #    plt.plot(nkeys, 100*np.array(scores), mark)
     plt.subplot(121)
-    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark)    
+    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark+'-', linewidth=2.0)
+    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(scores),mark+'--', linewidth=1.0)
+#    plt.semilogx(np.array(nkeys), 100*np.array(cons_scores),mark)    
     plt.xlabel('DB size (Mbytes)')
     plt.ylabel('Recognition rate (\%)')
     plt.subplot(122)
-    plt.semilogx(np.array(times), 100*np.array(cons_scores),mark)    
+    plt.semilogx(np.array(times), 100*np.array(cons_scores),mark+'-', linewidth=2.0)    
     plt.xlabel('Computation Times (s)')
     plt.ylabel('Recognition rate (\%)')
     
@@ -100,6 +102,6 @@ plt.subplot(122)
 plt.grid()    
 plt.legend(legends, loc='lower right')    
 plt.subplots_adjust(left=0.06,right=0.96, top=0.96)
-#plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
-#plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.pdf'%(set_id, len(setups), int(seg_dur))))
+plt.savefig(op.join(figure_path, '%s_Scores_%dfgpts_dur%d.png'%(set_id, len(setups), int(seg_dur))))
 plt.show()

@@ -2,8 +2,11 @@
 \lyxformat 413
 \begin_document
 \begin_header
-\textclass article
+\textclass report
 \use_default_options true
+\begin_modules
+figs-within-sections
+\end_modules
 \maintain_unincluded_children false
 \language english
 \language_package default
@@ -26,7 +29,16 @@
 \index_command default
 \paperfontsize default
 \spacing single
-\use_hyperref false
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
 \papersize default
 \use_geometry true
 \use_amsmath 1
@@ -48,13 +60,15 @@
 \rightmargin 3cm
 \bottommargin 2cm
 \secnumdepth 3
-\tocdepth 3
+\tocdepth 2
 \paragraph_separation indent
 \paragraph_indentation default
 \quotes_language english
 \papercolumns 1
-\papersides 1
-\paperpagestyle default
+\papersides 2
+\paperpagestyle headings
+\bullet 0 1 1 -1
+\bullet 1 0 31 -1
 \tracking_changes false
 \output_changes false
 \html_math_output 0
@@ -65,7 +79,22 @@
 \begin_body
 
 \begin_layout Title
-Technical report - september 2013
+\begin_inset Graphics
+	filename figures/logo_LOA.pdf
+	width 12cm
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Technical report on project Sketch II
+\end_layout
+
+\begin_layout Date
+sept.
+ 2013
 \end_layout
 
 \begin_layout Author
@@ -272,7 +301,7 @@ The project officially started in march 2013.
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 Building Sound Sketches
 \end_layout
 
@@ -353,11 +382,11 @@ x\rightarrow Rep(x)\rightarrow sketch(x)\rightarrow fgpt(x)
  the sketches and finally the fingerprints.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section
 Representations
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Spectrograms
 \end_layout
 
@@ -493,7 +522,7 @@ Spectrogram (Logarithm of the magnitude of the Short Time Fourier Transform)
 \end_layout
 
 \end_deeper
-\begin_layout Subsubsection
+\begin_layout Subsection
 Constant Q transform
 \end_layout
 
@@ -565,7 +594,7 @@ midi(f)=69+12\log_{2}\left(\frac{f}{440}\right)
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Cochleogram
 \end_layout
 
@@ -580,17 +609,52 @@ key "Yang1992,Wang1995"
 , the cochleogram is the magnitude of a log-frequency transform similar
  in spirit to the CQT but using real auditory response filters (from the
  cochlea) as the filter banks.
- Cochleograms somewhat emphasize the TF regions that are perceptually stimulated.
- More information should be seeked directly in the papers 
+ Those filters are called 
+\emph on
+Gammatone auditory filters.
+ 
+\emph default
+Their main difference with Constant Q filters and Gabor filters (used in
+ STFT) is their non-symmetricalness.
+ A gammatone filter centered at frequency 
+\begin_inset Formula $f_{c}$
+\end_inset
+
+ writes in the time domain:
+\begin_inset Formula 
+\[
+gt(t)=at^{(n-1)}\exp\left(-2\pi bt\right)\cos\left(2\pi f_{c}t+\phi\right)
+\]
+
+\end_inset
+
+it is basically a cosine windowed by a non-symmetric windows that is the
+ product of a power term and a decreasing exponential.
+ the parameters mainly controls the filter duration and therefore the bandwidth.
+ These characteristic values can be experimentally learned.
+ For the sake of clarity we will use the same set of filter coefficients
+ used in existing software (i.e.
+ the NSL toolbox).
+\end_layout
+
+\begin_layout Standard
+Cochleograms are the visualization of the gammatone filters output magnitudes.
+ They somewhat emphasize the TF regions that are perceptually stimulated.
+ A nice introduction to cochleograms can be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Viberg2004"
+
+\end_inset
+
+ and further details in 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Yang1992,Wang1995"
 
 \end_inset
 
- (and other by D.
- Pressnitzer and S.
- Shamma) on which these are based.
+.
  The cochleogram computation is a direct transcription of the one performed
  in the NSL Toolbox
 \begin_inset Foot
@@ -648,25 +712,45 @@ Cochleogram (absolute value) of an audio excerpt.
 
 \end_layout
 
-\begin_layout Subsubsection
-Corticogram
+\begin_layout Subsection
+Corticograms
 \end_layout
 
 \begin_layout Standard
 Even deeper into the human auditory system is the primary area of the cortex.
  The output of the cochlear system is processed by neuron layers whose action
  can be approximately modeled by 2D wavelet transforms.
- The corticogram is a 4D representation indexed as a scale/rate/time/frequency
- matrix.
- As such it can be figured as a matrix of TF transforms.
- As for above: one should read the paper 
+ The 
+\emph on
+corticogram
+\emph default
+ is a 4D representation indexed as a scale/rate/time/frequency matrix.
+ As such it can be figured as a matrix of Time-Frequency representations.
+ 
+\end_layout
+
+\begin_layout Standard
+Evidences suggest that groups of neurons in the primary area of the auditory
+ cortex (A1) perform a processing that is tuned to a certain scale and rate
+ and looks like a filtering with some additional non-linear behaviors that
+ can be neglected in a first approximation.
+ A different way of understanding the Corticogram of a sound, is to view
+ it as a kind of double Fourier analysis (more precisely a double wavelet
+ transform) where the cochlea performs the first stage and the cortex the
+ second one.
+\end_layout
+
+\begin_layout Standard
+Interested reader should dig into the paper 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Wang1995"
 
 \end_inset
 
- for more details and look into the NSL toolbox.
+ for more details.
+ Again, the implementation that has been done in this work mimics the one
+ of the NSL toolbox.
 \end_layout
 
 \begin_layout Standard
@@ -675,13 +759,13 @@ key "Wang1995"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
 	filename figures/exemple_corticogram.pdf
-	width 12cm
+	width 16cm
 
 \end_inset
 
@@ -712,6 +796,13 @@ wavelet transform
 \end_inset
 
  and looks much more like the Cochleogram
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Corticogram-visualization"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -728,18 +819,147 @@ wavelet transform
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
+Questions raised by the corticogram
+\end_layout
+
+\begin_layout Standard
+The corticogram is a 4-D object and thus not intuitively manipulated.
+ As Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Corticogram-visualization"
+
+\end_inset
+
+ shows, it can be visualized as a grid where each element corresponds to
+ a possible 2D local ripple filtering.
+ The ripple parameters are precisely the rate and scale parameters, also
+ labeled ripple frequency and phase.
+\end_layout
+
+\begin_layout Standard
+Which of these multiple representation preserve the discriminative information
+ the best? It is not clear how this multi-staged analysis enables the mammal
+ brain to robustly process sounds.
+ Intuition suggests a specialization of brain areas to spectral, temporal
+ and hybrid sort of processing.
+ This intuition is backed by our understanding of how sounds, and particularly
+ music is organized in melodies (harmonic content) and rhythm.
+ 
+\end_layout
+
+\begin_layout Subsection
 Sparse Multi-Resolution Approximation
 \end_layout
 
 \begin_layout Standard
-Multi-resolution representations use a union of overcomplete basis (e.g.
- MDCT) to approximate a target audio signal.
- The sparse nature is achieved through selection mechanism such as thresholding
- or greedy algorithms.
- It is a synthesis-based view of the sparse problem.
- There is a huge litterature on these methods, but for practical purposes,
- one can look into the PyMP tutorials
+Corticograms can be considered as a multi-resolution view of cochleograms.
+ A different class of multi-resolution representations can be built using
+ the theory of frames 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Mallat2009"
+
+\end_inset
+
+ and more generally using a union of analysis 
+\emph on
+dictionaries
+\emph default
+.
+ A dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is any family of 
+\begin_inset Formula $M$
+\end_inset
+
+ vectors 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+.
+ One is typically interested in solving a synthesis problem of finding the
+ coefficients 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ such that:
+\begin_inset Formula 
+\begin{equation}
+x=\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}\label{eq:synthesis-dico}
+\end{equation}
+
+\end_inset
+
+which poses no problem when the dictionary is an orthonormal basis.
+ But in order to achieve multi-resolution, one might built a dictionary
+ as a union of orthonormal basis (for instance, STFT of different window
+ length or MDCT).
+ However, in such 
+\emph on
+overcomplete
+\emph default
+ dictionaries, their might not be a unique set of coefficient satisfying
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:synthesis-dico"
+
+\end_inset
+
+.
+ The problem of 
+\emph on
+sparse representation
+\emph default
+ therefore consists in finding, among all possible solutions the one that
+ minimizes a 
+\emph on
+sparsity cost function, 
+\emph default
+usually the 
+\begin_inset Formula $\ell_{0}$
+\end_inset
+
+-pseudo norm.
+ The sparse 
+\emph on
+representation
+\emph default
+ problem thus writes:
+\begin_inset Formula 
+\[
+\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }x=\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}
+\]
+
+\end_inset
+
+and its sparse 
+\emph on
+approximation
+\emph default
+ counterpart:
+\begin_inset Formula 
+\[
+\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }\|x-\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}\|^{2}\leq\epsilon
+\]
+
+\end_inset
+
+which are (most of the time) NP-hard to solve.
+ Potentially sub-optimal solutions are found using selection mechanism such
+ as thresholding or greedy algorithms.
+ There is a huge literature on these methods (for instance 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Mallat_TSP1993,Chen98atomicdecomposition,Donoho2006a"
+
+\end_inset
+
+), but for practical purposes, one can look into the PyMP tutorials
 \begin_inset Foot
 status open
 
@@ -802,12 +1022,52 @@ Left: Spectrogram of the resynthesis of a sparse approximation in a union
 
 \end_layout
 
-\begin_layout Standard
-As one can notice, here the representation is in itself a sketchification
- process.
+\begin_layout Paragraph
+Remark on sparse approximation
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Standard
+As one can notice, here the representation is in itself a 
+\emph on
+sketchification
+\emph default
+ process.
+ The multi-resolution representation space that is chosen and most importantly
+ the sparsity prior that is enforced on the representation amounts to a
+ 
+\emph on
+feature selection
+\emph default
+ process in a high-dimensionnal space.
+ Since they are no exact representation but already a simplification, sparse
+ approximations can be viewed as sketches of sound.
+\end_layout
+
+\begin_layout Section
+Sketches
+\end_layout
+
+\begin_layout Standard
+A sketch is a simplified version of an audio signal.
+ Usually a sketch is obtained by reducing the dimensionality in a transform
+ domain.
+ Therefore, any combination of a Sparse Approximation algorithm and a specific
+ representation (e.g.
+ dictionary) constitute a sketch.
+ Among such algorithms one can cite:
+\end_layout
+
+\begin_layout Itemize
+Greedy algorithms such as Matching Pursuit .
+ These algorithm alternate the selection of a component of the representation
+ and a reprojection of the residual.
+\end_layout
+
+\begin_layout Itemize
+Thresholding algorithm, (Iterative Hard Thresholding, Soft etc..)
+\end_layout
+
+\begin_layout Subsection
 SineWave Speech
 \end_layout
 
@@ -866,16 +1126,12 @@ Spectrogram of a SineWave Speech reconstruction of an audio excerpt.
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Feature vector
 \end_layout
 
@@ -894,31 +1150,7 @@ key "Muller2005"
 .
 \end_layout
 
-\begin_layout Subsection
-Sketches
-\end_layout
-
-\begin_layout Standard
-A sketch is a simplified version of an audio signal.
- Usually a sketch is obtained by reducing the dimensionality in a transform
- domain.
- Therefore, any combination of a Sparse Approximation algorithm and a specific
- representation (e.g.
- dictionary) constitute a sketch.
- Among such algorithms one can cite:
-\end_layout
-
-\begin_layout Itemize
-Greedy algorithms such as Matching Pursuit .
- These algorithm alternate the selection of a component of the representation
- and a reprojection of the residual.
-\end_layout
-
-\begin_layout Itemize
-Thresholding algorithm, (Iterative Hard Thresholding, Soft etc..)
-\end_layout
-
-\begin_layout Subsection
+\begin_layout Section
 Fingerprints
 \end_layout
 
@@ -961,7 +1193,7 @@ key "Philips_DCT,Philips_noise"
  
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Families of fingerprints
 \end_layout
 
@@ -1024,7 +1256,7 @@ some of them
  such as Shazam and so we shall adopt it here.
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Building Keys
 \end_layout
 
@@ -1036,11 +1268,10 @@ keys,
 some of them are listed below:
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Peaks and Thresholded values indexes
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Whatever the chosen representation (STFT 
 \begin_inset CommandInset citation
@@ -1112,12 +1343,10 @@ Visualization of sketch as a sparse collection of Time-Frequency Peaks.
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Pairs of Time-Frequency Peaks
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Much more robust than isolated Peaks, Pairs of Peaks have been introduced
  by Wang in the Shazam standard 
@@ -1177,12 +1406,10 @@ Visualization of Pairs of Peaks in a TF plane.
 
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Feature vectors
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 Along with their binarization (see 
 \begin_inset CommandInset citation
@@ -1194,12 +1421,10 @@ key "Haitsma,Muller2005"
 )
 \end_layout
 
-\end_deeper
-\begin_layout Enumerate
+\begin_layout Subsubsection
 Formant differences
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 A fingerprint specifically dedicated to the SineWave Speech (NEW ONE)
 \end_layout
@@ -1253,7 +1478,6 @@ Novel type of key.
 To be explained when will give satisfactory results....
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 \begin_inset Newpage newpage
 \end_inset
@@ -1261,11 +1485,11 @@ To be explained when will give satisfactory results....
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 Experiments
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section*
 Criteria
 \end_layout
 
@@ -1297,13 +1521,102 @@ Scalability: Will the system continue to perform if the database is about
  million songs
 \end_layout
 
+\begin_layout Section
+Robustness experiments
+\end_layout
+
 \begin_layout Subsection
 Noise Robustness
 \end_layout
 
 \begin_layout Standard
-Here we measure the amount of keys that are not affected by additive white
- noise:
+We are interested in the following problem.
+ Let 
+\begin_inset Formula $F[x]=\{K[x]\}_{k}$
+\end_inset
+
+ be the fingerprint of a clean signal 
+\begin_inset Formula $x$
+\end_inset
+
+ as a collection of 
+\begin_inset Formula $k$
+\end_inset
+
+ keys.
+ Let now 
+\begin_inset Formula $F[y]=F[x+w]=\{K[x+w]\}_{k}$
+\end_inset
+
+ be the fingerprint of a signal 
+\begin_inset Formula $y$
+\end_inset
+
+ being the same as 
+\begin_inset Formula $x$
+\end_inset
+
+ but corrupted with additive white gaussian noise 
+\begin_inset Formula $w$
+\end_inset
+
+.
+ Depending on the variance of 
+\begin_inset Formula $w$
+\end_inset
+
+ (or equivalently the Signal To Noise ratio of 
+\begin_inset Formula $y$
+\end_inset
+
+), we measure the Key Overlap Ratio:
+\begin_inset Formula 
+\[
+KOR=\frac{\#\{K[x]\}_{k}\bigcap K[y]\}_{k}}{k}
+\]
+
+\end_inset
+
+which is the amount of keys that have remained unchanged by the noise.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Key-Robustness-noise"
+
+\end_inset
+
+ shows these values for 4 different sketches/fingerprint associations:
+\end_layout
+
+\begin_layout Description
+XMDCTSparse is an approximation in a 3 times redundant MDCT dictionary.
+ Here 
+\begin_inset Formula $k$
+\end_inset
+
+ corresponds to the number of selected atoms and the keys are directly the
+ atom indexes.
+\end_layout
+
+\begin_layout Description
+SWS is a sine wave speech sketchification.
+ The fingerprint keys are the frequency intervals of the selected formants
+ resonant frequencies.
+\end_layout
+
+\begin_layout Description
+STFTPeaks is a Shazam-like mechanism.
+ 
+\begin_inset Formula $k$
+\end_inset
+
+ is here the number of peaks selected in the STFT.
+ Keys are defined by peak-pairs.
+\end_layout
+
+\begin_layout Description
+CochleoPeaks is exactly the same as STFT peaks except the STFT representation
+ is replaced by a cochleogram.
 \end_layout
 
 \begin_layout Standard
@@ -1316,7 +1629,25 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
+	filename figures/NoiseRobustness_k10.pdf
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Graphics
 	filename figures/NoiseRobustness_k50.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k100.pdf
 	width 8cm
 
 \end_inset
@@ -1336,7 +1667,18 @@ status collapsed
 
 \begin_layout Plain Layout
 Key Robustness to additive white noise.
- Left k=200, Right k=50
+ Values for 
+\begin_inset Formula $k=10,$
+\end_inset
+
+50,100 and 200
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Key-Robustness-noise"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1353,11 +1695,350 @@ Key Robustness to additive white noise.
 
 \end_layout
 
-\begin_layout Subsection
-Results on recognition tasks
+\begin_layout Paragraph
+Interpreting the results
+\end_layout
+
+\begin_layout Standard
+High KOR values means a large proportion of keys are not affected by additive
+ white Gaussian noise.
+ Following remarks can be made regarding results presented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Key-Robustness-noise"
+
+\end_inset
+
+:
 \end_layout
 
 \begin_layout Itemize
+Unsurprisingly, the Sine Wave Speech based fingerprint appears to be the
+ less robust to addition of noise.
+ Indeed, the formant center frequency selection process is fairly unstable
+ and minor modification of the spectral shape has large consequences on
+ the SWS and therefore on the fingerprint.
+ results may be expected to be even worse in the case of colored noise,
+ where the spectral balance is even more affected.
+ 
+\end_layout
+
+\begin_layout Itemize
+Cochleogram-based pairs of peaks appears to have a higher robustness to
+ (white Gaussian) noise than STFT-based ones.
+ Although additional tests must be conducted before strong conclusion can
+ be made, one can already see that the auditory model builds a representation
+ that is slightly less affected by white Gaussian noise.
+ This may not be the case with colored noise, especially if it is designed
+ to mainly affect frequency regions that are emphasized by the cochlear
+ response model.
+\end_layout
+
+\begin_layout Itemize
+Sparse approximation based sketches are clearly the most robust to additive
+ noise.
+ This also is no surprise since the feature, in that case, are specifically
+ selected for this purpose.
+ This can also be linked with conclusion of the Sketch I study 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Suied2013"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+In general, increasing 
+\begin_inset Formula $k$
+\end_inset
+
+ decreases the KOR score.
+ This emphasizes the fact that the first selected features are the most
+ robust ones.
+\end_layout
+
+\begin_layout Subsection
+Invariance robustness
+\end_layout
+
+\begin_layout Standard
+We are now interested in the following problem.
+ Let 
+\begin_inset Formula $F[x]=\{K[x]\}_{k}$
+\end_inset
+
+ be the fingerprint of a signal 
+\begin_inset Formula $x$
+\end_inset
+
+ as a collection of 
+\begin_inset Formula $k$
+\end_inset
+
+ keys.
+ Let now 
+\begin_inset Formula $F[y]=F[x*\delta_{\tau}]=\{K[x*\delta_{\tau}\}_{k}$
+\end_inset
+
+ be the fingerprint of a signal 
+\begin_inset Formula $y$
+\end_inset
+
+ being the same as 
+\begin_inset Formula $x$
+\end_inset
+
+ but translated in time.
+ Again, we can measure the robustness using the KOR value.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/ShiftRobustness_k50.pdf
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/ShiftRobustness_k200.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Key Robustness to time shifting.
+ Values for 
+\begin_inset Formula $k=50$
+\end_inset
+
+ and 200
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Key-Robustness-shift"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Interpreting the results
+\end_layout
+
+\begin_layout Standard
+High KOR values means a large proportion of keys are not affected by time
+ shifts.
+ Following remarks can be made regarding results presented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Key-Robustness-shift"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Itemize
+Sine Wave Speech results are hard to interpret, but they emphasize the fact
+ that a large number of keys are not discriminant enough.
+\end_layout
+
+\begin_layout Itemize
+Cochleogram and STFT based pairs of peaks have fairly comparable performances.
+ One can see that increasing the number of keys increases the robustness
+ in this case.
+ The oscillatory pattern stresses the fact that peak selection is highly
+ phase dependent.
+ More robustness could be attained by further quantifying the frequencies
+ of the keys.
+\end_layout
+
+\begin_layout Itemize
+Sparse approximation based sketches are once again quite robust to the deformati
+on.
+\end_layout
+
+\begin_layout Section
+Results on recognition tasks
+\end_layout
+
+\begin_layout Standard
+Robustness measure are not sufficient to compare fingerprinting systems.
+ Not only must a fingerprint be robust to deformation, but it should also
+ be characteristic of a sound.
+ The discriminative power of a fingerprint can only be evaluated by large
+ scale experiments.
+\end_layout
+
+\begin_layout Subsection
+Fingerprint Test framework
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Fingerprint-Test-framework"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Any test run consists in two phases:
+\end_layout
+
+\begin_layout Enumerate
+Learning: an audio dataset 
+\begin_inset Formula $\mathcal{D}$
+\end_inset
+
+ is a collection of 
+\begin_inset Formula $T$
+\end_inset
+
+ tracks 
+\begin_inset Formula $X_{t}$
+\end_inset
+
+.
+ Each track is cut into (non-overlapping) 
+\begin_inset Formula $S_{t}$
+\end_inset
+
+ segments of 5 seconds.
+ Each segment 
+\begin_inset Formula $x_{s,t}$
+\end_inset
+
+ is then processed by the fingerprint system which yields a collection of
+ 
+\begin_inset Formula $k$
+\end_inset
+
+ keys 
+\begin_inset Formula $\{K[x_{s,t}]\}_{k}$
+\end_inset
+
+ and associated values.
+ Each key is then hashed and stored in a dedicated database 
+\begin_inset Formula $\mathcal{B}$
+\end_inset
+
+ on the disk.
+ Two cases arises:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+The key does not exist in the database.
+ Then the key is added and the value associated is the place of occurrence,
+ i.e.
+ the time of occurrence and the track index 
+\begin_inset Formula $t$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+The key already exists in the database.
+ Then the place of occurrence is added to the list of values associated
+ with this key.
+\end_layout
+
+\begin_layout Standard
+At the end of this process, the dataset has been entirely transformed into
+ a database of fingerprints
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Testing: for each track, random segments of 5 seconds are selected.
+ These segments are not aligned with the ones of the learning phase.
+ For each segment, the fingerprint is computed, yielding a collection of
+ keys.
+ For each key, the associated values are retrieved from the database 
+\begin_inset Formula $\mathcal{B}$
+\end_inset
+
+ and a majority vote is conducted to decide of the most probable place of
+ occurrence.
+ For each segment there is three kind of result:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Segment is correctly identified as track 
+\begin_inset Formula $t$
+\end_inset
+
+ and in the correct time position
+\end_layout
+
+\begin_layout Enumerate
+Segment is correctly identified as track 
+\begin_inset Formula $t$
+\end_inset
+
+ but with the wrong time position.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Segment is incorrectly identified as track 
+\begin_inset Formula $t'$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Paragraph
+Metrics
+\end_layout
+
+\begin_layout Standard
+Performances are simply expressed in terms of 2 recognition rates:
+\end_layout
+
+\begin_layout Itemize
+Conservative: the ratio of segments whose both track and time of occurrence
+ have been correctly found
+\end_layout
+
+\begin_layout Itemize
+Relaxed: the ratio of segments whose track have been correctly found
+\end_layout
+
+\begin_layout Subsection
+Results on real datasets
+\end_layout
+
+\begin_layout Paragraph
 Setup: GTZAN dataset (1000 songs of 30 seconds each 
 \begin_inset Formula $\sim$
 \end_inset
@@ -1367,12 +2048,11 @@ Setup: GTZAN dataset (1000 songs of 30 seconds each
 \end_layout
 
 \begin_layout Standard
-We run a recognition experiment with various levels of sparsities in the
- sketch, leading to various number of keys.
- These keys are stored in specific Hash Tables for highly efficient search
- and retrieval.
- The size of the hash table is here used to illustrate the performances.
- 
+The GTZAN dataset contains 100 musical examples of 10 different musical
+ genres (reggae, rock , jazz, classical, etc..).
+ Is is known to contain some mistakes, but is a good framework for our analysis
+ since many of the pieces it contains are similar in content (at least they
+ belong to the same musical genre).
 \end_layout
 
 \begin_layout Standard
@@ -1396,10 +2076,16 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Recognition score on the GTZAN dataset with STFT and Cochleograms pairs
+Recognition scores on the GTZAN dataset with STFT and Cochleograms pairs
  of peaks.
- Cochleograms seems to allow for slightly better recognition score for a
- given sketch sparsity level.
+ Dashed lines are conservative recognition rates.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:RecognitionGTZAN"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1416,7 +2102,43 @@ Recognition score on the GTZAN dataset with STFT and Cochleograms pairs
 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
+Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:RecognitionGTZAN"
+
+\end_inset
+
+ shows results in terms of recognition rate.
+ The test framework described in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Fingerprint-Test-framework"
+
+\end_inset
+
+ has been applied to fingerprint systems using pairs of peaks in STFT and
+ Cochleograms.
+ Runs where initialized with varying number of peaks.
+ Increasing the number of peaks has three effects: 
+\end_layout
+
+\begin_layout Enumerate
+It increases the size of the database that contains all the key/values of
+ the fingerprints
+\end_layout
+
+\begin_layout Enumerate
+It increases the computation time
+\end_layout
+
+\begin_layout Enumerate
+It enhances the recognition capabilities since more keys (usually) means
+ more discriminative fingerprints.
+\end_layout
+
+\begin_layout Paragraph
 Setup: RWC sub dataset (80 songs of a few minutes each 
 \begin_inset Formula $\sim$
 \end_inset
@@ -1446,8 +2168,14 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Recognition score on a subset of the RWC pop dataset with STFT and Cochleograms
+Recognition scores on a subset of the RWC pop dataset with STFT and Cochleograms
  pairs of peaks.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Recognition-RWC"
+
+\end_inset
+
  
 \end_layout
 
@@ -1469,46 +2197,112 @@ Recognition score on a subset of the RWC pop dataset with STFT and Cochleograms
 \end_layout
 
 \begin_layout Section
-Experiments still to make
+Ongoing Experiments 
+\end_layout
+
+\begin_layout Subsection
+Extensive comparison with as many sketches as possible
+\end_layout
+
+\begin_layout Standard
+As we have presented above, their are numerous ways of computing sketches
+ and numerous ways of computing fingerprints out of those sketches.
+ So far, satisfactory results have been achieved only with fingerprinting
+ schemes based on peak pairs on STFT and Cochleograms, however the following
+ schemes are under development and almost finished:
 \end_layout
 
 \begin_layout Itemize
-We have yet many sketches (with many parameters) to try for fingerprinting
+Fingerprints based on sparse approximations
 \end_layout
 
 \begin_layout Itemize
-Results on Speech dataset of tens of thousands of short speech: we may also
- want to know distance to same phrase by different locutor..
+Fingerprints on the various sub parts of the corticogram
 \end_layout
 
 \begin_layout Itemize
-Other types of distortions should be investigated:
+Fingerprints on a plain CQT (L.
+ Cornu)
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-time shift
+\begin_layout Standard
+Designing an efficient fingerprint scheme for the Sine Wave Speech is a
+ more challenging task that we are currently concentrated on.
+ Indeed, the instability of the formant selection process is a major technical
+ difficulty.
+ We do not expect such fingerprints to be competitive on the same datasets
+ as tested above.
+ However, datasets of pure speech signals may give very different results
+ and be more coherent with the signal model at the core of the SWS idea.
 \end_layout
 
-\begin_layout Itemize
-frequency shift
+\begin_layout Subsection
+Feedback and statistical modeling
 \end_layout
 
-\begin_layout Itemize
-compression
+\begin_layout Standard
+The experimental setup presented so far is a direct application of the commonly
+ found solution to the automatic recognition by acoustic fingerprint comparison
+ task.
+ As we've seen, a sketch is computed for a given sound following a fixed,
+ deterministic process.
+ The adequacy of a sketch to the retrieval task plays no role in its constructio
+n, although it is really what is important here.
 \end_layout
 
-\begin_layout Itemize
-echo
+\begin_layout Standard
+In other word, we need to define sketches that may be less descriptive and
+ more discriminative of the sounds.
+ To do so we need to learn statistical models for the sketches.
+ In particular, adopting the dictionary-based point of view, the problem
+ should not only be to find the features 
+\begin_inset Formula $\phi$
+\end_inset
+
+ that are good at describing a signal 
+\begin_inset Formula $x$
+\end_inset
+
+, but only the ones that are not easily found in other signals.
+ This can be written as a problem of the form:
+\begin_inset Formula 
+\[
+\min_{\alpha}\|\alpha\|_{0}\mbox{ such that }\|x-\sum\alpha_{i}\phi_{i}\|^{2}\leq\epsilon\mbox{ and }\max D(\alpha,\alpha_{common})
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $D(\alpha,\alpha_{common})$
+\end_inset
+
+ being a distance between the chosen 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and a prototype 
+\begin_inset Formula $\alpha_{common}$
+\end_inset
+
+ that can be learned on the dataset.
 \end_layout
 
-\end_deeper
+\begin_layout Standard
+This suggests a feedback mechanism.
+ Sketches are computed and evaluated in the retrieval task, a prototype
+ is build that in turn serves for the computation of the sketched and so
+ on.
+ Such mechanism can also be seen as a genetic algorithm with the fingerprint
+ evaluation being the fitness function.
+ The next few months should be dedicated to building this kind of framework.
+\end_layout
+
+\begin_layout Subsection
+Longer term experiments
+\end_layout
+
 \begin_layout Itemize
 Find an equivalent of priming in the fingerprinting problem
-\end_layout
-
-\begin_layout Itemize
-Find a robust fgpt with sinewave speech 
 \end_layout
 
 \begin_layout Standard
@@ -1518,11 +2312,11 @@ Find a robust fgpt with sinewave speech
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 Implementation details
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section
 Language and libraries
 \end_layout
 
@@ -1770,8 +2564,8 @@ More explanations to come
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "/home/manu/Documents/Global-Fingerprint,/home/manu/Documents/Global-Fingerprint-sketch,/home/manu/Documents/Global-Perception,/home/manu/Documents/Global-Own"
-options "plain"
+bibfiles "/home/manu/Documents/Global-Fingerprint,/home/manu/Documents/Global-Fingerprint-sketch,/home/manu/Documents/Global-Perception,/home/manu/Documents/Global-Own,/home/manu/Documents/Global"
+options "bibtotoc,abbrv"
 
 \end_inset
 
