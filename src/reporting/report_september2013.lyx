@@ -483,7 +483,7 @@ The STFT is perfectly invertible, provided the Constant Overlap-Add condition
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -675,7 +675,7 @@ Doc and download at http://www.isr.umd.edu/Labs/NSL/Downloads.html
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -931,9 +931,9 @@ representation
 \emph default
  problem thus writes:
 \begin_inset Formula 
-\[
-\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }x=\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}
-\]
+\begin{equation}
+\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }x=\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}\label{eq:l0_prob}
+\end{equation}
 
 \end_inset
 
@@ -943,9 +943,9 @@ approximation
 \emph default
  counterpart:
 \begin_inset Formula 
-\[
-\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }\|x-\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}\|^{2}\leq\epsilon
-\]
+\begin{equation}
+\min_{\alpha}\|\mathbf{\alpha}\|_{0}\mbox{ such that }\|x-\sum_{i=0}^{M-1}\alpha_{i}\phi_{i}\|^{2}\leq\epsilon\label{eq:l0_approx}
+\end{equation}
 
 \end_inset
 
@@ -1038,7 +1038,7 @@ sketchification
 \emph on
 feature selection
 \emph default
- process in a high-dimensionnal space.
+ process in a high-dimensional space.
  Since they are no exact representation but already a simplification, sparse
  approximations can be viewed as sketches of sound.
 \end_layout
@@ -1050,21 +1050,63 @@ Sketches
 \begin_layout Standard
 A sketch is a simplified version of an audio signal.
  Usually a sketch is obtained by reducing the dimensionality in a transform
- domain.
- Therefore, any combination of a Sparse Approximation algorithm and a specific
- representation (e.g.
- dictionary) constitute a sketch.
- Among such algorithms one can cite:
+ domain or equivalently in a 
+\emph on
+feature space.
+ 
+\emph default
+The selection of a subset of these features constitutes a sketch.
+ Equivalently, a sketch is any sparse combination of atoms in a given 
+\emph on
+dictionary
+\emph default
+.
+\end_layout
+
+\begin_layout Subsection
+Time-Frequency Peaks
+\end_layout
+
+\begin_layout Standard
+Peak-picking consists in finding the local extreme values.
+ At the core of the fingerprinting scheme proposed by Wang in the Shazam
+ method, peaks are selected in square regions of the Time frequency plane
+ in order to maximize their mutual information.
+ It is indeed easy to show that (except for completely noisy processes)
+ time-frequency features of audio signals are strongly correlated locally.
+ In this work, peak picking has been implemented on Spectrograms, Cochleograms
+ and Corticograms.
+\end_layout
+
+\begin_layout Subsection
+Sparse approximation 
+\end_layout
+
+\begin_layout Standard
+As we have already seen in section 1.1.5, sparse approximations can be considered
+ as sketches.
+ The feature selection is the result of algorithms that are tailored for
+ the problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:l0_approx"
+
+\end_inset
+
+.
+ Two main classes of methods have been implemented so far:
 \end_layout
 
 \begin_layout Itemize
-Greedy algorithms such as Matching Pursuit .
+Greedy algorithms such as Matching Pursuit.
  These algorithm alternate the selection of a component of the representation
  and a reprojection of the residual.
 \end_layout
 
 \begin_layout Itemize
-Thresholding algorithm, (Iterative Hard Thresholding, Soft etc..)
+Thresholding algorithm, (Iterative Hard Thresholding, Soft etc..).
+ These algorithm select multiple features at each iteration and perform
+ a thresholding of the non-selected features, followed by a shrinkage procedure.
 \end_layout
 
 \begin_layout Subsection
@@ -1097,7 +1139,7 @@ target "http://www.scholarpedia.org/article/Sine-wave_speech"
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -1132,13 +1174,21 @@ Spectrogram of a SineWave Speech reconstruction of an audio excerpt.
 \end_layout
 
 \begin_layout Subsection
-Feature vector
+Audio Feature vector
 \end_layout
 
 \begin_layout Standard
-Any feature extraction process can be used, (MFCC, chroma, LPC, etc..) any
- feature combination can be thought of as a representation of the signal.
- The synthesis can then be obtained by concatenating sounds from a database
+Literature on audio feature computation is proficient.
+ Any feature extraction process can be used, (MFCC, chroma, LPC, etc..) any
+ feature combination can be thought of as a sketch of the signal.
+ Most of the time, the audio features are analysis-oriented and cannot be
+ inverted.
+ This is for instance the case with Zero-Crossing Rate or spectral moments.
+ 
+\end_layout
+
+\begin_layout Standard
+The synthesis can then be obtained by concatenating sounds from a database
  based on nearest neighbors search in the feature space.
  This is for example used in 
 \begin_inset CommandInset citation
@@ -2312,18 +2362,21 @@ Find an equivalent of priming in the fingerprinting problem
 
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Part*
+Annexes
+\end_layout
+
+\begin_layout Chapter*
 Implementation details
 \end_layout
 
-\begin_layout Section
+\begin_layout Section*
 Language and libraries
 \end_layout
 
 \begin_layout Standard
 A unified framework has been developed in Python (2.0 syntax).
- It has been tested on linux and windows and should straightforwardly work
- on mac also.
+ It has been tested on linux, windows and Mac platform.
  The manipulation of audio signals, spectrogram construction, and sparse
  greedy algorithms are performed through the use of the PyMP
 \begin_inset Foot
@@ -2349,62 +2402,11 @@ At: http://manuel.moussallam.net/PyMP/
 \end_layout
 
 \begin_layout Standard
-PyMP installation is relatively easy once the following Python packages
- have been installed:
-\end_layout
-
-\begin_layout Itemize
-Numpy/Scipy 
-\end_layout
-
-\begin_layout Itemize
-Matplotlib
-\end_layout
-
-\begin_layout Itemize
-scikits.audiolab
-\end_layout
-
-\begin_layout Itemize
-scikits.learn
-\end_layout
-
-\begin_layout Standard
-On any platform, all of these can be easily installed using easy_install
- software of pip.
-\end_layout
-
-\begin_layout Standard
-In order to work properly, additional (but quite standard and definitely
- cross platform) libraries will be required:
-\end_layout
-
-\begin_layout Itemize
-fftw3 
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-Doc and Download at http://www.fftw.org/
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Itemize
-libsndfile 
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-Doc and download at http://www.mega-nerd.com/libsndfile/
-\end_layout
-
-\end_inset
-
-
+Everywhere it is possible, the code is run in parallel using the 
+\emph on
+joblib 
+\emph default
+python package.
 \end_layout
 
 \begin_layout Paragraph
@@ -2456,13 +2458,20 @@ Doc and download at http://www.fon.hum.uva.nl/praat/
  platforms so far.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section*
 Sketches
 \end_layout
 
 \begin_layout Standard
-All sketches inherit from an abstract interface AudioSketch as the following
- figure shows:
+All sketches inherit from an abstract interface AudioSketch.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:UML-diagram-sketches"
+
+\end_inset
+
+ shows a UML diagram of the sketches that have been implemented so far.
 \end_layout
 
 \begin_layout Standard
@@ -2490,6 +2499,13 @@ status collapsed
 \begin_layout Plain Layout
 UML diagram of the sketches objects.
  There is a unique abstract interface for audio sketches.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:UML-diagram-sketches"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2506,12 +2522,7 @@ UML diagram of the sketches objects.
 
 \end_layout
 
-\begin_layout Standard
-A nice way to discover the different sketches is by launching the test script
- SketchTest.py
-\end_layout
-
-\begin_layout Subsection
+\begin_layout Section*
 Fingerprints
 \end_layout
 
@@ -2557,8 +2568,16 @@ UML diagram of the fingerprint handler objects.
 
 \end_layout
 
+\begin_layout Subsection*
+Berkeley DB database
+\end_layout
+
 \begin_layout Standard
-More explanations to come
+Berkeley DB is a widely used C library that implements hash tables and relationa
+l databases.
+ When properly configured, it can handle many write and read access to a
+ database stored in RAM and flush to the disk, say, at the end of the learning
+ stage.
 \end_layout
 
 \begin_layout Standard
