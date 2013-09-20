@@ -36,7 +36,7 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [200,150,100,50,30,20,15,10,7,5,3]
+sparsities = [20,30,50,100]
 # sparsities = [20,15,10,7,5,3]
 seg_dur = 5
 fs = 8000
@@ -50,10 +50,10 @@ setups = [((XMDCTBDB,{'wall':False}),1,
                                                   'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
-                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
-                     ((CochleoPeaksBDB,{'wall':False}),4,
-                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+#                 ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
+#                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
+#                      ((CochleoPeaksBDB,{'wall':False}),4,
+#                      CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
                  ]
 
 for (fgpthandlename, fgptparams),n_jobs,sk in setups:
@@ -96,7 +96,7 @@ for (fgpthandlename, fgptparams),n_jobs,sk in setups:
             # saving the results
             score_name = "%s_%s_k%d_%s_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, sk.get_sig(),
                                                     int(seg_dur), int(fs), int(100.0*test_proportion),int(step))
-            
+            del fgpthandle
             stats =  os.stat(op.join(db_path, db_name))
             savemat(op.join(score_path,score_name), {'score':scores, 'time':ttest,
                                                      'size':stats.st_size,'failures': failures})

@@ -11,15 +11,16 @@ from PyMP import Signal
 from classes import pydb
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
-sparsities = [200,150,100,50,30,20,10,5,3]
-sparsities = [200,150]
+# sparsities = [200,150,100,50,30,20,10,5,3]
+sparsities = [150,100,50,30,20,10,5,3]
+# sparsities = [200,150]
 setups = [
-          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
+          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':3,
                                                   'nature':'LOMDCT'}),8000,sparsities,'k-s',.25),
            (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b-+', .25),
            (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'r-o', 0.25)    
