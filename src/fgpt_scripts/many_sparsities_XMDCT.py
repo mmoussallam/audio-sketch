@@ -42,20 +42,20 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [300,]
+sparsities = [100,]
 seg_dur = 5
 fs = 11025
 step = 3.0
 ## Initialize the sketchifier
 
 # sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
-sk = XMDCTSparseSketch(**{'scales':[1024, 4096,],'n_atoms':5,'nature':'LOMDCT',
-                          'penalty':0.9,'mask_size':1})
+sk = XMDCTSparseSketch(**{'scales':[1024, 8192,],'n_atoms':5,'nature':'LOMDCT',
+                          'penalty':0.3,'mask_size':1})
 sk_id = sk.__class__.__name__[:-6]
  
 learn = True
 test = True
-subset = 50
+subset = 100
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
     db_name = "%s_%s_k%d_%s_%dsec_%dfs_subset%d.db"%(set_id, sk_id, sparsity, sk.get_sig(),

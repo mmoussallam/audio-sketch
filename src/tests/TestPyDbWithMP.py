@@ -250,7 +250,7 @@ class DatabaseConstructionTest(unittest.TestCase):
 
                 print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 ppdb.populate(
-                    approx, None, fileIndex, offset=(segIdx * segmentLength) - padZ)
+                    approx, None, fileIndex, offset=float((segIdx * segmentLength) - padZ)/ sig.fs)
 
                 keycount += approx.atom_number
 
@@ -287,7 +287,7 @@ class OffsetDetectionTest(unittest.TestCase):
 
             print "Populating database with offset " + str(segIdx * pySig.segment_size / pySig.fs)
             ppdb.populate(
-                approx,None, 0, offset=(segIdx * pySig.segment_size) - scales.get_pad())
+                approx,None, 0, offset= float((segIdx * pySig.segment_size) - scales.get_pad())/float(pySig.fs))
     
 
         # ok we have a DB with only 1 file and different segments, now 
