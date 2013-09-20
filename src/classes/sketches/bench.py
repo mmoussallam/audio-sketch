@@ -50,7 +50,7 @@ class STFTPeaksSketch(AudioSketch):
                              self.params['scale'],
                              self.params['step'])
 
-    def represent(self, sparse=False, **kwargs):
+    def represent(self, sparse=False, fig=None, **kwargs):
         if sparse:
             rep = np.zeros_like(self.sp_rep)
             rep[np.nonzero(self.sp_rep)] = 1.
@@ -64,19 +64,23 @@ class STFTPeaksSketch(AudioSketch):
         y_tick_vec = np.linspace(0, rep.shape[1], 6).astype(int)
         y_label_vec = (y_tick_vec / float(
             self.params['scale'])) * float(self.orig_signal.fs)
-
-        plt.figure()
-        for chanIdx in range(rep.shape[0]):
-            plt.subplot(rep.shape[0], 1, chanIdx + 1)
-            plt.imshow(10 * np.log10(np.abs(rep[chanIdx, :, :])),
-                       aspect='auto',
-                       interpolation='nearest',
-                       origin='lower',
-                       cmap=cm.coolwarm)
-            plt.xlabel('Time (s)')
-            plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
-            plt.ylabel('Frequency')
-            plt.yticks(y_tick_vec, ["%d" % int(a) for a in y_label_vec])
+        
+        if fig is None:
+            fig = plt.figure()
+        else:
+            ax = fig.gca()
+#        for chanIdx in range(rep.shape[0]):
+#        plt.subplot(rep.shape[0], 1, chanIdx + 1)
+        chanIdx = 0
+        plt.imshow(10 * np.log10(np.abs(rep[chanIdx, :, :])),
+                   aspect='auto',
+                   interpolation='nearest',
+                   origin='lower',
+                   cmap=cm.coolwarm)
+        plt.xlabel('Time (s)')
+        plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
+        plt.ylabel('Frequency')
+        plt.yticks(y_tick_vec, ["%d" % int(a) for a in y_label_vec])
 
     def sparsify(self, sparsity, **kwargs):
         ''' sparsity is here achieved through Peak-Picking in the

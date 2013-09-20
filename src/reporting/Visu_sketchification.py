@@ -28,46 +28,68 @@ audio_output_path = '/home/manu/workspace/audio-sketch/src/reporting/audio/'
 
 learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'    
 
-sketches_to_test = [SWSSketch(),
+sketches_to_test = [
+                    SWSSketch(),
                     KNNSketch(**{'location':learned_base_dir,
                                                 'shuffle':13,
                                                 'n_frames':100000,
                                                 'n_neighbs':1}),
                     STFTPeaksSketch(**{'scale':2048, 'step':256}),
-                    CochleoPeaksSketch(),
-                    CorticoIndepSubPeaksSketch(),
-                    XMDCTSparseSketch(**{'scales':[64,512,4096], 'n_atoms':100}),                    
+                    CochleoPeaksSketch(**{'frmlen':8}),
+                    CochleoIHTSketch(**{'frmlen':8}),
+                    CorticoIndepSubPeaksSketch(**{'frmlen':8}),
+                    XMDCTSparseSketch(**{'scales':[64,512,4096], 'n_atoms':500}),                    
                             ]
 
-for sk in sketches_to_test:
+for i, sk in enumerate(sketches_to_test):
     audio_name = op.split(audio_test_file)[1][:-4]
     # also save the complete STFT
     sig = Signal(audio_test_file, normalize=True, mono=True)
-    sig.resample(11025)
-    plt.figure(figsize=(10,5))    
-    sig.spectrogram(1024,64, order=0.5, log=False,
-                          cmap=cm.hot, cbar=False)
+    sig.resample(16000)
+    if i<1:
+        plt.figure(figsize=(10,5))    
+        sig.spectrogram(1024,64, order=0.5, log=False,
+                              cmap=cm.hot, cbar=False)
+            
+        plt.savefig(op.join(figure_output_path, 'original_%s.pdf'%(audio_name)))    
+        sig.write(op.join(audio_output_path, 'original_%s.wav'%(audio_name)))
         
-    plt.savefig(op.join(figure_output_path, 'original_%s.pdf'%(audio_name)))    
-    sig.write(op.join(audio_output_path, 'original_%s.wav'%(audio_name)))
-    
     print " compute full representation"
-    sk.recompute(audio_test_file)
+    try:
+        sk.recompute(sig)
+    except:
+        print "recomputing from file"
+        sk.recompute(op.join(audio_output_path, 'original_%s.wav'%(audio_name)))
     
 #    print " plot the computed full representation" 
 #    sk.represent()
-    
-    print " Now sparsify with 1000 elements" 
-    sk.sparsify(1000)
+    f = plt.figure(figsize=(10,6))    
+    sk.represent(sparse=False, fig=f)
+    plt.savefig(op.join(figure_output_path, 'represent_%s_%s.pdf'%(audio_name,
+                                                                     sk.__class__.__name__)))
     
 #    print " plot the sparsified representation"    
+#    f = plt.figure(figsize=(10,6))
+#    f.add_subplot(121)    
+#    sk.represent(sparse=False, fig=f)
+    print " Now sparsify with 100 elements" 
+    sk.sparsify(200)
+#    f.add_subplot(122)    
+    f = plt.figure(figsize=(10,6))    
+    sk.represent(sparse=True, fig=f)
+    plt.subplots_adjust(left=0.08,right=0.97)
+    plt.savefig(op.join(figure_output_path, 'sparsified_%s_%s.pdf'%(audio_name,
+                                                                     sk.__class__.__name__)))
+#    plt.show()
+    
 #    sk.represent(sparse=True)
         
     synth_sig = sk.synthesize(sparse=True)              
     
 #    print synth_sig.data.shape
     
-    snr = 10*np.log10(synth_sig.energy/np.sum((synth_sig.data- sk.orig_signal.data[:synth_sig.length])**2))
+    snr = 10*np.log10(synth_sig.energy/np.sum((synth_sig.data[:sk.orig_signal.length] -
+                                               sk.orig_signal.data[:synth_sig.length])**2))
     
     synth_sig.resample(11025)
     plt.figure(figsize=(10,5))    

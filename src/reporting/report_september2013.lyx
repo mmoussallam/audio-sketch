@@ -1437,8 +1437,8 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Visualization of Pairs of Peaks in a TF plane.
- Each of the line specifies a key.
+Visualization of Pairs of Peaks in a Time-Frequency plane.
+ Each of the black segment figures a pair of peaks that constitute a key.
  
 \end_layout
 
@@ -1468,7 +1468,16 @@ key "Haitsma,Muller2005"
 
 \end_inset
 
-)
+).
+ Features such as Mel-Frequency Cepstral Coefficient (MFCC) or Pitch Class
+ Profile (PCP) also known as Chroma features (see also 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Jiao2008,Philips_DCT,Scheirer1997"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Subsubsection
@@ -1476,7 +1485,14 @@ Formant differences
 \end_layout
 
 \begin_layout Standard
-A fingerprint specifically dedicated to the SineWave Speech (NEW ONE)
+One can think of new ways to build fingerprint keys.
+ For instance we are investigating keys computed using the Sine Wave Speech
+ sketch.
+ It is not clear how to efficiently combine the information carried by the
+ formants resonant frequency variations across time.
+ The simplest way to measure distance in such space would be to perform,
+ say a dynamic time warping between formant series.
+ However this would require too much computation time.
 \end_layout
 
 \begin_layout Standard
@@ -1525,7 +1541,11 @@ Novel type of key.
 \end_layout
 
 \begin_layout Standard
-To be explained when will give satisfactory results....
+A much simpler way, based on keys comparison is to store the difference
+ between neighboring formants as the keys.
+ So far this approach is not providing competitive results as we will show
+ in the experiment section.
+ However, we believe that there is still room for improvements on this aspect.
 \end_layout
 
 \begin_layout Standard
@@ -2135,7 +2155,9 @@ name "fig:RecognitionGTZAN"
 
 \end_inset
 
-
+.
+ Computation times achieved on a Xeon(R) CPU X5482 @ 3.20GHz running a Linux/Debi
+an system with 32Gb of RAM.
 \end_layout
 
 \end_inset
@@ -2226,7 +2248,8 @@ name "fig:Recognition-RWC"
 
 \end_inset
 
- 
+ Computation times achieved on a Xeon(R) CPU X5482 @ 3.20GHz running a Linux/Debi
+an system with 32Gb of RAM.
 \end_layout
 
 \end_inset
@@ -2348,11 +2371,33 @@ This suggests a feedback mechanism.
 \end_layout
 
 \begin_layout Subsection
-Longer term experiments
+Longer-term
 \end_layout
 
-\begin_layout Itemize
-Find an equivalent of priming in the fingerprinting problem
+\begin_layout Standard
+The automatic recognition by fingerprint comparison task is a well defined
+ problem that allows empirical comparison between different schemes.
+ However, its relationship with the 
+\emph on
+priming 
+\emph default
+issue is not clearly known.
+ In the longer-term, it would be nice to design an experiment inspired by
+ the fingerprint problem that reflects the 
+\emph on
+priming 
+\emph default
+effect.
+\end_layout
+
+\begin_layout Standard
+A few ideas come to mind.
+ Fingerprints could be stored in a cache memory, allowing faster retrieval
+ of sounds in the hash tables.
+ Nonetheless, designing a precise framework that mimics the mammal brain
+ behavior remains a challenging task.
+ The follow-up of this project (e.g.
+ WP 2.1 and 2.2) should shed some light on this topic.
 \end_layout
 
 \begin_layout Standard
@@ -2362,11 +2407,7 @@ Find an equivalent of priming in the fingerprinting problem
 
 \end_layout
 
-\begin_layout Part*
-Annexes
-\end_layout
-
-\begin_layout Chapter*
+\begin_layout Chapter
 Implementation details
 \end_layout
 
@@ -2375,8 +2416,8 @@ Language and libraries
 \end_layout
 
 \begin_layout Standard
-A unified framework has been developed in Python (2.0 syntax).
- It has been tested on linux, windows and Mac platform.
+A unified framework has been developed in Python (2.7 syntax).
+ It has been tested on Linux/Ubuntu, Windows 32 bits and Mac OS X platforms.
  The manipulation of audio signals, spectrogram construction, and sparse
  greedy algorithms are performed through the use of the PyMP
 \begin_inset Foot
@@ -2407,9 +2448,11 @@ Everywhere it is possible, the code is run in parallel using the
 joblib 
 \emph default
 python package.
+ The hash tables manipulation is performed in pure C via a python wrapper.
+ 
 \end_layout
 
-\begin_layout Paragraph
+\begin_layout Subsection*
 Versionning
 \end_layout
 
@@ -2430,8 +2473,14 @@ Tests
 \end_layout
 
 \begin_layout Standard
-Some tests have been written.
- Mainly to guarantee back compatibility.
+Following principles of test-driven development, unit testing is performed
+ on the code using python 
+\emph on
+unittest
+\emph default
+ package.
+ this guarantees back compatibility and ensure no critical part is damaged
+ after code edition.
  They are located in the tests package.
 \end_layout
 
@@ -2522,12 +2571,28 @@ name "fig:UML-diagram-sketches"
 
 \end_layout
 
+\begin_layout Standard
+This architecture allows an easy manipulation of the different sketches
+ and is crucial for large scale experiments.
+\end_layout
+
 \begin_layout Section*
 Fingerprints
 \end_layout
 
 \begin_layout Standard
-All fingerprinting systems uses the same interface as depicted below:
+All fingerprinting systems uses the same interface as depicted in Figure
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:UML-Fingerprints"
+
+\end_inset
+
+.
+ The super class makes a single interface with the Berkeley DB (BDB) API.
+ BDB objects must be manipulated with great care since they correspond to
+ low-level memory and disk file-system editing.
 \end_layout
 
 \begin_layout Standard
@@ -2556,7 +2621,9 @@ status collapsed
 UML diagram of the fingerprint handler objects.
  There is a unique abstract interface that deals with the low level hash
  table system.
-\end_layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:UML-Fingerprints"
 
 \end_inset
 
@@ -2566,6 +2633,17 @@ UML diagram of the fingerprint handler objects.
 \end_inset
 
 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This architecture allows to develop specific fingerprinting schemes without
+ worrying about the low-level handling of BDB objects anymore.
+ 
 \end_layout
 
 \begin_layout Subsection*
@@ -2578,6 +2656,39 @@ l databases.
  When properly configured, it can handle many write and read access to a
  database stored in RAM and flush to the disk, say, at the end of the learning
  stage.
+ Its configuration can be tricky.
+ Typical efficient usage may include:
+\end_layout
+
+\begin_layout Itemize
+Storage in RAM for fast read-only access (for instance in a fingerprinting
+ 
+\emph on
+Test
+\emph default
+ phase).
+ Enough heap space must be allocated in this mode
+\end_layout
+
+\begin_layout Itemize
+Storage on disk between experiments.
+ The hash table structure can be nicely flushed to disk between fingerprinting
+ phases and experiments.
+ 
+\end_layout
+
+\begin_layout Itemize
+Fast multi-threaded read/write access (for instance in a fingerprinting
+ 
+\emph on
+Learn
+\emph default
+ phase).
+ The multi-threading must be carefully handled.
+ This mode is the most sensitive one and is unlikely to be easily efficiently
+ implemented on all platforms.
+ However it is easy to downgrade to a safe, single-threaded mode with pure
+ RAM manipulation.
 \end_layout
 
 \begin_layout Standard

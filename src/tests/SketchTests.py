@@ -43,7 +43,7 @@ class SketchTest(unittest.TestCase):
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
                             misc.SWSSketch(),
-#                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
                             cochleo.CochleoPeaksSketch(**{'fs':8000}),
 #                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),   
