@@ -13,7 +13,7 @@
 \usecolortheme{dolphin}
 \usepackage{movie15}
 
-\title{Esquisses et Empreintes Sonores }
+\title{Esquisses et Empreintes Sonores, bilan d'étape du projet Sketch 2}
 \author{Manuel ~Moussallam}
 \institute{ Institut Langevin }
 \date{24 septembre 2013}
@@ -76,23 +76,912 @@
 
 \begin_body
 
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Plan de la présentation:
+\end_layout
+
+\begin_layout Enumerate
+- Introduction
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Traits marquants (rythmes, phonèmes, intervalles)
+\end_layout
+
+\begin_layout Enumerate
+Représentations : invariants et structures
+\end_layout
+
+\begin_layout Enumerate
+Problématiques
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+- Esquisses sonores.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Exemples
+\end_layout
+
+\begin_layout Enumerate
+Propriétés
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Objectifs et moyens
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Comparaisons d'esquisses
+\end_layout
+
+\begin_layout Enumerate
+Mise au jour d'invariants
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Travaux en cours
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Comparaison par empreintes
+\end_layout
+
+\begin_layout Enumerate
+Synthèse concaténative
+\end_layout
+
+\begin_layout Enumerate
+Analyse parcimonieuse structurée
+\end_layout
+
+\end_deeper
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Copyright 2004 by Till Tantau <tantau@users.sourceforge.net>.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Traduction de Philippe De Sousa <philippejjg@free.fr>.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Adaptation à LyX par Jean-Pierre Chrétien <chretien@cert.fr> 
+\end_layout
+
+\begin_layout Plain Layout
+En principe, ce fichier peut être redistribué et/ou modifié conformément
+ aux termes de la GNU Public License, version 2.Cependant, ce fichier est
+ un "exemple-type" qui peut être modifié selon vos propres besoins.
+ Pour cette raison, si vous utilisez ce fichier en tant qu'"exemple-type"
+ et non spécifiquement pour le distribuer en tant que partie d'un package
+ ou programme, je vous donne la permission exceptionnelle de copier librement
+ et de modifier ce fichier et même d'effacer ce message de copyright.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Correction mineure (style Institute au lieu de style Date) des fichiers
+ originaux le 12 jan 07 par Jean-Pierre Chrétien <chretien@cert.fr> 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Title (Plain Frame)
+Esquisses Sonores 
+\begin_inset Argument
+status open
+
+\begin_layout Plain Layout
+Esquisses et empreintes
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+(facultatif, à utiliser uniquement si le titre de l'article est trop long)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subtitle
+Réunion d'avancement projet Sketch 2
+\end_layout
+
+\begin_layout Author
+M.
+ Moussallam
+\end_layout
+
+\begin_layout Date
+26 avril 2013
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Itemize
+utilisez le nom de la conférence ou son abréviation; 
+\end_layout
+
+\begin_layout Itemize
+n'a pas réellement d'importance pour l'assistance qui sera présente lors
+ de la conférence; mais en a pour les personnes (y compris vous-même) qui
+ liront les transparents en ligne.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Argument
+status open
+
+\begin_layout Plain Layout
+26 avril 2013
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+facultatif, devrait être une abréviation du nom de la conférence
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Si vous avez un fichier nommé "université-logo-nomfichier.xxx", où xxxest
+ un format graphique accepté par LyX (comme par exemple .png), alors vous
+ pouvez insérer votre logo ainsi :
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+setbeamertemplate{navigation symbols}{}
+\end_layout
+
+\begin_layout Plain Layout
+
+%
+\backslash
+includegraphics[width=1cm]{figures/logo_charpak.jpeg} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{frame}[plain]
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+titlepage
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{frame}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%
+\backslash
+logo{
+\backslash
+includegraphics[height=0.5cm]{figures/logo_LOA.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Avec la syntaxe pgf, construction équivalente, mais format graphique compris
+ par latex ou pdflatex:
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%
+\backslash
+pgfdeclareimage[height=0.5cm]{institution-logo}{institution-logo-filename}
+\end_layout
+
+\begin_layout Plain Layout
+
+%
+\backslash
+logo{
+\backslash
+pgfuseimage{institution-logo}} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+AtBeginSection[]{
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+frame<beamer>{ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+frametitle{Plan}   
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+tableofcontents[currentsection,currentsubsection,hideothersubsections] 
+\end_layout
+
+\begin_layout Plain Layout
+
+% Vous pouvez, si vous le souhaitez ajouter l'option [pausesections]
+\end_layout
+
+\begin_layout Plain Layout
+
+  }
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%
+\backslash
+beamerdefaultoverlayspecification{<+->}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout BeginPlainFrame
+Structure du projet
+\end_layout
+
+\begin_layout Itemize
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+onslide<1->{
+\end_layout
+
+\end_inset
+
+WP1 : Empreintes et esquisses auditives 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\emph on
+(Institut Langevin) - 2013
+\end_layout
+
+\begin_layout Itemize
+1.1 Modélisation
+\end_layout
+
+\begin_layout Itemize
+1.2 Implémentation
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+onslide<2>{
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+WP2 : Priming 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\emph on
+(ENS) - 2014
+\end_layout
+
+\begin_layout Itemize
+2.1 Distance perceptives entre esquisses
+\end_layout
+
+\begin_layout Itemize
+2.2 Priming subliminal
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
 \begin_layout Section*
 Introduction
 \end_layout
 
-\begin_layout BeginFrame
-Introduction
+\begin_layout BeginPlainFrame
+Sommaire
 \end_layout
 
-\begin_layout Itemize
-Rappel: buts du projet
-\end_layout
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
 
-\begin_layout Itemize
-Schéma: phases du projet: montrer où on en est
+\end_inset
+
+
 \end_layout
 
 \begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Qu'est-ce qu'une esquisse?
+\end_layout
+
+\begin_layout Standard
+Simplification d'un objet qui ne perturbe pas (trop) son identification
+\end_layout
+
+\begin_layout ColumnsCenterAligned
+
+\end_layout
+
+\begin_deeper
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/orig_daudet.png
+	width 3cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size giant
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sketch_daudet.png
+	width 3cm
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout BeginFrame
+Identifiabilité?
+\end_layout
+
+\begin_layout FrameSubtitle
+dépend du contexte
+\end_layout
+
+\begin_layout ColumnsCenterAligned
+
+\end_layout
+
+\begin_deeper
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size giant
+\color black
+?
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size giant
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sketch_pressnitzer.png
+	width 3cm
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Équivalent pour des sons?
+\end_layout
+
+\begin_layout ColumnsCenterAligned
+
+\end_layout
+
+\begin_deeper
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+Son original complexe
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size giant
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Column
+3cm
+\end_layout
+
+\begin_layout Standard
+\align center
+Son simplifié : Esquisse
+\end_layout
+
+\end_deeper
+\begin_layout ColumnsCenterAligned
+
+\end_layout
+
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Quels sont les 
+\color red
+traits caractéristiques
+\color inherit
+ des sons?
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Traits caractéristiques des sons
+\end_layout
+
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+Traits généraux
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Locuteur, instrument : nature de la source sonore
+\end_layout
+
+\begin_layout Itemize
+Réverbérations, condition d'enregistrement
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Information 
+\color red
+extraite du contexte
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+Traits particuliers
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Phonèmes, Rythmes, Intervalles, Timbre
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Information 
+\color red
+extraite du signal
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Représentations de scènes sonores
+\end_layout
+
+\begin_layout FrameSubtitle
+Comment extraire l'information d'un signal
+\end_layout
+
+\begin_layout Standard
+Idée: identifier les 
+\begin_inset Quotes fld
+\end_inset
+
+atomes
+\begin_inset Quotes frd
+\end_inset
+
+ du son
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/Example_3atoms_mdct.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout BeginFrame
+Représentations de scènes sonores
+\end_layout
+
+\begin_layout FrameSubtitle
+\begin_inset Quotes fld
+\end_inset
+
+He saw only the effects in a general, sketchy way
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=5cm]{figures/voice_0_spectro.pdf}},mouse=true,controls=true
+]{5cm}{4cm}{audio/voice_0_spectro.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=5cm]{figures/voice_1_spectro.pdf}},mouse=true,controls=true
+]{5cm}{4cm}{audio/voice_1_spectro.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
@@ -100,12 +989,701 @@ Schéma: phases du projet: montrer où on en est
 Construction d'esquisses sonores
 \end_layout
 
+\begin_layout Subsection
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+signal
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout BeginFrame
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+signal
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Outils de traitement du signal 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+analyse de Fourier, ondelettes,..
+\end_layout
+
+\begin_layout Itemize
+modèle source/filtre de voix parlée
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Formalisation mathématique
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+signal 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ espace de Hilbert
+\end_layout
+
+\begin_layout Itemize
+dictionnaire 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ opérateur
+\end_layout
+
+\begin_layout Itemize
+esquisse 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ représentation parcimonieuses
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+état de l'art (méthode Shazam)
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Esquisses
+\end_layout
+
+\begin_layout FrameSubtitle
+Pics d'énergie dans des spectrogrammes
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sketchified_STFTPeaksSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Esquisses
+\end_layout
+
+\begin_layout FrameSubtitle
+Résonance formantique (Sinewave Speech)
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sketchified_SWSSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Esquisses
+\end_layout
+
+\begin_layout FrameSubtitle
+Décomposition multi-échelles
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/sketchified_XMDCTSparseSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Subsection
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+physiologique
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout BeginFrame
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+physiologique
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Modèles de fonctionnements des couches primaires du système auditif
+\end_layout
+
+\begin_layout Itemize
+Multiples étapes
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+oreille interne 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ cochleogram
+\end_layout
+
+\begin_layout Itemize
+cortex auditif 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ corticogram
+\end_layout
+
+\begin_layout Itemize
+esquisse 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ zones actives de ces représentations
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Esquisses manipulées dans le projet sketch 1
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Cochleogram
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/exemple_cochleogram.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Corticogram
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/exemple_corticogram.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Subsection
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+information
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout BeginFrame
+Approche 
+\begin_inset Quotes fld
+\end_inset
+
+information
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Analyse par extraction de 
+\emph on
+descripteurs
+\end_layout
+
+\begin_layout Itemize
+Outils informatiques:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+apprentissage automatique 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Esquisses par reconstruction 
+\end_layout
+
+\begin_layout Itemize
+Approche historique pour les comparaisons d'empreintes acoustiques
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Descripteurs
+\end_layout
+
+\begin_layout Standard
+\align center
+Ici un Chromagramme/MFCC fantastique
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
 \begin_layout Section
-Évaluation
+Comparaison d'empreintes 
+\end_layout
+
+\begin_layout Subsection
+Calculs d'empreintes
+\end_layout
+
+\begin_layout BeginFrame
+Comparaison d'esquisse
+\end_layout
+
+\begin_layout FrameSubtitle
+Tâche de reconnaissance automatique de scènes sonores
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/ConceptAudioFingerprint.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+Reconnaissance par empreinte acoustique
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Tâche bien définie (taux de réussite sur base de données)
+\end_layout
+
+\begin_layout Itemize
+Standard Industriels (Shazam) 
+\end_layout
+
+\end_deeper
+\begin_layout BeginFrame
+Calcul des empreintes
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/SparseRep2AudioFingerprint.pdf
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{Questions:}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Quelle esquisse est la plus performante ? 
+\end_layout
+
+\begin_layout Itemize
+Paramètres critiques ? 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+taille des empreintes
+\end_layout
+
+\begin_layout Itemize
+méthode de construction d'empreinte
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout BeginFrame
+Calcul d'empreintes
+\end_layout
+
+\begin_layout FrameSubtitle
+Méthode Shazam
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/ShazamFGPT.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Calcul d'empreintes
+\end_layout
+
+\begin_layout FrameSubtitle
+Transposable à d'autres esquisses..
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/ShazamFGPT.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Critères d'évaluations
+\end_layout
+
+\begin_layout Itemize
+Robustesse aux bruits et distorsions
+\end_layout
+
+\begin_layout Itemize
+Taille sur le disque
+\end_layout
+
+\begin_layout Itemize
+Rapidité
+\end_layout
+
+\begin_layout Itemize
+Passage à l'échelle
+\end_layout
+
+\begin_layout Subsection
+Robustesse
+\end_layout
+
+\begin_layout BeginFrame
+Robustesse
+\end_layout
+
+\begin_layout Standard
+Ici des courbes de robustesse aux perturbations
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Subsection
+Reconnaissance automatique
+\end_layout
+
+\begin_layout BeginFrame
+Protocole
+\end_layout
+
+\begin_layout Itemize
+Ensemble de sons
+\end_layout
+
+\begin_layout Itemize
+Phase d'apprentissage des empreintes 
+\end_layout
+
+\begin_layout Itemize
+Phase de test
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Résultats
+\end_layout
+
+\begin_layout Standard
+Ici des résultats très convaincants
+\end_layout
+
+\begin_layout EndFrame
+
 \end_layout
 
 \begin_layout Section
 Travaux en cours
+\end_layout
+
+\begin_layout Subsection
+Expériences
+\end_layout
+
+\begin_layout BeginFrame
+Apport des modèles physiologiques
+\end_layout
+
+\begin_layout Itemize
+Cochleogram très proche de CQT
+\end_layout
+
+\begin_layout Itemize
+avantage de l'un sur l'autre?
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Empreintes formantiques robustes
+\end_layout
+
+\begin_layout Itemize
+Sinewave speech très intéressant perceptivement
+\end_layout
+
+\begin_layout Itemize
+Construire des clefs robustes 
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Empreintes corticales
+\end_layout
+
+\begin_layout Itemize
+Performances décevantes sur le corticogramme 
+\end_layout
+
+\begin_layout Itemize
+Comment combiner les dimensions pour construire des empreintes robustes
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Subsection
+Apprentissage et boucle de rétro-action
+\end_layout
+
+\begin_layout BeginFrame
+rétro-action
+\end_layout
+
+\begin_layout FrameSubtitle
+des empreintes descriptives vers les empreintes discriminatives
+\end_layout
+
+\begin_layout Itemize
+Schéma actuel direct: sons 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ esquisse/empreintes 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ score
+\end_layout
+
+\begin_layout Itemize
+Schéma bouclé: score 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+esquisse/empreintes
+\end_layout
+
+\begin_layout Itemize
+Apprentissage des esquisses efficaces pour la reconnaissance
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout Subsection
+résumé
+\end_layout
+
+\begin_layout BeginFrame
+Résumé
+\end_layout
+
+\begin_layout Itemize
+Mise en place d'une constellation de procédés de construction d'esquisse
+\end_layout
+
+\begin_layout Itemize
+Protocoles de comparaison direct et bientôt en rétro-action
+\end_layout
+
+\begin_layout Itemize
+But: outils opérationnels pour la 2e phase du projet
+\end_layout
+
+\begin_layout EndFrame
+
 \end_layout
 
 \end_body
