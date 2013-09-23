@@ -18,8 +18,8 @@ from PyMP import Signal
 import stft
 from scipy.signal import lfilter, hann
 #audio_test_file = '/home/manu/workspace/recup_angelique/Sketches/NLS Toolbox/Hand-made Toolbox/forAngelique/61_sadness.wav'
-audio_test_file = '/sons/jingles/panzani.wav'
-audio_name ='panzani'
+audio_test_file = '/sons/jingles/carglass.wav'
+audio_name ='carglass'
 from classes.sketches.bench import *
 from classes.sketches.misc import *
 from classes.sketches.cochleo import *
@@ -27,19 +27,19 @@ from classes.sketches.cortico import *
 from classes.pydb import *
 figure_output_path = '/home/manu/workspace/audio-sketch/src/reporting/figures/'
 audio_output_path = '/home/manu/workspace/audio-sketch/src/reporting/audio/'
-single_test_file = '/sons/jingles/panzani.wav'
+single_test_file = '/sons/jingles/carglass.wav'
 learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'    
 
 fgpt_sketches = [
 #                 (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                 SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
-#                (STFTPeaksBDB(None, **{'wall':False}),
-#                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-#                (CochleoPeaksBDB(None, **{'wall':False}),
-#                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#                 (XMDCTBDB(None, load=False,**{'wall':False}),
-#                  XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-#                                              'nature':'LOMDCT'})),         
+                (STFTPeaksBDB(None, **{'wall':False}),
+                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+                (CochleoPeaksBDB(None, **{'wall':False}),
+                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+                 (XMDCTBDB(None, load=False,**{'wall':False}),
+                  XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+                                              'nature':'LOMDCT'})),         
 #                 (CochleoPeaksBDB(None, **{'wall':False}),
 #                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),                  
                     (CorticoIndepSubPeaksBDB('tempcort.db', **{'wall':False}),

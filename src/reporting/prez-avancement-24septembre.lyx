@@ -1073,17 +1073,87 @@ Esquisses
 Pics d'énergie dans des spectrogrammes
 \end_layout
 
+\begin_layout Overprint
+
+\end_layout
+
+\begin_deeper
 \begin_layout Standard
-\align center
-\begin_inset Graphics
-	filename figures/sketchified_STFTPeaksSketch.pdf
-	width 8cm
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<1>{
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/original_surprise.pdf}},mouse=true,controls=t
+rue]{10cm}{5cm}{audio/original_surprise.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<2>{
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_STFTPeaksSketch.pdf}},mo
+use=true,controls=true]{10cm}{5cm}{audio/sketchified_surprise_STFTPeaksSketch.wav
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
 
 \end_inset
 
 
 \end_layout
 
+\end_deeper
 \begin_layout EndFrame
 
 \end_layout
@@ -1098,9 +1168,32 @@ Résonance formantique (Sinewave Speech)
 
 \begin_layout Standard
 \align center
-\begin_inset Graphics
-	filename figures/sketchified_SWSSketch.pdf
-	width 8cm
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_SWSSketch.pdf}},mouse=tr
+ue,controls=true]{10cm}{5cm}{audio/sketchified_surprise_SWSSketch.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
 
 \end_inset
 
@@ -1121,9 +1214,33 @@ Décomposition multi-échelles
 
 \begin_layout Standard
 \align center
-\begin_inset Graphics
-	filename figures/sketchified_XMDCTSparseSketch.pdf
-	width 8cm
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_XMDCTSparseSketch.pdf}},
+mouse=true,controls=true]{10cm}{5cm}{audio/sketchified_surprise_XMDCTSparseSketc
+h.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
 
 \end_inset
 
@@ -1204,19 +1321,172 @@ Esquisses manipulées dans le projet sketch 1
 Cochleogram
 \end_layout
 
+\begin_layout Overprint
+
+\end_layout
+
+\begin_deeper
 \begin_layout Standard
-\align center
 
 \lang english
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<1>{
+\end_layout
+
+\end_inset
+
+
 \begin_inset Graphics
-	filename figures/exemple_cochleogram.pdf
+	filename figures/represent_surprise_CochleoIHTSketch.pdf
 	width 10cm
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
 
 \end_inset
 
 
 \end_layout
 
+\begin_layout Standard
+
+\lang english
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<2>{
+\end_layout
+
+\end_inset
+
+
+\lang french
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_CochleoIHTSketch.pdf}},m
+ouse=true,controls=true]{10cm}{5cm}{audio/sketchified_surprise_CochleoIHTSketch.w
+av} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\lang english
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<3>{
+\end_layout
+
+\end_inset
+
+
+\lang french
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_CochleoPeaksSketch.pdf}}
+,mouse=true,controls=true]{10cm}{5cm}{audio/sketchified_surprise_CochleoPeaksSke
+tch.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \begin_layout EndFrame
 
 \end_layout
@@ -1230,7 +1500,7 @@ Corticogram
 
 \lang english
 \begin_inset Graphics
-	filename figures/exemple_corticogram.pdf
+	filename figures/represent_surprise_CorticoIndepSubPeaksSketch.pdf
 	width 10cm
 
 \end_inset
@@ -1307,6 +1577,52 @@ Ici un Chromagramme/MFCC fantastique
 
 \end_layout
 
+\begin_layout BeginFrame
+Reconstruction
+\end_layout
+
+\begin_layout Standard
+\align center
+Patchwork de sons dans une banque de données
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{figure}[ht] 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+includemovie[poster,text={
+\backslash
+includegraphics[width=10cm]{figures/sketchified_surprise_KNNSketch.pdf}},mouse=tr
+ue,controls=true]{10cm}{5cm}{audio/sketchified_surprise_KNNSketch.wav} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{figure}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
 \begin_layout Section
 Comparaison d'empreintes 
 \end_layout
@@ -1325,19 +1641,9 @@ Tâche de reconnaissance automatique de scènes sonores
 
 \begin_layout Standard
 \align center
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-\align center
 \begin_inset Graphics
 	filename figures/ConceptAudioFingerprint.pdf
 	width 8cm
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 
@@ -1438,19 +1744,9 @@ Méthode Shazam
 
 \begin_layout Standard
 \align center
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-\align center
 \begin_inset Graphics
 	filename figures/ShazamFGPT.pdf
 	width 8cm
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 
@@ -1469,20 +1765,38 @@ Calcul d'empreintes
 Transposable à d'autres esquisses..
 \end_layout
 
+\begin_layout Overprint
+
+\end_layout
+
+\begin_deeper
 \begin_layout Standard
-\align center
-\begin_inset Note Note
+\begin_inset ERT
 status open
 
 \begin_layout Plain Layout
-\align center
+
+
+\backslash
+only<1>{
+\end_layout
+
+\end_inset
+
+Cochleogram
 \begin_inset Graphics
-	filename figures/ShazamFGPT.pdf
-	width 8cm
+	filename figures/fingerprint_carglass_CochleoPeaksSketch.pdf
+	width 10cm
 
 \end_inset
 
 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
 \end_layout
 
 \end_inset
@@ -1490,6 +1804,41 @@ status open
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+only<2>{
+\end_layout
+
+\end_inset
+
+Corticogram
+\begin_inset Graphics
+	filename figures/fingerprint_carglass_CorticoIndepSubPeaksSketch.pdf
+	width 10cm
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \begin_layout EndFrame
 
 \end_layout
@@ -1522,8 +1871,46 @@ Robustesse
 Robustesse
 \end_layout
 
+\begin_layout FrameSubtitle
+Quelle proportion de clefs restent inchangées lorsqu'on ajoute du bruit?
+\end_layout
+
 \begin_layout Standard
-Ici des courbes de robustesse aux perturbations
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k200.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout EndFrame
+
+\end_layout
+
+\begin_layout BeginFrame
+Robustesse
+\end_layout
+
+\begin_layout FrameSubtitle
+Quelle proportion de clefs restent inchangées lorsqu'on décale le son?
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/ShiftRobustness_k200.pdf
+	width 8cm
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout EndFrame
@@ -1539,15 +1926,23 @@ Protocole
 \end_layout
 
 \begin_layout Itemize
-Ensemble de sons
+Collection de sons (plusieurs heures)
 \end_layout
 
 \begin_layout Itemize
 Phase d'apprentissage des empreintes 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+Base d'empreintes
 \end_layout
 
 \begin_layout Itemize
-Phase de test
+Phase de test 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+Score
 \end_layout
 
 \begin_layout EndFrame
@@ -1559,7 +1954,16 @@ Résultats
 \end_layout
 
 \begin_layout Standard
-Ici des résultats très convaincants
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/GTZAN_Scores_2fgpts_dur5.pdf
+	width 12cm
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout EndFrame
@@ -1583,9 +1987,44 @@ Cochleogram très proche de CQT
 \end_layout
 
 \begin_layout Itemize
-avantage de l'un sur l'autre?
+Avantage de l'un sur l'autre?
 \end_layout
 
+\begin_layout Pause
+
+\end_layout
+
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+Hypothèse
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+CQT pour la musique, Cochleogram pour la voix
+\end_layout
+
+\end_deeper
 \begin_layout EndFrame
 
 \end_layout
@@ -1602,6 +2041,19 @@ Sinewave speech très intéressant perceptivement
 Construire des clefs robustes 
 \end_layout
 
+\begin_layout Standard
+\align center
+
+\lang english
+\begin_inset Graphics
+	filename figures/fingerprint_panzani_SWSSketch.pdf
+	width 6cm
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout EndFrame
 
 \end_layout
@@ -1610,14 +2062,52 @@ Construire des clefs robustes
 Empreintes corticales
 \end_layout
 
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename figures/fingerprint_carglass_CorticoIndepSubPeaksSketch.pdf
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
 Performances décevantes sur le corticogramme 
 \end_layout
 
-\begin_layout Itemize
-Comment combiner les dimensions pour construire des empreintes robustes
+\begin_layout Block
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+{
 \end_layout
 
+\end_inset
+
+Problème
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Comment combiner les dimensions pour construire des empreintes robustes?
+\end_layout
+
+\end_deeper
 \begin_layout EndFrame
 
 \end_layout
