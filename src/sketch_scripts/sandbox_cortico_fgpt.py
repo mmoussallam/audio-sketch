@@ -107,25 +107,29 @@ def expe2():
     plt.show()
 
 
-sig = Signal('/sons/jingles/panzani.wav', mono=True, normalize=True)
+sig = Signal(os.path.abspath('../reporting/audio/original_surprise.wav'), mono=True, normalize=True)
 #sig.crop(0, 2*sig.fs)
-sk = CorticoSubPeaksSketch(**{'downsample':8000, 'n_inv_iter':10})
+sk = CorticoSubPeaksSketch(**{'n_inv_iter':5})
 sk.recompute(sig)
 
-sk.sparsify(100)
-sk.represent()
-plt.show()
+#sk.sparsify(100)
+#sk.represent()
+#plt.show()
 
 
-
-
-#combis = [(0,6),(4,6),(0,11),(4,11)]
-#for combi in combis:
-#    sk.sp_rep = np.zeros_like(sk.rep)
-#    sk.sp_rep[combi[0], combi[1], :,:] = sk.rep[combi[0], combi[1], :,:]
-#    sk.represent(sparse=True)
-#    synth_sig = sk.synthesize(sparse=True)
-#    synth_sig.write('SubCortico_%d_%d.wav'%(combi[0], combi[1]))
+combis = [(0,6),(4,6),(0,11),(4,11)]
+for combi in combis:
+    sk.sp_rep = np.zeros_like(sk.rep)
+    sk.sp_rep[combi[0], combi[1], :,:] = sk.rep[combi[0], combi[1], :,:]
+    aud_path = os.path.abspath('../reporting/figures/')
+    f = plt.figure(figsize=(10,6))
+    sk.represent(sparse=True, fig=f)
+    plt.savefig(os.path.join(aud_path,'SubCortico_surprise_%d_%d.pdf'%(combi[0], combi[1])))
+    
+    if False:
+        synth_sig = sk.synthesize(sparse=True)
+        aud_path = os.path.abspath('../reporting/audio/')
+        synth_sig.write(os.path.join(aud_path,'SubCortico_surprise_%d_%d.wav'%(combi[0], combi[1])))
 #sk.sparsify(1000)
 #sk.represent(sparse=True)
 #sk.represent()

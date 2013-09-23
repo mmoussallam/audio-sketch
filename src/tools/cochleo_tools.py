@@ -17,7 +17,8 @@ from scipy.io import loadmat
 from scipy.signal import lfilter
 from numpy.fft import fft, ifft
 
-filter_coeffs_path = '/home/manu/workspace/audio-sketch/src/aud24.mat'
+import os
+filter_coeffs_path = os.path.abspath('../aud24.mat')
 
 
 class Cochleogram(object):
