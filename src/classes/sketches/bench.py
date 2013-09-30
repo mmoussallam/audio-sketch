@@ -28,7 +28,6 @@ class STFTPeaksSketch(AudioSketch):
             self.orig_signal = original_sig
             self.recompute()
         
-
     def get_sig(self):
         strret = '_scale-%d_fw-%d_tw-%d' % (self.params['scale'],
                                             self.params['f_width'],
@@ -137,6 +136,7 @@ class STFTPeaksSketch(AudioSketch):
 #               aspect='auto',
 #               interpolation='nearest',
 #               origin='lower')
+
     def synthesize(self, sparse=False):
         import stft
 
@@ -150,7 +150,6 @@ class STFTPeaksSketch(AudioSketch):
                                      self.params['step'],
                                      self.orig_signal.length),
                           self.orig_signal.fs, mono=True)
-
 
     def fgpt(self, sparse=False):
         """ This only has a meaning if the peaks have been selected """

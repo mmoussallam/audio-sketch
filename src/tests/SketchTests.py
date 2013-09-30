@@ -42,10 +42,10 @@ class SketchTest(unittest.TestCase):
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
-                            misc.SWSSketch(),
-                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+#                            misc.SWSSketch(),
+#                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
 #                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-                            cochleo.CochleoPeaksSketch(**{'fs':8000}),
+#                            cochleo.CochleoPeaksSketch(**{'fs':8000}),
 #                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),   
 #                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -57,11 +57,12 @@ class SketchTest(unittest.TestCase):
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(4,11),'n_inv_iter':10})
 #                                                     
-                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
+#                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
 #                            bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-#                            bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),              
+#                            bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
+                            bench.CQTPeakSketch(**{'n_octave':5,'freq_min':1001})            
                             ]
         
         # for all sketches, we performe the same testing
