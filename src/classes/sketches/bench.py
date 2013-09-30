@@ -3,8 +3,10 @@ classes.sketches.benchsketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
-from base import *
-from tools import stft
+from src.classes.sketches.base import *
+from src.tools import stft
+
+
 class STFTPeaksSketch(AudioSketch):
     ''' Sketch based on a single STFT with peak-picking as a
     sparsifying method '''

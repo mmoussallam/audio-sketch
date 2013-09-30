@@ -15,11 +15,17 @@ sys.path.append('/home/manu/workspace/PyMP')
 sys.path.append('/home/manu/workspace/meeg_denoise')
 
 #from classes import pydb, sketch
-from classes.pydb import *
+#from classes.pydb import *
 from classes.sketches.misc import *
 from classes.sketches.bench import *
 from classes.sketches.cortico import *
 from classes.sketches.cochleo import *
+
+from classes.fingerprints.misc import *
+from classes.fingerprints.bench import *
+from classes.fingerprints.cortico import *
+from classes.fingerprints.cochleo import *
+
 from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
@@ -30,7 +36,7 @@ plt.switch_backend('Agg')
 
 learn_dir = '/sons/rwc/Learn/'
 test_dir = '/sons/rwc/Test/'
-single_test_file1 = '/sons/jingles/panzani.wav'
+single_test_file1 = '/sons/sqam/voicefemale.wav'
 single_test_file2 = '/sons/sqam/voicemale.wav'
 
 #audio_files_path = '/sons/rwc/rwc-p-m07'
@@ -42,25 +48,25 @@ file_names = os.listdir(audio_files_path)
 #    
 #    def runTest(self):
         
-#abstractFGPT = pydb.FgptHandle('abstract.db')
-
+#abstractFGPT = FgptHandle('abstract.db')
+#
 #self.assertRaises(NotImplementedError,abstractFGPT.add, None,0)
 #self.assertRaises(NotImplementedError,abstractFGPT.retrieve, None, None)
 #self.assertRaises(NotImplementedError,abstractFGPT.populate, None, None,0)
 #self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
 fgpt_sketches = [
-                 (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
-                 SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
-#                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-#                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-#                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-#                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#                 (pydb.XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-#                  sketch.XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-#                                              'nature':'LOMDCT'})),         
-#                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
-#                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+#                 (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
+#                 SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
+                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+                 (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+                  XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+                                              'nature':'LOMDCT'})),         
+                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
+                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
 #                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),
 #                    (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
 #                     CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
@@ -78,7 +84,8 @@ def populate(sk, fgpthand):
     nbFiles = 8
     keycount = 0
     for fileIndex in range(nbFiles):
-        RandomAudioFilePath = file_names[fileIndex]        
+        RandomAudioFilePath = file_names[fileIndex]
+        print RandomAudioFilePath
         if not (RandomAudioFilePath[-3:] == 'wav'):
             continue
 
@@ -94,7 +101,7 @@ def populate(sk, fgpthand):
             print "sketchify the segment %d" % segIdx 
             # run the decomposition                        
             sk.recompute(pySigLocal)
-#            sk.sparsify(300)
+            sk.sparsify(300)
             fgpt = sk.fgpt()
             print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
             fgpthand.populate(fgpt, sk.params, fileIndex, offset=segIdx*segDuration)
@@ -116,26 +123,34 @@ for (fgpthand, sk) in fgpt_sketches:
         print "Here the params: ",sk.params
         fgpthand.populate(fgpt, sk.params, 0)
         
+        anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1, debug=True))
+        print anchor
+        
         # Do the same with the second file
         sk.recompute(single_test_file2)
         sk.sparsify(300)    
         fgpthand.populate(sk.fgpt(sparse=True), sk.params, 1)
-        
+#        plt.show()
         # check that the handler can recover the first one
         # does it build a coherent histogram matrix
     #    self.assertNotEqual(fgpt, sk.fgpt(sparse=True))
         assert not fgpt==sk.fgpt(sparse=True)
-        hist = fgpthand.retrieve(fgpt, params, nbCandidates=2)
+#        
+#        plt.figure()
+#        fgpthand.draw_fgpt(fgpt, sk.params)
+#        plt.show()
+        hist = fgpthand.retrieve(fgpt, sk.params, nbCandidates=2, debug=True)
     #    self.assertIsNotNone(hist)
         assert hist is not None
         print hist.shape
         print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
                                                               np.max(hist[:,1]))
         
-        plt.figure()
-        from scipy.ndimage.filters import median_filter            
-        plt.plot(median_filter(hist, (3, 1)))
-        plt.title(fgpthand.__class__)
+#        plt.figure()
+#        from scipy.ndimage.filters import median_filter            
+#        plt.plot(median_filter(hist, (3, 1)))
+#        plt.title(fgpthand.__class__)
+#        plt.show()
         # is the best candidate the good one
         estimated_index, estimated_offset  = fgpthand.get_candidate(fgpt,sk.params,
                                                                     nbCandidates=2, smooth=3)
@@ -150,7 +165,7 @@ for (fgpthand, sk) in fgpt_sketches:
     
     # and retrieve a segment in the base
     true_file_index = 3
-    true_offset = 11.5    
+    true_offset = 11.5   
     
     # get the fingerprint 
     true_file_path = op.join(audio_files_path, file_names[true_file_index])
@@ -158,26 +173,32 @@ for (fgpthand, sk) in fgpt_sketches:
     true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
     true_sig.crop(0, 5.0*true_sig.fs)
     sk.recompute(true_sig)
-#    sk.sparsify(300)    
+    sk.sparsify(300)    
     test_fgpt = sk.fgpt(sparse=False)
 
     hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=8)
+#    maxI = np.argmax(hist[:])
+#    OffsetI = maxI / 8
+#    estFileI = maxI % 8
+#    print OffsetI, estFileI
+#    plt.plot(hist[:,[0,3,7]])
+#    plt.show()
+    
     estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
-                                                                nbCandidates=8, smooth=1)
+                                                                nbCandidates=8, smooth=3)
 
+    print estimated_index, true_file_index
     assert estimated_index == true_file_index
     assert np.abs(estimated_offset - true_offset) <= 5
 
-    plt.plot(hist[:,2])
-    plt.show()
     
-    # bourrinade
-    fgpthand.populate(test_fgpt, sk.params, 9)
-    test_hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=10)
-    estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
-                                                                nbCandidates=10, smooth=1)
-    plt.plot(test_hist)
-    plt.show()
+#    # bourrinade
+#    fgpthand.populate(test_fgpt, sk.params, 9)
+#    test_hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=10)
+#    estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
+#                                                                nbCandidates=10, smooth=1)
+#    plt.plot(test_hist)
+#    plt.show()
 
 #if __name__ == "__main__":
 #    

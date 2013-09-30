@@ -3,8 +3,8 @@ classes.sketches.corticosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 import os.path as op
-from base import *
-from tools import  cochleo_tools
+from src.classes.sketches.base import *
+from src.tools import  cochleo_tools
 
 class CorticoSketch(AudioSketch):
     """ meta class for all corticogram-based sketches     

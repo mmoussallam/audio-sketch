@@ -7,6 +7,7 @@
 # M. Moussallam                                             Wed Sep 07 2011  */
 # -------------------------------------------------------------------------- */
 
+# DEPRECATED!! 
 
 import bsddb.db as db
 import os

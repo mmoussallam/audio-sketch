@@ -3,8 +3,8 @@ classes.sketches.cochleosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
-from base import *
-from tools import  cochleo_tools
+from src.classes.sketches.base import *
+from src.tools import  cochleo_tools
 
 class CochleoSketch(AudioSketch):
     """ meta class for all cochleogram-based sketches     

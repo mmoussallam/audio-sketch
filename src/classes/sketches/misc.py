@@ -3,7 +3,7 @@ classes.sketches.MiscSketches  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
-from base import *
+from src.classes.sketches.base import *
 tempdir = '/home/manu/workspace/audio-sketch'
 class SWSSketch(AudioSketch):
     """ Sine Wave Speech """
