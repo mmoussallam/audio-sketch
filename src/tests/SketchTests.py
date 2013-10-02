@@ -5,6 +5,7 @@ Created on Jan 31, 2013
 '''
 import unittest
 import sys
+import os
 from os import chdir
 #sys.path.append('/home/manu/workspace/audio-sketch')
 #sys.path.append('/home/manu/workspace/PyMP')
@@ -20,8 +21,9 @@ import src.classes.sketches.cortico as cortico
 
 import matplotlib.pyplot as plt
 #plt.switch_backend('Agg')
-#audio_test_file = '/sons/jingles/panzani.wav'
-audio_test_file  = '/Users/loa-guest/Documents/Laure/libs/PyMP/data/ClocheB.wav'
+SND_DB_PATH = os.environ['SND_DB_PATH']
+audio_test_file = os.path.join(SND_DB_PATH,'jingles/panzani.wav')
+#audio_test_file  = '/Users/loa-guest/Documents/Laure/libs/PyMP/data/ClocheB.wav'
 #signal = Signal(son, normalize=True, mono=True)
 
 class SketchTest(unittest.TestCase):

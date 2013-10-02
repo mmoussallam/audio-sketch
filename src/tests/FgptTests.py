@@ -31,10 +31,12 @@ from PyMP.signals import LongSignal, Signal
 #mem = Memory(cachedir='/tmp/fgpt')
 #plt.switch_backend('Agg')
 
-single_test_file1 = '/sons/sqam/voicefemale.wav'
-single_test_file2 = '/sons/sqam/voicemale.wav'
+SND_DB_PATH = os.environ['SND_DB_PATH']
 
-audio_files_path = '/sons/rwc/rwc-p-m07'
+single_test_file1 = op.join(SND_DB_PATH,'sqam/voicefemale.wav')
+single_test_file2 = op.join(SND_DB_PATH,'sqam/voicemale.wav')
+
+audio_files_path =  op.join(SND_DB_PATH,'rwc/rwc-p-m07')
 file_names = os.listdir(audio_files_path)
 
 fgpt_sketches = [
@@ -148,7 +150,7 @@ class FgptTest(unittest.TestCase):
         self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
         # for all sketches, we performe the same testing
-        Full = False
+        Full = True
         display=False
         import time
         
