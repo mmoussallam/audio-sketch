@@ -5,19 +5,24 @@ Created on Jan 31, 2013
 '''
 import unittest
 import sys
-sys.path.append('/home/manu/workspace/audio-sketch')
-sys.path.append('/home/manu/workspace/PyMP')
-sys.path.append('/home/manu/workspace/meeg_denoise')
+from os import chdir
+#sys.path.append('/home/manu/workspace/audio-sketch')
+#sys.path.append('/home/manu/workspace/PyMP')
+#sys.path.append('/home/manu/workspace/meeg_denoise')
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
 
-import classes.sketches.base as base
-import classes.sketches.bench as bench
-import classes.sketches.misc as misc
-import classes.sketches.cochleo as cochleo
-import classes.sketches.cortico as cortico
+
+import src.classes.sketches.base as base
+import src.classes.sketches.bench as bench
+import src.classes.sketches.misc as misc
+import src.classes.sketches.cochleo as cochleo
+import src.classes.sketches.cortico as cortico
 
 import matplotlib.pyplot as plt
-plt.switch_backend('Agg')
-audio_test_file = '/sons/jingles/panzani.wav'
+#plt.switch_backend('Agg')
+#audio_test_file = '/sons/jingles/panzani.wav'
+audio_test_file  = '/Users/loa-guest/Documents/Laure/libs/PyMP/data/ClocheB.wav'
+#signal = Signal(son, normalize=True, mono=True)
 
 class SketchTest(unittest.TestCase):
 
@@ -35,7 +40,7 @@ class SketchTest(unittest.TestCase):
 #        
 #        kwargs = {'dico':[64,512,2048], 'n_atoms':100}
 #        xmdctmpsketch = sketch.XMDCTSparseSketch()
-        learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
+        #learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
         
         sketches_to_test = [
 #                            misc.KNNSketch(**{'location':learned_base_dir,
@@ -60,9 +65,9 @@ class SketchTest(unittest.TestCase):
 #                            bench.XMDCTSparseSketch(**{'scales':[64,512,2048], 'n_atoms':100}),
 #                           NOT FINISHED
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
-#                            bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
-#                            bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
-                            bench.CQTPeakSketch(**{'n_octave':5,'freq_min':1001})            
+                            #bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
+                            #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
+                            bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':1001, 'bins':12.0})            
                             ]
         
         # for all sketches, we performe the same testing

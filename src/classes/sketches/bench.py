@@ -4,7 +4,181 @@ classes.sketches.benchsketch  -  Created on Jul 25, 2013
 '''
 
 from src.classes.sketches.base import *
-from src.tools import stft
+from src.tools import stft, cqt
+
+
+class CQTPeaksSketch(AudioSketch):
+    ''' Sketch based on a single STFT with peak-picking as a
+    sparsifying method '''
+
+    # TODO this is same as superclass
+    def __init__(self, original_sig=None, noyau=None,**kwargs):
+        
+        # baseline parameters: default rectangle is 10 frames by 10 bins large        
+        self.params = {'fen_type': 1, # 1.hamming 2.blackman
+              'avance': 0.005,
+              'bandwidth': 0.95,
+              'freq_min' : 101.84,
+              'freq_max': None,
+              'n_octave': None,
+              'bins': 24,
+              'inc': None,
+              'K': None}
+              
+        # add all the parameters that you want              
+        for key in kwargs:
+            self.params[key] = kwargs[key]   
+        
+        if self.params['n_octave'] is None and self.params['freq_max'] is None:
+            raise ValueError("No limitation in frequency as been given, enter the freq_max or the n_octave needed")
+        
+        if self.params['freq_max'] is None:
+            self.params['freq_max'] = self.params['freq_min']*2**self.params['n_octave']
+        
+        if original_sig is not None:
+            self.orig_signal = original_sig
+            self.recompute()
+            
+        self.noyau = noyau
+        
+    def get_sig(self):
+        strret = '_frequences: minimum-%d_maximum-%d__nb of bins per octave-%d' % (self.params['freq_min'],
+                                            self.params['freq_max'],
+                                            self.params['bins'])
+        return strret
+
+    def recompute(self, signal=None, **kwargs):
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+        if signal is not None:
+            if isinstance(signal, str):
+                # TODO allow for stereo signals
+                signal = Signal(signal, normalize=True, mono=True)
+            self.orig_signal = signal
+
+        if self.orig_signal is None:
+            raise ValueError("No original Sound has been given")
+        self.params['fs'] = self.orig_signal.fs
+        
+        if self.params['inc'] is None:
+            self.params['inc'] = int(self.params['fs'] * 0.0078125)
+        
+        if self.noyau is None:
+            [self.noyau,self.params['K']] = cqt.noyau(self.params['fs'], self.params['freq_min'],
+                                   self.params['freq_max'],
+                                   self.params['fen_type'],
+                                   self.params['bins'])
+
+        [self.rep, self.f, self.t] = cqt.cqtS(self.orig_signal, self.noyau, self.params['inc'], 
+                            self.params['K'], self.params['bandwidth'], 
+                            self.params['freq_min'], self.params['bins'])
+
+    def represent(self, sparse=False, fig=None, **kwargs):
+        if sparse:
+            rep = np.zeros_like(self.sp_rep)
+            rep[np.nonzero(self.sp_rep)] = 1.
+        else:
+            rep = self.rep
+
+#        #x_tick_vec = np.linspace(0, rep.shape[2], 10).astype(int)
+#        x_label_vec = (
+#            x_tick_vec * float(self.params['step'])) / float(self.orig_signal.fs)
+#
+#        y_tick_vec = np.linspace(0, rep.shape[1], 6).astype(int)
+#        y_label_vec = (y_tick_vec / float(
+#            self.params['scale'])) * float(self.orig_signal.fs)
+        
+        if fig is None:
+            fig = plt.figure()
+        else:
+            ax = fig.gca()
+#        for chanIdx in range(rep.shape[0]):
+#        plt.subplot(rep.shape[0], 1, chanIdx + 1)
+        #chanIdx = 0
+        plt.imshow(self.rep,
+                   aspect='auto',
+                   interpolation='nearest',
+                   origin='lower',
+                   cmap=cm.coolwarm)
+#        plt.xlabel('Time (s)')
+#        plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
+#        plt.ylabel('Frequency')
+#        plt.yticks(y_tick_vec, ["%d" % int(a) for a in y_label_vec])
+
+    def sparsify(self, sparsity, **kwargs):
+        ''' sparsity is here achieved through Peak-Picking in the
+        STFT: naive version: square TF regions'''
+        if self.rep is None:
+            raise ValueError("representation hasn't been computed yet..")
+
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= np.sum(self.rep.shape)
+#        else:
+            # otherwise the sparsity argument take over and we divide in
+            # the desired number of regions (preserving the bin/frame ratio)
+#            print self.rep.shape[1:]
+        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+        self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
+#            print self.params['f_width'], self.params['t_width']
+
+        self.sp_rep = np.zeros_like(self.rep)
+        # naive implementation: cut in non-overlapping zone and get the max
+        (n_bins, n_frames) = self.rep.shape[1:]
+        (f, t) = (self.params['f_width'], self.params['t_width'])
+        
+        
+        for x_ind in range(0, (n_frames / t) * t, t):
+            
+            for y_ind in range(0, (n_bins / f) * f, f):
+                rect_data = self.rep[0, y_ind:y_ind + f, x_ind:x_ind + t]
+                
+                if len(rect_data) > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
+                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                    # add the peak to the sparse rep
+                    self.sp_rep[0, y_ind + f_index,
+                                x_ind + t_index] = rect_data[f_index, t_index]
+
+        self.nnz = np.count_nonzero(self.sp_rep)
+#        print "Sparse rep of %d element computed" % self.nnz
+
+#    def represent_sparse(self):
+#        if self.sp_rep is None:
+#            raise ValueError("no sparse rep constructed yet")
+#
+#        plt.figure()
+#        for chanIdx in range(self.sp_rep.shape[0]):
+#            plt.subplot(self.sp_rep.shape[0],1,chanIdx+1)
+#            plt.imshow(10*np.log10(np.abs(self.sp_rep[chanIdx,:,:])),
+#               aspect='auto',
+#               interpolation='nearest',
+#               origin='lower')
+
+    def synthesize(self, sparse=False):
+        import stft
+
+        if sparse:
+            return Signal(stft.istft(self.sp_rep,
+                                     self.params['step'],
+                                     self.orig_signal.length),
+                          self.orig_signal.fs, mono=True)
+        else:
+            return Signal(stft.istft(self.rep,
+                                     self.params['step'],
+                                     self.orig_signal.length),
+                          self.orig_signal.fs, mono=True)
+
+    def fgpt(self, sparse=False):
+        """ This only has a meaning if the peaks have been selected """
+        if self.sp_rep is None:
+            print "WARNING : default peak-picking of 100"
+            self.sparsify(100)        
+        return self.sp_rep
 
 
 class STFTPeaksSketch(AudioSketch):
@@ -138,7 +312,7 @@ class STFTPeaksSketch(AudioSketch):
 #               origin='lower')
 
     def synthesize(self, sparse=False):
-        import stft
+        
 
         if sparse:
             return Signal(stft.istft(self.sp_rep,
@@ -157,6 +331,7 @@ class STFTPeaksSketch(AudioSketch):
             print "WARNING : default peak-picking of 100"
             self.sparsify(100)        
         return self.sp_rep
+
 
 class STFTDumbPeaksSketch(STFTPeaksSketch):
     ''' only changes the sparsifying method '''
