@@ -10,201 +10,201 @@ import unittest
 import os
 import sys
 import numpy as np
-sys.path.append('/home/manu/workspace/audio-sketch')
-sys.path.append('/home/manu/workspace/PyMP')
-sys.path.append('/home/manu/workspace/meeg_denoise')
-
-#from classes import pydb, sketch
-#from classes.pydb import *
-from classes.sketches.misc import *
-from classes.sketches.bench import *
-from classes.sketches.cortico import *
-from classes.sketches.cochleo import *
-
-from classes.fingerprints.misc import *
-from classes.fingerprints.bench import *
-from classes.fingerprints.cortico import *
-from classes.fingerprints.cochleo import *
-
-from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
-from joblib import Memory
-mem = Memory(cachedir='/tmp/fgpt')
 
-plt.switch_backend('Agg')
+sys.path.append('../..')
 
-learn_dir = '/sons/rwc/Learn/'
-test_dir = '/sons/rwc/Test/'
+from src.classes.sketches.base import *
+from src.classes.sketches.bench import *
+from src.classes.sketches.cortico import *
+from src.classes.sketches.cochleo import *
+
+from src.classes.fingerprints import *
+from src.classes.fingerprints.bench import *
+from src.classes.fingerprints.cortico import *
+from src.classes.fingerprints.cochleo import *
+
+from PyMP.signals import LongSignal, Signal
+
+#from joblib import Memory
+#mem = Memory(cachedir='/tmp/fgpt')
+#plt.switch_backend('Agg')
+
 single_test_file1 = '/sons/sqam/voicefemale.wav'
 single_test_file2 = '/sons/sqam/voicemale.wav'
 
-#audio_files_path = '/sons/rwc/rwc-p-m07'
 audio_files_path = '/sons/rwc/rwc-p-m07'
 file_names = os.listdir(audio_files_path)
 
-#class FgptTest(unittest.TestCase):
-#    """ testing the fingerprinting """ 
-#    
-#    def runTest(self):
-        
-#abstractFGPT = FgptHandle('abstract.db')
-#
-#self.assertRaises(NotImplementedError,abstractFGPT.add, None,0)
-#self.assertRaises(NotImplementedError,abstractFGPT.retrieve, None, None)
-#self.assertRaises(NotImplementedError,abstractFGPT.populate, None, None,0)
-#self.assertRaises(NotImplementedError,abstractFGPT.get, None)
-
 fgpt_sketches = [
-#                 (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
-#                 SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
-                (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-                 STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-                (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-                 CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-                 (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-                  XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-                                              'nature':'LOMDCT'})),         
-                 (CochleoPeaksBDB('CorticoSub_0_0Peaks.db', **{'wall':False}),
-                  CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#                  CorticoSubPeaksSketch(**{'fs':8000,'step':128,'downsample':8000,'sub_slice':(4,11)})),
-#                    (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-#                     CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
+#     (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
+#     SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
+    (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+                                  'nature':'LOMDCT'})),         
+#        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
+#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
                     ]
 
-#@mem.cache
-def populate(sk, fgpthand):
-    segDuration = 5        
-    sig = LongSignal(op.join(audio_files_path, file_names[0]),
-                             frame_duration=segDuration, mono=True, Noverlap=0)
 
-    segmentLength = sig.segment_size
-    max_seg_num = 5
-#        " run sketchifier on a number of files"
-    nbFiles = 8
-    keycount = 0
-    for fileIndex in range(nbFiles):
-        RandomAudioFilePath = file_names[fileIndex]
-        print RandomAudioFilePath
-        if not (RandomAudioFilePath[-3:] == 'wav'):
-            continue
-
-        pySig = LongSignal(op.join(audio_files_path, RandomAudioFilePath),
-            frame_size=segmentLength, mono=True, Noverlap=0)
+class FgptTest(unittest.TestCase):
+    """ testing the fingerprinting """ 
+    
+    def populate_test(self, skhandle, fgpthandle):
+        "Inner test that will populate 8 files in the db using the sketch handler provided"
+        segDuration = 5        
+        sig = LongSignal(op.join(audio_files_path, file_names[0]),
+                                 frame_duration=segDuration, mono=True, Noverlap=0)
+    
+        segmentLength = sig.segment_size
+        max_seg_num = 5
+    #        " run sketchifier on a number of files"
+        nbFiles = 8
+        keycount = 0
+        for fileIndex in range(nbFiles):
+            RandomAudioFilePath = file_names[fileIndex]
+#            print RandomAudioFilePath
+            if not (RandomAudioFilePath[-3:] == 'wav'):
+                continue
+    
+            pySig = LongSignal(op.join(audio_files_path, RandomAudioFilePath),
+                frame_size=segmentLength, mono=True, Noverlap=0)
+            
+            nbSeg = int(pySig.n_seg)
+            print 'Working on ' + str(RandomAudioFilePath) + ' with ' + str(nbSeg) + ' segments'
+            for segIdx in range(min(nbSeg, max_seg_num)):
+                pySigLocal = pySig.get_sub_signal(
+                    segIdx, 1, True, True, channel=0, pad=0, fast_create=False)
+                print ".",                           
+#                print "sketchify the segment %d" % segIdx 
+                # run the decomposition                        
+                skhandle.recompute(pySigLocal)
+                skhandle.sparsify(300)
+                fgpt = skhandle.fgpt()
+#                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
+                fgpthandle.populate(fgpt, skhandle.params, fileIndex, offset=segIdx*segDuration)
+            print 'done, max offset of %d seconds'%(segIdx*segDuration)
         
-        nbSeg = int(pySig.n_seg)
-        print 'Working on ' + str(RandomAudioFilePath) + ' with ' + str(nbSeg) + ' segments'
-        for segIdx in range(min(nbSeg, max_seg_num)):
-            pySigLocal = pySig.get_sub_signal(
-                segIdx, 1, True, True, channel=0, pad=0, fast_create=False)
-                                        
-            print "sketchify the segment %d" % segIdx 
-            # run the decomposition                        
-            sk.recompute(pySigLocal)
-            sk.sparsify(300)
-            fgpt = sk.fgpt()
-            print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
-            fgpthand.populate(fgpt, sk.params, fileIndex, offset=segIdx*segDuration)
-
-# for all sketches, we performe the same testing
-Full = False
-for (fgpthand, sk) in fgpt_sketches:
-    print fgpthand
-    print sk    
-    if Full:
-        # Initialize the sketch
-        sk.recompute(single_test_file1)
-        sk.sparsify(300)
-        # convert it to a fingeprint compatible with associated handler
-        fgpt = sk.fgpt(sparse=True)
-        params = sk.params
-    #            print fgpt
-        # check that the handler is able to process the fingerprint            
-        print "Here the params: ",sk.params
-        fgpthand.populate(fgpt, sk.params, 0)
+    
+    def add_get_test(self, skhandle, fgpthandle, display=False):
+        # Initialize the sketch handle
+        skhandle.recompute(single_test_file1)
+        skhandle.sparsify(300)
+        print "Calling sketch handle fgpt method"
+        fgpt = skhandle.fgpt(sparse=True)
+        params = skhandle.params
+        if display:
+            print fgpt
+        print "Checking that the fgpt handle is able to process the result - populate..",                    
+        fgpthandle.populate(fgpt, skhandle.params, 0)
+        print " retrieve"
+        anchor = np.sum(fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=1, debug=True))
+        print "fgpt handle has built and retrieved %d keys "%anchor        
         
-        anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1, debug=True))
-        print anchor
-        
-        # Do the same with the second file
-        sk.recompute(single_test_file2)
-        sk.sparsify(300)    
-        fgpthand.populate(sk.fgpt(sparse=True), sk.params, 1)
-#        plt.show()
-        # check that the handler can recover the first one
+        print " Do the same with the second file"
+        skhandle.recompute(single_test_file2)
+        skhandle.sparsify(300)    
+        fgpthandle.populate(skhandle.fgpt(sparse=True), skhandle.params, 1)
+        print " check that the handler can recover the first one "
         # does it build a coherent histogram matrix
-    #    self.assertNotEqual(fgpt, sk.fgpt(sparse=True))
-        assert not fgpt==sk.fgpt(sparse=True)
-#        
+        assert not fgpt==skhandle.fgpt(sparse=True)
+        
 #        plt.figure()
-#        fgpthand.draw_fgpt(fgpt, sk.params)
+#        fgpthandle.draw_fgpt(fgpt, skhandle.params)
 #        plt.show()
-        hist = fgpthand.retrieve(fgpt, sk.params, nbCandidates=2, debug=True)
-    #    self.assertIsNotNone(hist)
+        hist = fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=2, debug=True)
+        
         assert hist is not None
         print hist.shape
         print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
                                                               np.max(hist[:,1]))
         
-#        plt.figure()
-#        from scipy.ndimage.filters import median_filter            
-#        plt.plot(median_filter(hist, (3, 1)))
-#        plt.title(fgpthand.__class__)
-#        plt.show()
-        # is the best candidate the good one
-        estimated_index, estimated_offset  = fgpthand.get_candidate(fgpt,sk.params,
+        if display:
+            plt.figure()
+            from scipy.ndimage.filters import median_filter            
+            plt.plot(median_filter(hist, (3, 1)))
+            plt.title(fgpthandle.__class__)
+            plt.show()
+            
+        print "Is the best candidate the good one?"
+        estimated_index, estimated_offset  = fgpthandle.get_candidate(fgpt,skhandle.params,
                                                                     nbCandidates=2, smooth=3)
         print "Guessed %d with offset %1.1f s"%(estimated_index, estimated_offset)
-    #    self.assertEqual(0, estimated_index)
-    #    self.assertGreater(5.0, estimated_offset)
         assert estimated_index == 0
         assert estimated_offset < 6.0
+        print "OK"
     
-    # Now the last of the test: populate a base of a few dozens musical samples
-    populate(sk, fgpthand)
-    
-    # and retrieve a segment in the base
-    true_file_index = 3
-    true_offset = 11.5   
-    
-    # get the fingerprint 
-    true_file_path = op.join(audio_files_path, file_names[true_file_index])
-    true_l_sig = LongSignal(true_file_path,  frame_duration=true_offset)
-    true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
-    true_sig.crop(0, 5.0*true_sig.fs)
-    sk.recompute(true_sig)
-    sk.sparsify(300)    
-    test_fgpt = sk.fgpt(sparse=False)
+    def runTest(self):        
+        abstractFGPT = FgptHandle('abstract.db')
+        
+        self.assertRaises(NotImplementedError,abstractFGPT.add, None,0)
+        self.assertRaises(NotImplementedError,abstractFGPT.retrieve, None, None)
+        self.assertRaises(NotImplementedError,abstractFGPT.populate, None, None,0)
+        self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
-    hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=8)
-#    maxI = np.argmax(hist[:])
-#    OffsetI = maxI / 8
-#    estFileI = maxI % 8
-#    print OffsetI, estFileI
-#    plt.plot(hist[:,[0,3,7]])
-#    plt.show()
+        # for all sketches, we performe the same testing
+        Full = False
+        display=False
+        import time
+        
+        for (fgpthandle, skhandle) in fgpt_sketches:
+            print "************************************"
+            print fgpthandle
+            print skhandle            
+            tstart = time.time()    
+            if Full:
+                self.add_get_test(skhandle, fgpthandle, display=display)
+            
+            # Now the last of the test: populate a base of a few dozens musical samples
+            self.populate_test(skhandle, fgpthandle)
+            
+            # and retrieve a segment in the base
+            true_file_index = 3
+            # This is on eof the hardest offset, its right in the middle of two learning frames
+            true_offset = 7.5   
+            
+            # get the fingerprint for the test
+            true_file_path = op.join(audio_files_path, file_names[true_file_index])
+            true_l_sig = LongSignal(true_file_path,  frame_duration=true_offset)
+            true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
+            true_sig.crop(0, 5.0*true_sig.fs)
+            skhandle.recompute(true_sig)
+            skhandle.sparsify(300)    
+            test_fgpt = skhandle.fgpt(sparse=False)
+        
+            hist =  fgpthandle.retrieve(test_fgpt, skhandle.params, nbCandidates=8)
+            
+            estimated_index, estimated_offset  = fgpthandle.get_candidate(test_fgpt,skhandle.params,
+                                                                        nbCandidates=8, smooth=1)
+        
+            print "The System %s retrieved index %d (%d) at position %d (%d)"%(fgpthandle.__class__.__name__,
+                                                                               estimated_index,
+                                                                            true_file_index,
+                                                                            estimated_offset,
+                                                                            true_offset)
+            
+            print " It took %d seconds, DB contains %d keys and %d key/data pairs"%(
+                                                                    time.time()-tstart,
+                                                                     fgpthandle.get_stats()['nkeys'],
+                                                                     fgpthandle.get_stats()['ndata'])
+            if display:
+                plt.figure()
+                plt.plot(hist)
+                plt.show()
+            assert estimated_index == true_file_index
+            assert np.abs(estimated_offset - true_offset) <= 5
+
+
+if __name__ == "__main__":
     
-    estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
-                                                                nbCandidates=8, smooth=3)
+    suite = unittest.TestSuite()
 
-    print estimated_index, true_file_index
-    assert estimated_index == true_file_index
-    assert np.abs(estimated_offset - true_offset) <= 5
+    suite.addTest(FgptTest())
 
-    
-#    # bourrinade
-#    fgpthand.populate(test_fgpt, sk.params, 9)
-#    test_hist =  fgpthand.retrieve(test_fgpt, sk.params, nbCandidates=10)
-#    estimated_index, estimated_offset  = fgpthand.get_candidate(test_fgpt,sk.params,
-#                                                                nbCandidates=10, smooth=1)
-#    plt.plot(test_hist)
-#    plt.show()
-
-#if __name__ == "__main__":
-#    
-#    suite = unittest.TestSuite()
-#
-#    suite.addTest(FgptTest())
-#
-#    unittest.TextTestRunner(verbosity=2).run(suite)
-#    plt.show()
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    plt.show()

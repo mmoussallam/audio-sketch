@@ -102,7 +102,11 @@ class FgptHandle(object):
     def get_stats(self):
         ''' retrieve the number of keys in the table
         '''
-        return self.dbObj.stat()
+        return self.dbObj.stat()    
+    
+    def get_size(self):
+        ''' retrieve the size on disk '''
+        return os.stat(self.db_name).st_size        
     
     def add(self, Pairs, fileIndex):
         ''' add all key/value pairs to base '''
