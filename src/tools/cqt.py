@@ -56,26 +56,27 @@ def noyau(fs,freq_min,freq_max,fen_type,bins): #x = resize(signal)
         noyautmp[:,k] = np.multiply(listn0,B)
     specnoyau= np.fft.fft(noyautmp.T)
     specnoyau[abs(specnoyau)<=seuil] = 0
-    noyau=np.conj(sp.csc_matrix(specnoyau.T))
-    return noyau,K
+    noyauatrous=np.conj(sp.csc_matrix(specnoyau.T))
+    return noyauatrous,K
     
     
-def cqtS(signal, noyau, inc, K, bandwidth, freq_min, bins):
+def cqtS(signal, noyauatrous, inc, K, bandwidth, freq_min, bins):
+    signal = verticalize(signal)
+    wdw_size = noyauatrous.shape[0]
+    cqt_l = int((signal.length-wdw_size)/inc)+1
     
-    signal = resize(signal)
-    wdw_size = noyau.shape[0]
-    t_cal = np.zeros(int((len(signal.x)-wdw_size)/inc)+1)
-    cqt_sync = np.zeros((K,int((len(signal.x)-wdw_size)/inc)+1))
+    t_cal = np.zeros(cqt_l)
+    cqt_sync = np.zeros((K,cqt_l))
     
     l=0
-    for indice in np.arange(int(math.ceil(len(signal.x)-wdw_size)/inc+1)):
-        bit = signal.x[int(indice*inc):int(indice*inc+wdw_size)]     
-        cq = constQ(bit, noyau)
+    for indice in np.arange(cqt_l):
+        bit = signal.data[int(indice*inc):int(indice*inc+wdw_size)]     
+        cq = constQ(bit.T, noyauatrous)
         cqt_sync[:,indice]=abs(cq)        
         t_cal[l] = (indice*inc+1)/signal.fs
         l += 1  
-        
-    f_cal = [freq_min*2**a/bins for a in range(int(K))]
+    #f_cal = [freq_min*2**a/bins for a in range(int(K))]
+    f_cal=freq_min*2**(np.arange(int(K))/bins)
     return cqt_sync,f_cal,t_cal
     
 def cqtP(noyau, fs_new, avance, Nfft,K,signal, freq_max, bandwidth, freq_min, bins):
@@ -127,7 +128,7 @@ def cqtP(noyau, fs_new, avance, Nfft,K,signal, freq_max, bandwidth, freq_min, bi
             dec = 0
         cqt_sync[ind:int(ind+bins),:][:,dec:int(dec+nc)] = cqt_non_sync[np.arange(ind,int(ind+bins)),:]
     t_cal = Nfft/2-decmin+R*np.arange(nc_ns-1)/fs_new
-    f_cal = [freqmin*2**a/bins for a in range(int(K))]
+    f_cal = [freq_min*2**a/bins for a in range(int(K))]
     return cqt_sync, f_cal, t_cal
     
 
@@ -174,7 +175,11 @@ def bufferND(x, n, p):
 def resize(signal):
    # signal est de la classe signal
    nb = signal.length//signal.fs           ####### est ce sur que le signal est en mono (length)
-   signal.x = np.concatenate((np.zeros(floor(1.2*signal.fs),),signal.data[0:floor(5*signal.fs)], np.zeros(floor(1.2*signal.fs),)), axis = 0)
+   signal.x = np.concatenate((np.zeros(floor(1.2*signal.fs),),signal.data[0:floor(2*signal.fs)], np.zeros(floor(1.2*signal.fs),)), axis = 0)
    del nb
    return signal
+
+def verticalize(signal):
+    signal.data = np.array(signal.data).flatten(1)
+    return signal
     

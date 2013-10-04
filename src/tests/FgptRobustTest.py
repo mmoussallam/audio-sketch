@@ -9,22 +9,32 @@ Purpose is to evaluate the robustness to following perturbation:
 @author: M. Moussallam
 '''
 
-from classes.pydb import *
-from classes.sketches.misc import *
-from classes.sketches.bench import *
-from classes.sketches.cortico import *
-from classes.sketches.cochleo import *
+sys.path.append('../..')
+
+from src.classes.sketches.base import *
+from src.classes.sketches.bench import *
+from src.classes.sketches.cortico import *
+from src.classes.sketches.cochleo import *
+
+
+from src.classes.fingerprints import *
+from src.classes.fingerprints.bench import *
+from src.classes.fingerprints.cortico import *
+from src.classes.fingerprints.cochleo import *
+from src.classes.fingerprints.CQT import *
 from PyMP.signals import LongSignal, Signal
 import os.path as op
 import matplotlib.pyplot as plt
-tempdir = '/home/manu/workspace/audio-sketch'
-figuredir = '/home/manu/workspace/audio-sketch/src/reporting/figures'
-single_test_file1 = '/sons/jingles/panzani.wav'
+tempdir = '.'
+figuredir = '.'
+
+SND_DB_PATH = os.environ['SND_DB_PATH']
+single_test_file1 = op.join(SND_DB_PATH,'jingles/panzani.wav')
 single_test_file2 = '/sons/sqam/voicemale.wav'
 
 #audio_files_path = '/sons/rwc/rwc-p-m07'
 audio_files_path = '/sons/rwc/rwc-p-m07'
-file_names = os.listdir(audio_files_path)
+#file_names = os.listdir(audio_files_path)
 
 def SNR(noisy, orig):
     return 10*np.log10(np.linalg.norm(orig)/np.linalg.norm(orig-noisy))
@@ -164,18 +174,20 @@ fgpt_sketches = [
                      (XMDCTBDB(None, load=False,**{'wall':False}),
                       XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
                                                   'nature':'LOMDCT'})),     
-                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
-                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
+              #       (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
+               #      SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
                 (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
                      (CochleoPeaksBDB(None, **{'wall':False}),
                      CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+ (CQTPeaksBDB(None, **{'wall':False}),
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs}))  
                  ]
 
 # tests
-for sparsity in [10,50,100,200]:
-#    NoiseTest(np.logspace(-5, 0, 20), sparsity, ntest=5)
-    TimeShiftTest(np.linspace(0,3*fs, 50), sparsity)
+for sparsity in [200]:
+    NoiseTest(np.logspace(-5, 0, 20), sparsity, ntest=5)
+#    TimeShiftTest(np.linspace(0,3*fs, 50), sparsity)
     
 # plotting
 plt.show()

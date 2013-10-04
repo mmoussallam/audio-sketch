@@ -56,6 +56,9 @@ class CQTPeaksSketch(AudioSketch):
                 signal = Signal(signal, normalize=True, mono=True)
             self.orig_signal = signal
 
+        if self.params.has_key('downsample'):
+            self.orig_signal.downsample(self.params['downsample']) 
+
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
         self.params['fs'] = self.orig_signal.fs
@@ -63,15 +66,21 @@ class CQTPeaksSketch(AudioSketch):
         if self.params['inc'] is None:
             self.params['inc'] = int(self.params['fs'] * 0.0078125)
         
+       
+        
         if self.noyau is None:
             [self.noyau,self.params['K']] = cqt.noyau(self.params['fs'], self.params['freq_min'],
                                    self.params['freq_max'],
                                    self.params['fen_type'],
                                    self.params['bins'])
-
-        [self.rep, self.f, self.t] = cqt.cqtS(self.orig_signal, self.noyau, self.params['inc'], 
+                                   
+        [rep_temp, self.f, self.t] = cqt.cqtS(self.orig_signal, self.noyau, self.params['inc'], 
                             self.params['K'], self.params['bandwidth'], 
                             self.params['freq_min'], self.params['bins'])
+
+        self.rep = np.zeros((1,rep_temp.shape[0],rep_temp.shape[1]))
+        self.rep[0,:,:] = rep_temp
+        self.params['f'] = self.f
 
     def represent(self, sparse=False, fig=None, **kwargs):
         if sparse:
@@ -80,30 +89,26 @@ class CQTPeaksSketch(AudioSketch):
         else:
             rep = self.rep
 
-#        #x_tick_vec = np.linspace(0, rep.shape[2], 10).astype(int)
-#        x_label_vec = (
-#            x_tick_vec * float(self.params['step'])) / float(self.orig_signal.fs)
-#
-#        y_tick_vec = np.linspace(0, rep.shape[1], 6).astype(int)
-#        y_label_vec = (y_tick_vec / float(
-#            self.params['scale'])) * float(self.orig_signal.fs)
+        x_tick_vec = np.linspace(0, self.t.shape[0]-1, 10).astype(int)
+        x_label_vec = self.t[x_tick_vec]
+
+        y_tick_vec = np.linspace(0, self.f.shape[0]-1, 6).astype(int)
+        y_label_vec = self.f[y_tick_vec]
         
         if fig is None:
             fig = plt.figure()
         else:
             ax = fig.gca()
-#        for chanIdx in range(rep.shape[0]):
-#        plt.subplot(rep.shape[0], 1, chanIdx + 1)
-        #chanIdx = 0
-        plt.imshow(self.rep,
+            
+        plt.imshow(10*np.log10(np.abs(rep[0,:,:])),
                    aspect='auto',
                    interpolation='nearest',
                    origin='lower',
                    cmap=cm.coolwarm)
-#        plt.xlabel('Time (s)')
-#        plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
-#        plt.ylabel('Frequency')
-#        plt.yticks(y_tick_vec, ["%d" % int(a) for a in y_label_vec])
+        plt.xlabel('Time (s)')
+        plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
+        plt.ylabel('Frequency')
+        plt.yticks(y_tick_vec, ["%d" % int(a) for a in y_label_vec])
 
     def sparsify(self, sparsity, **kwargs):
         ''' sparsity is here achieved through Peak-Picking in the
@@ -160,7 +165,7 @@ class CQTPeaksSketch(AudioSketch):
 #               origin='lower')
 
     def synthesize(self, sparse=False):
-        import stft
+#        import stft
 
         if sparse:
             return Signal(stft.istft(self.sp_rep,

@@ -20,10 +20,12 @@ from src.classes.sketches.bench import *
 from src.classes.sketches.cortico import *
 from src.classes.sketches.cochleo import *
 
+
 from src.classes.fingerprints import *
 from src.classes.fingerprints.bench import *
 from src.classes.fingerprints.cortico import *
 from src.classes.fingerprints.cochleo import *
+from src.classes.fingerprints.CQT import *
 
 from PyMP.signals import LongSignal, Signal
 
@@ -42,13 +44,15 @@ file_names = os.listdir(audio_files_path)
 fgpt_sketches = [
 #     (SWSBDB('SWSdeltas.db', **{'wall':False,'n_deltas':2}),                  
 #     SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
-    (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
-     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-     CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-                                  'nature':'LOMDCT'})),         
+#    (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
+#     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
+#   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+#    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+#     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+#      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+#                                 'nature':'LOMDCT'})),
+    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
 #        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
 #         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
                     ]
@@ -105,7 +109,7 @@ class FgptTest(unittest.TestCase):
         print "Checking that the fgpt handle is able to process the result - populate..",                    
         fgpthandle.populate(fgpt, skhandle.params, 0)
         print " retrieve"
-        anchor = np.sum(fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=1, debug=True))
+        anchor = np.sum(fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=1))
         print "fgpt handle has built and retrieved %d keys "%anchor        
         
         print " Do the same with the second file"
@@ -119,7 +123,7 @@ class FgptTest(unittest.TestCase):
 #        plt.figure()
 #        fgpthandle.draw_fgpt(fgpt, skhandle.params)
 #        plt.show()
-        hist = fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=2, debug=True)
+        hist = fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=2)
         
         assert hist is not None
         print hist.shape
