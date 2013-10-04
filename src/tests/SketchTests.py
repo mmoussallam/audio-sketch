@@ -69,7 +69,7 @@ class SketchTest(unittest.TestCase):
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
                             #bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
                             #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
-                            bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':1001, 'bins':12.0})            
+                            bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0})            
                             ]
         
         # for all sketches, we performe the same testing
@@ -85,26 +85,26 @@ class SketchTest(unittest.TestCase):
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
             sk.sparsify(1000)                    
-            
+#            
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)
-#            plt.title(sk.__class__)
-            
-            # Remove the original signal
-#            sk.orig_signal = None 
-            
-            print "%s : Synthesize the sketch"%sk.__class__
-            synth_sig = sk.synthesize(sparse=True)
-            
-            plt.figure()
-#            plt.subplot(211)
-#            plt.plot(sk.orig_signal.data)
-#            plt.subplot(212)
-            plt.plot(synth_sig.data)
-            
-            
-#            synth_sig.play()
-            synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
+##            plt.title(sk.__class__)
+#            
+#            # Remove the original signal
+##            sk.orig_signal = None 
+#            
+#            print "%s : Synthesize the sketch"%sk.__class__
+#            synth_sig = sk.synthesize(sparse=True)
+#            
+#            plt.figure()
+##            plt.subplot(211)
+##            plt.plot(sk.orig_signal.data)
+##            plt.subplot(212)
+#            plt.plot(synth_sig.data)
+#            
+#            
+##            synth_sig.play()
+#            synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
 
 if __name__ == "__main__":
     
