@@ -13,8 +13,9 @@ import os.path as op
 from joblib import Parallel, delayed
 
 from PyMP import signals
-from classes import pydb, sketch
-from classes.sketches.base import AudioSketch
+#from classes import pydb, sketch
+from src.classes.sketches.base import AudioSketch
+from src.classes.fingerprints.base import FgptHandle
 
 audio_files_path = '/sons/rwc/rwc-g-m01/'
 default_db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
@@ -393,7 +394,7 @@ def db_creation(fgpthandle,
         '''
     n_files = len(file_names)
     
-    if not isinstance(fgpthandle, pydb.FgptHandle):
+    if not isinstance(fgpthandle, FgptHandle):
         raise TypeError("First argument should be a pydb.FgptHandle but is a %s"%fgpthandle.__class__)
     
     if not isinstance(sk, AudioSketch):

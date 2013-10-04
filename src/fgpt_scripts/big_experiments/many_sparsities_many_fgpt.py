@@ -7,10 +7,20 @@ import os
 import os.path as op
 import time
 from scipy.io import savemat
-from classes.sketches.bench import *
-from classes.sketches.cochleo import *
-from classes.sketches.cortico import *
-from classes.pydb import *
+import sys
+sys.path.append('../../..')
+
+from src.classes.sketches.base import *
+from src.classes.sketches.bench import *
+from src.classes.sketches.cortico import *
+from src.classes.sketches.cochleo import *
+
+
+from src.classes.fingerprints import *
+from src.classes.fingerprints.bench import *
+from src.classes.fingerprints.cortico import *
+from src.classes.fingerprints.cochleo import *
+from src.classes.fingerprints.CQT import *
 from tools.fgpt_tools import db_creation, db_test
 from tools.fgpt_tools import get_filepaths
 
@@ -19,6 +29,8 @@ SKETCH_ROOT = os.environ['SKETCH_ROOT']
 db_path = op.join(SKETCH_ROOT,'fgpt_db')
 score_path = op.join(SKETCH_ROOT,'fgpt_scores')
 
+SND_DB_PATH = os.environ['SND_DB_PATH']
+
 import bsddb.db as db
 env = db.DBEnv()
 env.set_cachesize(0,512*1024*1024,0)
@@ -26,9 +38,9 @@ env_flags = db.DB_CREATE | db.DB_PRIVATE | db.DB_INIT_MPOOL#| db.DB_INIT_CDB | d
 env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
 env.open(None, env_flags)
 
-bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
-         'voxforge':('/sons/voxforge/main/Learn/','wav'),
-         'GTZAN':('/home/manu/workspace/databases/genres/','.au')}
+bases = {'RWCLearn':(op.join(SND_DB_PATH,'rwc/Learn/'),'.wav'),
+         'voxforge':(op.join(SND_DB_PATH,'voxforge/main/Learn/'),'wav'),
+         'GTZAN':(op.join(SND_DB_PATH,'genres/'),'.au')}
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
@@ -49,16 +61,19 @@ learn = True
 test = True
 
 ## Initialize the sketchifier
-setups = [((XMDCTBDB,{'wall':False}),
-           1,
-           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':3,
-                                                  'nature':'LOMDCT'})),     
+setups = [
+#          ((XMDCTBDB,{'wall':False}),
+#           1,
+#           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':3,
+#                                                  'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
 #                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
 #                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
 #                     ((CochleoPeaksBDB,{'wall':False}),4,
 #                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+ ((CQTPeaksBDB,{'wall':False}),3,
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs})) 
                  ]
 
 for (fgpthandlename, fgptparams),n_jobs,sk in setups:
