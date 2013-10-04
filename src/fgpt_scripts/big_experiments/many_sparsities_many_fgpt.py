@@ -13,7 +13,12 @@ from classes.sketches.cortico import *
 from classes.pydb import *
 from tools.fgpt_tools import db_creation, db_test
 from tools.fgpt_tools import get_filepaths
-db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
+
+
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+db_path = op.join(SKETCH_ROOT,'fgpt_db')
+score_path = op.join(SKETCH_ROOT,'fgpt_scores')
+
 import bsddb.db as db
 env = db.DBEnv()
 env.set_cachesize(0,512*1024*1024,0)
@@ -29,7 +34,7 @@ bases = {'RWCLearn':('/sons/rwc/Learn/','.wav'),
 #audio_path = '/sons/rwc/Learn'
 set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
-score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
+
 
 file_names = get_filepaths(audio_path, 0,  ext=ext)
 
