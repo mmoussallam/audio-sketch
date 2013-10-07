@@ -5,7 +5,7 @@ classes.sketches.benchsketch  -  Created on Jul 25, 2013
 
 from src.classes.sketches.base import *
 from src.tools import stft, cqt
-
+from numpy import unravel_index
 
 class CQTPeaksSketch(AudioSketch):
     ''' Sketch based on a single STFT with peak-picking as a
@@ -292,11 +292,12 @@ class STFTPeaksSketch(AudioSketch):
         
         for x_ind in range(0, (n_frames / t) * t, t):
             
-            for y_ind in range(0, (n_bins / f) * f, f):
+            for y_ind in range(0, (n_bins / f) * f, f):                
                 rect_data = self.rep[0, y_ind:y_ind + f, x_ind:x_ind + t]
                 
                 if len(rect_data) > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
-                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                    f_index, t_index = unravel_index(np.abs(rect_data).argmax(), rect_data.shape)
+#                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)                    
                     # add the peak to the sparse rep
                     self.sp_rep[0, y_ind + f_index,
                                 x_ind + t_index] = rect_data[f_index, t_index]

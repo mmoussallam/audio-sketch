@@ -18,7 +18,8 @@ from scipy.signal import lfilter
 from numpy.fft import fft, ifft
 
 import os
-filter_coeffs_path = os.path.abspath('../aud24.mat')
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+filter_coeffs_path = os.path.abspath(os.path.join(SKETCH_ROOT,'src/aud24.mat'))
 
 
 class Cochleogram(object):

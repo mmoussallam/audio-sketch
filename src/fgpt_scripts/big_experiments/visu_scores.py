@@ -3,26 +3,45 @@ fgpt_scripts.big_experiments.visu_scores  -  Created on Sep 18, 2013
 @author: M. Moussallam
 '''
 
+import os
 import os.path as op
-from classes.sketches.bench import *
-from classes.sketches.cochleo import *
+import time
 from scipy.io import loadmat
+import sys
+sys.path.append('../../..')
+
+from src.classes.sketches.base import *
+from src.classes.sketches.bench import *
+from src.classes.sketches.cortico import *
+from src.classes.sketches.cochleo import *
+
+from src.classes.fingerprints.base import FgptHandle
+from src.classes.fingerprints.bench import *
+from src.classes.fingerprints.cortico import *
+from src.classes.fingerprints.cochleo import *
+from src.classes.fingerprints.CQT import *
+from tools.fgpt_tools import db_creation, db_test
+from tools.fgpt_tools import get_filepaths
+
 from PyMP import Signal
-from classes import pydb
-score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
-db_path = '/home/manu/workspace/audio-sketch/fgpt_db'
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+db_path = op.join(SKETCH_ROOT,'fgpt_db')
+score_path = op.join(SKETCH_ROOT,'fgpt_scores')
+
+SND_DB_PATH = os.environ['SND_DB_PATH']
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
-sparsities = [200,150,100,50,30,20,10,3]
+sparsities = [200,150,100,50,30,10,7,5,3]
 #sparsities = [200,150]
 setups = [
 #          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
 #                                                  'nature':'LOMDCT'}),8000,sparsities,'k-s',.25),
            (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b+', .25),
-           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ro', 0.25)    
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ks', 0.25),
+           (CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}),8000, sparsities, 'ro', 0.25)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})
@@ -72,7 +91,7 @@ for setup in setups:
         subcands = [f for f in cands if '%dfs.db'%(int(fs)) in f]
         db_name = subcands[0]
         
-        fgpthandle = pydb.FgptHandle(op.join(db_path, db_name), load=True, persistent=True, rd_only=True)
+        fgpthandle = FgptHandle(op.join(db_path, db_name), load=True, persistent=True, rd_only=True)
         nkeys.append(float(fgpthandle.dbObj.stat()['ndata']))
         sizes.append(float(os.stat(op.join(db_path, db_name)).st_size))
 #        fgpthandle.dbObj.close()
