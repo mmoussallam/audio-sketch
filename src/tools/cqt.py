@@ -73,7 +73,7 @@ def cqtS(signal, noyauatrous, inc, K, bandwidth, freq_min, bins):
         bit = signal.data[int(indice*inc):int(indice*inc+wdw_size)]     
         cq = constQ(bit.T, noyauatrous)
         cqt_sync[:,indice]=abs(cq)        
-        t_cal[l] = (indice*inc+1)/signal.fs
+        t_cal[l] = float((indice*inc+1)/signal.fs)
         l += 1  
     #f_cal = [freq_min*2**a/bins for a in range(int(K))]
     f_cal=freq_min*2**(np.arange(int(K))/bins)

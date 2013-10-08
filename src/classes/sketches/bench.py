@@ -21,7 +21,7 @@ class CQTPeaksSketch(AudioSketch):
               'freq_min' : 101.84,
               'freq_max': None,
               'n_octave': None,
-              'bins': 24,
+              'bins': 24.0,
               'inc': None,
               'K': None}
               
@@ -64,7 +64,7 @@ class CQTPeaksSketch(AudioSketch):
         self.params['fs'] = self.orig_signal.fs
         
         if self.params['inc'] is None:
-            self.params['inc'] = int(self.params['fs'] * 0.0078125)
+            self.params['inc'] = self.params['fs'] * 0.0078125
         
        
         
@@ -123,13 +123,24 @@ class CQTPeaksSketch(AudioSketch):
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= np.sum(self.rep.shape)
+            #self.params['t_width'] = int(self.rep.shape[2] * np.sqrt(sparsity))
+            #self.params['f_width'] = int(self.rep.shape[1] * np.sqrt(sparsity))
+            #sparsity = sparsity*1000
+#            sparsity_t = int(np.sqrt(sparsity)*self.t[-1]/5.0)
+#            self.params['t_width'] = int(self.rep.shape[2] / sparsity_t)
 #        else:
-            # otherwise the sparsity argument take over and we divide in
-            # the desired number of regions (preserving the bin/frame ratio)
-#            print self.rep.shape[1:]
-        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+            sparsity *= np.prod(self.rep[0,:,:].shape)
         self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
+        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+#        elif sparsity < 1:
+#            # interprete as a ratio
+#            sparsity *= np.prod(self.rep[0,:,:].shape)
+##        else:
+#            # otherwise the sparsity argument take over and we divide in
+#            # the desired number of regions (preserving the bin/frame ratio)
+##            print self.rep.shape[1:]
+#        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+#        self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
 #            print self.params['f_width'], self.params['t_width']
 
         self.sp_rep = np.zeros_like(self.rep)
@@ -275,15 +286,14 @@ class STFTPeaksSketch(AudioSketch):
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= np.sum(self.rep.shape)
+            sparsity *= np.prod(self.rep[0,:,:].shape)
 #        else:
             # otherwise the sparsity argument take over and we divide in
             # the desired number of regions (preserving the bin/frame ratio)
 #            print self.rep.shape[1:]
-        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
         self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
+        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
 #            print self.params['f_width'], self.params['t_width']
-
         self.sp_rep = np.zeros_like(self.rep)
         # naive implementation: cut in non-overlapping zone and get the max
         (n_bins, n_frames) = self.rep.shape[1:]

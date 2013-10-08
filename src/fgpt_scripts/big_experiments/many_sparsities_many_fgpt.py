@@ -21,8 +21,8 @@ from src.classes.fingerprints.bench import *
 from src.classes.fingerprints.cortico import *
 from src.classes.fingerprints.cochleo import *
 from src.classes.fingerprints.CQT import *
-from tools.fgpt_tools import db_creation, db_test
-from tools.fgpt_tools import get_filepaths
+from src.tools.fgpt_tools import db_creation, db_test
+from src.tools.fgpt_tools import get_filepaths
 
 
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
@@ -39,12 +39,13 @@ env.log_set_config(db.DB_LOG_IN_MEMORY, 1)
 env.open(None, env_flags)
 
 bases = {'RWCLearn':(op.join(SND_DB_PATH,'rwc/Learn/'),'.wav'),
-         'voxforge':(op.join(SND_DB_PATH,'voxforge/main/Learn/'),'wav'),
+         'voxforge':(op.join(SND_DB_PATH,'voxforge/main/'),'wav'),
+         #'voxforge':(op.join(SND_DB_PATH,'voxforge/main/Learn/'),'wav'),
          'GTZAN':(op.join(SND_DB_PATH,'genres/'),'.au')}
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
+set_id = 'voxforge' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 
 
@@ -54,7 +55,7 @@ nb_files = len(file_names)
 # define experimental conditions
 
 sparsities = [200,150,100,50,30,20,15,10,7,5,3]
-seg_dur = 5
+seg_dur = -1 #5
 fs = 8000
 step = 3.0
 learn = True
@@ -64,15 +65,15 @@ test = True
 setups = [
 #          ((XMDCTBDB,{'wall':False}),
 #           1,
-#           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':3,
+#           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':1,
 #                                                  'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-#                ((STFTPeaksBDB,{'wall':True,'delta_t_max':60.0}),1,
-#                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
-#                     ((CochleoPeaksBDB,{'wall':False}),4,
-#                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
- ((CQTPeaksBDB,{'wall':False}),3,
+                ((STFTPeaksBDB,{'wall':False,'delta_t_max':60.0}),1,
+                 STFTPeaksSketch(**{'scale':1024, 'step':512,'downsample':fs})), 
+                     ((CochleoPeaksBDB,{'wall':False}),1,
+                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+ ((CQTPeaksBDB,{'wall':False}),1,
      CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs})) 
                  ]
 

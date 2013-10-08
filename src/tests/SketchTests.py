@@ -84,7 +84,7 @@ class SketchTest(unittest.TestCase):
             sk.represent()
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
-            sk.sparsify(1000)                    
+            sk.sparsify(200)                    
 #            
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)
