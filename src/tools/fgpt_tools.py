@@ -335,6 +335,8 @@ def _process_file(fgpthandle, sk, sparsity, file_names, seg_duration, resample,
                     continue 
         else:
             if resample > 0:
+                if not(l_sig.data.shape[0]%2==0):
+                    l_sig.crop(0, l_sig.data.shape[0]-1)
                 l_sig.resample(resample)
             sk.recompute(l_sig, **{'segIdx':0,'sig_name':file_names[fileIndex]})
             sk.sparsify(sparsity)
