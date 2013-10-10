@@ -21,13 +21,13 @@ from src.manu_sandbox.pymp_objects import PenalizedMDCTDico
                         
 exemp_sig = Signal(str(file_names[0]), mono=True, normalize=True)
 exemp_sig.crop(0, 4*8192)
-exemp_sig.pad(2*8192)
+exemp_sig.pad(4*8192)
 # Standard decomposition
 scales = [128,1024,8192]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
-nb_atoms = 150
-l_lambda = 1.3
+nb_atoms = 100
+l_lambda = 0.0
 
 # let us put some 1/f biais
 biaises = []
@@ -53,6 +53,15 @@ std_app , std_dec, = greedy(exemp_sig, std_dico, 100, nb_atoms, debug=1, pad=Fal
 pen_app , pen_dec = greedy(exemp_sig, pen_dico, 100, nb_atoms, debug=1, pad=False)
 spr_app , spr_dec = greedy(exemp_sig, spread_dico, 100, nb_atoms, debug=1, pad=False)
 
+# tell us when atoms stops being alike
+t = 0
+for atomA, atomB in zip(std_app.atoms, pen_app.atoms):
+    if atomA == atomB:
+        t += 1
+    else:
+        break
+
+print "%d out of %d atoms are similar"%(t, std_app.atom_number)
 print std_app
 print pen_app
 print spr_app
