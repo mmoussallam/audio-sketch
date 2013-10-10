@@ -402,6 +402,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         '''        
         if self.keyformat == 0:
             return int(floor(key[0]) * 2 ** (self.params['freq_n_bits']) + floor(float(key[1]) / float(self.beta)))
+#            return np.int32((floor(key[1])))
         # defaut case
         return int(floor(key) * 2 ** (self.params['freq_n_bits']) + floor(float(key) / float(self.beta)))
 

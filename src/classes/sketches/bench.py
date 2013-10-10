@@ -463,6 +463,7 @@ class XMDCTSparseSketch(AudioSketch):
                          mdct_dico,
                          self.params['SRR'],
                          self.params['n_atoms'],
+                         silent_fail=True,
                          debug=0)[0]
 
     def represent(self, fig=None, sparse=False):

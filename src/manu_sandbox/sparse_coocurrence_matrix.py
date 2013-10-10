@@ -5,13 +5,13 @@ manu_sandbox.sparse_coocurrence_matrix  -  Created on Oct 7, 2013
 import os, sys
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
 sys.path.append(SKETCH_ROOT)
-from src.manu_sandbox.settingup import *
+from src.settingup import *
 mem = Memory('/tmp/audio-sketch/')
 
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)
-max_file_num = 100
+max_file_num = 20
 
 seg_dur = 4
 sparsity = 100
@@ -19,7 +19,7 @@ fs = 8000.0
 # the density is approximately of sparsity/seg_dur features per second
 scales = [128,512,2048]
 skhandlename = XMDCTSparseSketch
-params = {'downsample':fs,'scales':scales,'nature':'LOMDCT','n_atoms':sparsity}
+params = {'downsample':fs,'scales':scales,'nature':'MDCT','n_atoms':sparsity}
 
 skhandle = skhandlename(**params)
 
@@ -31,14 +31,16 @@ times = []
 # calibrate the atom number
 M = int(len(scales)*seg_dur*fs + 2*scales[-1])
 from scipy.sparse import dok_matrix
-sp_mat = coo_matrix((M,M))
+#sp_mat = coo_matrix((M,M))
 #sp_mat = np.zeros((M,M), dtype=np.int8)
-
 # Coarse frequency dependency matrix
 F = int(fs)
 T = int(seg_dur*fs + 2*scales[-1])
 freq_sp_mat = dok_matrix((F/2,F/2))
-#freq_sp_tens = np.zeros((F/2,F/2,F/2))
+
+subsampfact = 1
+freq_sp_tens = dok_matrix(((F/(2*subsampfact))**2,F/(2*subsampfact)))
+
 time_sp_mat = dok_matrix((T,T))
 ## Computing all the sparse rep
 for fIdx, file_name in enumerate(file_names[:max_file_num]):
@@ -55,18 +57,25 @@ for fIdx, file_name in enumerate(file_names[:max_file_num]):
             cur_f = int(skhandle.rep.atoms[atomIdx].reduced_frequency * fs)
             prec_f = int(skhandle.rep.atoms[atomIdx-1].reduced_frequency * fs)
             
-            freq_sp_mat[cur_f,prec_f] += 1
+            freq_sp_mat[prec_f,cur_f] += 1
             
             cur_t = int(skhandle.rep.atoms[atomIdx].time_position)
             prec_t = int(skhandle.rep.atoms[atomIdx-1].time_position)
  
             time_sp_mat[cur_t,prec_t] += 1
-            
+        
+        for atomIdx in range(2, skhandle.rep.atom_number):
+            cur_f = int(skhandle.rep.atoms[atomIdx].reduced_frequency * fs)/subsampfact
+            prec_f = int(skhandle.rep.atoms[atomIdx-1].reduced_frequency * fs)/subsampfact
+            precprec_f = int(skhandle.rep.atoms[atomIdx-2].reduced_frequency * fs)/subsampfact
+#            print precprec_f, prec_f, cur_f, prec_f + precprec_f*(F/(2*subsampfact))
+            freq_sp_tens[prec_f + precprec_f*(F/(2*subsampfact)), cur_f] += 1
+        
     print "elapsed ",time.time()-t
         
 plt.figure()
 plt.subplot(121)
 plt.spy(freq_sp_mat,marker='o',markersize=1)
 plt.subplot(122)
-plt.spy(time_sp_mat,marker='o',markersize=1)
+plt.spy(freq_sp_tens,marker='o',markersize=1,aspect='auto')
 plt.show()

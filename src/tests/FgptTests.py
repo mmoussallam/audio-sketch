@@ -48,11 +48,11 @@ fgpt_sketches = [
 #     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
 #   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
 #    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-#      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-#                                 'nature':'LOMDCT'})),
-    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
-     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
+     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+      XMDCTSparseSketch(**{'scales':[1024,8192],'n_atoms':1,
+                                 'nature':'SpreadMDCT'})),
+#    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
 #        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
 #         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
                     ]
@@ -90,7 +90,7 @@ class FgptTest(unittest.TestCase):
 #                print "sketchify the segment %d" % segIdx 
                 # run the decomposition                        
                 skhandle.recompute(pySigLocal)
-                skhandle.sparsify(300)
+                skhandle.sparsify(150)
                 fgpt = skhandle.fgpt()
 #                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 fgpthandle.populate(fgpt, skhandle.params, fileIndex, offset=segIdx*segDuration)
@@ -114,7 +114,7 @@ class FgptTest(unittest.TestCase):
         
         print " Do the same with the second file"
         skhandle.recompute(single_test_file2)
-        skhandle.sparsify(300)    
+        skhandle.sparsify(150)    
         fgpthandle.populate(skhandle.fgpt(sparse=True), skhandle.params, 1)
         print " check that the handler can recover the first one "
         # does it build a coherent histogram matrix
@@ -180,7 +180,7 @@ class FgptTest(unittest.TestCase):
             true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
             true_sig.crop(0, 5.0*true_sig.fs)
             skhandle.recompute(true_sig)
-            skhandle.sparsify(300)    
+            skhandle.sparsify(150)    
             test_fgpt = skhandle.fgpt(sparse=False)
         
             hist =  fgpthandle.retrieve(test_fgpt, skhandle.params, nbCandidates=8)
