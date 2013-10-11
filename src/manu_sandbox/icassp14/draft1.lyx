@@ -1,0 +1,670 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass IEEEtran
+\begin_preamble
+
+%\documentclass[a4paper,10pt]{scrartcl}
+
+\usepackage{amsfonts}\usepackage{amsthm}
+\usepackage{float}
+\usepackage{hyperref}
+\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithme}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage[usenames]{color}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+
+
+
+
+%\title{Dictionary based audio fingerprinting}
+%\author{Manuel Moussallam}
+%\date{}
+
+
+
+\pdfinfo{%
+  /Title    (Icassp14_draft)
+  /Author   (Manuel Moussallam)
+  /Creator  (Manuel Moussallam)
+  /Producer ()
+  /Subject  ()
+  /Keywords ()
+}
+\end_preamble
+\use_default_options false
+\begin_modules
+eqs-within-sections
+figs-within-sections
+tabs-within-sections
+theorems-chap
+\end_modules
+\maintain_unincluded_children true
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format pdf
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "Icassp14_draft"
+\pdf_author "Manuel Moussallam"
+\pdf_subject "Dictionary Based Audio Fingerprinting"
+\pdf_keywords "Sparse Representation"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\branch chapitre1-intro
+\selected 1
+\filename_suffix 0
+\color #ff0000
+\end_branch
+\branch chapitre2-representation
+\selected 1
+\filename_suffix 0
+\color #005500
+\end_branch
+\branch chapitre3-MP
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre4-redondances
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre5-structures
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre6-hierarchique
+\selected 0
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre7-perspectives
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch AnnexeA
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre-RSSMP
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre-Mpdynamique
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch AnnexeB
+\selected 0
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch introPartie3
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch resume
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch pageDeGarde
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch Remerciements
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch abstract
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 2.5cm
+\rightmargin 2.5cm
+\bottommargin 4cm
+\secnumdepth 2
+\tocdepth 1
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language swedish
+\papercolumns 1
+\papersides 2
+\paperpagestyle default
+\bullet 0 1 5 -1
+\bullet 1 0 7 -1
+\bullet 2 0 8 -1
+\tracking_changes false
+\output_changes false
+\html_math_output 3
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Dictionary Based Audio Fingerprinting
+\end_layout
+
+\begin_layout Author
+Manuel Moussallam, Laurent Daudet
+\begin_inset Newline newline
+\end_inset
+
+Institut Langevin, ESPCI ParisTech - Univ Paris Diderot, 1 rue Jussieu 75005
+ Paris, France
+\end_layout
+
+\begin_layout Abstract
+Our message can be summarized like this: One need a balance between the
+ discriminative and the descriptive power of an audio fingerpint.
+ The former guarantees good recognition rates, while the latter provides
+ robustness.
+ State of the art techniques that concentrate on the first (feature-based
+ fingerptints, Shazam method etc..) and try to maximize the entropy of the
+ fingerprint distribution.
+ Techniques concentrated on the second (Cotton and Ellis using MP, Baluja
+ using Wavelet Thresholding, etc) experience higher robustness levels but
+ have more difficulties to scale up because of a strong biais on their selected
+ elements.
+ The idea is that audio signals have a strong internal structure, we can
+ learn this structure and use it as a probabilistic prior to define an new
+ objective function that takes both the descriptive and discriminative power
+ into account.
+\end_layout
+
+\begin_layout Keywords
+Sparse Representation, Audio Fingerprinting
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Dictionary based audio processing paradigm embraces several applications
+ in a single formalism.
+ The main idea, that can be traced back to the mid 80's and the speech coding
+ community, is to use a known collection of elements (labelled dictionary)
+ as a proxy to describe, analyze or further process a new object.
+ Let 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ be a 
+\begin_inset Formula $N$
+\end_inset
+
+-dimensionnal discrete signal and 
+\begin_inset Formula $\boldsymbol{\Phi}=\{\phi_{i}\}_{i=1..M}$
+\end_inset
+
+ a dictionary of 
+\begin_inset Formula $M$
+\end_inset
+
+ 
+\emph on
+atoms 
+\emph default
+
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ of same dimension than 
+\begin_inset Formula $y$
+\end_inset
+
+, one speaks of a 
+\emph on
+representation
+\emph default
+ 
+\begin_inset Formula $\hat{y}$
+\end_inset
+
+ of 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ in 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ as a linear combinations of the atoms: 
+\begin_inset Formula 
+\begin{equation}
+\hat{y}=\sum_{i=1}^{M}\alpha_{i}\phi_{i}
+\end{equation}
+
+\end_inset
+
+where the weights coefficients stacked in an 
+\begin_inset Formula $M-$
+\end_inset
+
+dimensionnal vector 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ now carry the information on 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+.
+ The nature and quantity of information conveyed by each (or a combination)
+ of these 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ is entirely determined by how the dictionary is designed and what a priori
+ knowledge on the signal is available.
+ Depending on applications, the objectives may be very different.
+ From a synthesis point of view, 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ is a 
+\emph on
+code
+\emph default
+ for 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ and one seeks the best 
+\emph on
+reconstruction
+\emph default
+ with the lesser 
+\emph on
+cost
+\emph default
+.
+ From an information retrieval perspective, 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ characterizes 
+\emph on
+features 
+\emph default
+that can be linked to the signal properties for, say, classification.
+\end_layout
+
+\begin_layout Paragraph
+Sparsity
+\end_layout
+
+\begin_layout Standard
+Whatever the chosen context, the objective function 
+\begin_inset Formula $\mathcal{F}(\boldsymbol{y},\boldsymbol{\Phi})$
+\end_inset
+
+ may vary, but sparsity will almost surely emerge as a desirable property
+ which incites to write the problem in the following form: 
+\begin_inset Formula 
+\begin{equation}
+\boldsymbol{\alpha}^{\star}=\arg\min\|\boldsymbol{\alpha}\|_{0}\mbox{ s.t \ensuremath{\mathcal{F}(\boldsymbol{y},\boldsymbol{\Phi})}}
+\end{equation}
+
+\end_inset
+
+In a coding perspective, 
+\begin_inset Formula $\mathcal{F}$
+\end_inset
+
+ may be a quadratic reconstruction error, in a classification problem, it
+ may be an accuracy rate.
+ In any case the sparsity enforced by the pseudo-norm is beneficial.
+ Not only do we want
+\end_layout
+
+\begin_layout Paragraph
+Fingerprinting and object recognition
+\end_layout
+
+\begin_layout Standard
+One can think of a representation as a fingerprint of 
+\begin_inset Formula $y$
+\end_inset
+
+.
+ Object recognition can be performed in the representation space using distance
+ in the feature space
+\end_layout
+
+\begin_layout Standard
+Here a little paragraph on state of the art methods: especially shazam,
+ that can be seen as a specific dictionary based technique using stft, a
+ binarization of 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and pairing of the feature to serve as keys.
+ Problems raised by these methods: selection is ad-hoc, non adaptive, which
+ means no knowledge of how much information is captured and no modelling
+ of the keys probability distribution.
+\end_layout
+
+\begin_layout Paragraph
+This paper
+\end_layout
+
+\begin_layout Standard
+We think the main problem is to find fingerprints that are both descriptive
+ and discriminative.
+ To do that we need a measure for each criterion:
+\end_layout
+
+\begin_layout Itemize
+Using the reconstructive power as a measure of the descriptiveness
+\end_layout
+
+\begin_layout Itemize
+Use an information metric based on a probabilistic framework and a structured
+ sparsity prior as a measure of discriminativeness
+\end_layout
+
+\begin_layout Section
+Audio Fingerprints
+\end_layout
+
+\begin_layout Subsection
+Problem statement and metrics
+\end_layout
+
+\begin_layout Standard
+In this study we're interested in the object recognition problem which is
+ a particular audio fingerprint case.
+ Given a database of sounds, we want to be able to quickly find an object
+ in it.
+ Binary Metric: is it rightfully located or not.
+ Parameters: 1) size of base (number of keys) 2) computation time.
+\end_layout
+
+\begin_layout Subsection
+State of the art techniques
+\end_layout
+
+\begin_layout Standard
+There are many many studies on the subject.
+ Nowadays, people agree to consider the Shazam method (at least the one
+ described in the 2003 paper) as the most effective.
+ Issues:
+\end_layout
+
+\begin_layout Itemize
+Noise sensitivity
+\end_layout
+
+\begin_layout Itemize
+No reconstruction
+\end_layout
+
+\begin_layout Subsection
+Dictionary based techniques
+\end_layout
+
+\begin_layout Standard
+The one presented in [Cotton/Ellis2010] is based on pairs of MP atoms.
+ Even simpler the one in [Fenet2012].
+ More generally we can include Shazam in the dictionary-based method: local
+ peak-picking in a Gabor dictionary then pairs of points are used as keys.
+ Here we can show the probability distribution of the points in the time-frequen
+cy plane learned on a base, and the keys distribution.
+ 
+\end_layout
+
+\begin_layout Section
+Proposed Framework
+\end_layout
+
+\begin_layout Standard
+MP-based fingerprints are robust to noise, but less discriminative.
+ TF-spreaded fingerprints are more discriminative but less robust.
+ There seem to be a potential equilibrium between both constrains.
+\end_layout
+
+\begin_layout Standard
+To test this assumption we can design an algorithm that will target the
+ following problem:
+\begin_inset Formula 
+\[
+\min\lambda_{R}\|y-\sum_{i=1}^{M}\alpha_{i}\phi_{i}\|_{2}+\lambda_{H}H_{\Phi}(\alpha)
+\]
+
+\end_inset
+
+ where 
+\begin_inset Formula $H_{\Phi}(\alpha)$
+\end_inset
+
+ is the entropy of the vector 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ given the dictionary.
+ Additionnally on can think of a practical constraint on the 
+\begin_inset Formula $\ell_{0}$
+\end_inset
+
+ norm of 
+\begin_inset Formula $\alpha$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+\min\lambda_{R}\|y-\sum_{i=1}^{M}\alpha_{i}\phi_{i}\|_{2}+\lambda_{H}H_{\Phi}(\alpha)\mbox{ s.t }\|\alpha\|_{0}=k
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is non-convex, the litterature can be understood as suboptimal algorithm
+ on this problem:
+\end_layout
+
+\begin_layout Itemize
+Shazam method : Local Peak Picking
+\end_layout
+
+\begin_layout Itemize
+Cotton/Ellis method: put 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+to zero
+\end_layout
+
+\begin_layout Subsection
+Structured Sparsity model
+\end_layout
+
+\begin_layout Standard
+Using a Boltzmann machine as the distribution of the index:
+\begin_inset Formula 
+\[
+p(s)\propto\exp(b^{T}s+s^{T}Ws)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $b$
+\end_inset
+
+ being a biais and 
+\begin_inset Formula $W$
+\end_inset
+
+ a correlation matyrix between an atom and the others.
+ To go a little further, an TF atom can be indexed by a triplet 
+\begin_inset Formula $(f,t,l)$
+\end_inset
+
+ of its frequency, time localization and length.
+ We can assume separability of these internal variables:
+\begin_inset Formula 
+\[
+p(\phi_{i}(f_{i},t_{i},l_{i}))=p(f_{i})p(t_{i})p(l_{i})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Model Learning
+\end_layout
+
+\begin_layout Standard
+We will use Hebbian learning in this context, which means given a training
+ set we can compute empirical averages for 
+\begin_inset Formula $b$
+\end_inset
+
+ and 
+\begin_inset Formula $W$
+\end_inset
+
+.
+ Here I will provide nice pictures of how the atoms are pairwise correlated
+ in a multiscale TF dictionary as well as proving that the biais is only
+ visible on the frequency and scale parameters (atoms are uniformly located
+ in time, which by the way justifies to get rid of the absolute time information
+ in the fingerprint key).
+\end_layout
+
+\begin_layout Subsection
+Algorithm
+\end_layout
+
+\begin_layout Standard
+A standard MP with a modified selection rule specifying:
+\begin_inset Formula 
+\[
+\arg\max_{\phi}|\langle r^{n},\phi_{i}\rangle|+\lambda_{H}p(\phi_{i}|s_{n-1})
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $p(\phi_{i}|s_{n-1})=b_{i}+\sum_{j\in\Gamma^{n-1}}w_{ij}$
+\end_inset
+
+ where 
+\begin_inset Formula $b_{i}$
+\end_inset
+
+ is the biais of the atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ and the second term simply add up the paiwise codependency of an atom with
+ all previsously selected atoms.
+ A nice property is that this second term is quite simple to update:
+\begin_inset Formula 
+\[
+p(\phi_{i}|s_{n})=p(\phi_{i}|s_{n-1})+w_{ij^{\star}}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $j^{\star}$
+\end_inset
+
+ being the index of the atom just selected.
+\end_layout
+
+\begin_layout Section
+Experiments
+\end_layout
+
+\begin_layout Standard
+So we must see how the modified criterion affects the recognition rate and
+ robustness.
+ We can compare to Shazam [Wang2003], [Cotton/Ellis2010] (pairs of MP atoms)
+ and [Fenet/Moussallam2012] (single MP atoms).
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+Using a dictionary-based framwork, we can efficiently characterize the concurren
+t objectives that a recognition system must deal with.
+ The problem can be stated as: how to select a sparse set of elements that
+ are effective at describing my signal (e.g.
+ reconstruct it) and allow me to discriminate it from others.
+ State of the art methods appears to be extremum points on a pareto front,
+ we propose a greedy algorithm to reach other points on this front.
+\end_layout
+
+\end_body
+\end_document
