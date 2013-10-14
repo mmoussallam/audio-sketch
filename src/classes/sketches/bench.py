@@ -399,7 +399,8 @@ class XMDCTSparseSketch(AudioSketch):
         self.params = {'scales': [128, 1024, 8192],
                        'nature': 'MDCT',
                          'n_atoms': 1000,
-                         'SRR': 30}
+                         'SRR': 30,
+                         'pad':True}
 
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -419,7 +420,7 @@ class XMDCTSparseSketch(AudioSketch):
     def _get_dico(self):
         from PyMP.mdct import Dico, LODico
         from PyMP.mdct.dico import SpreadDico
-        from PyMP.wavelet import dico as wavelet_dico
+        #from PyMP.wavelet import dico as wavelet_dico
 
         if self.params['nature'] == 'LOMDCT':
             mdct_dico = LODico(self.params['scales'])
@@ -464,6 +465,7 @@ class XMDCTSparseSketch(AudioSketch):
                          self.params['SRR'],
                          self.params['n_atoms'],
                          silent_fail=True,
+                         pad=self.params['pad'],
                          debug=0)[0]
 
     def represent(self, fig=None, sparse=False):

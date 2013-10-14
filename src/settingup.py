@@ -42,5 +42,5 @@ bases = {'RWCLearn':(op.join(SND_DB_PATH,'rwc/Learn/'),'.wav'),
          'GTZAN':(op.join(SND_DB_PATH,'genres/'),'.au')}
 
 
-from sklearn.neighbors import NearestNeighbors
+#from sklearn.neighbors import NearestNeighbors
 from cProfile import runctx

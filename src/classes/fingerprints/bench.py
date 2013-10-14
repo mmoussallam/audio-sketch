@@ -469,8 +469,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 ax = fig.add_subplot(111) 
             sparse_rep.plot_tf()
         for atIdx, atom in enumerate(sparse_rep.atoms):
-            f1 = atom.reduced_frequency * atom.fs
-            t_anchor = (atom.time_position + atom.length/2) / atom.fs
+            f1 = int(atom.reduced_frequency * atom.fs)
+            t_anchor = np.round((atom.time_position + atom.length/2) / atom.fs, 3) # precision up to the milisecond seem more than enough
             proximities = [((neigh.time_position + neigh.length/2) / neigh.fs) - t_anchor for neigh in sparse_rep.atoms[atIdx+1:]]
             # find the nb_max_closest
             closest = np.argsort(np.abs(proximities))[:self.params['nb_neighbors_max']]
@@ -478,8 +478,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
             for relAtomIdx in closest:
                 
                 neigh = sparse_rep.atoms[atIdx+1+relAtomIdx]
-                neighb_f = neigh.reduced_frequency * neigh.fs
-                neighb_t = (neigh.time_position + neigh.length/2) / neigh.fs
+                neighb_f = int(neigh.reduced_frequency * neigh.fs)
+                neighb_t = np.round((neigh.time_position + neigh.length/2) / neigh.fs, 3)
                 if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
                     continue
                 if abs(neighb_f - f1) > self.params['delta_f_max']:
@@ -495,6 +495,16 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 values.append(t_anchor + offset)
         return keys, values
 
+    def draw_keys(self, keys_values, ax=None, color='r'):
+        if ax is None:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111) 
+        for key, value in keys_values:
+            ax.arrow(value, key[0], key[2], key[1], head_width=0.05, head_length=0.1, fc=color, ec=color)
+
     def format_key(self, key):
         """ Format the Key as [f1 , delta_f, delta_t] 
         
@@ -507,7 +517,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
               (delta_f>0) * 2**(self.params['delta_f_bits'] + self.params['dt_n_bits'] + 1) \
              + floor((abs(delta_f) / self.beta) * deltafmult) + \
              + (delta_t>0) *  2 ** (self.params['dt_n_bits']) + \
-             floor((abs(delta_t)) / self.gamma)
+             floor((abs(delta_t)))
+             #floor((abs(delta_t)) / self.gamma)
 
 
     def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0,debug=False):
