@@ -171,10 +171,10 @@ fs = 11025
 sparsity = 100
 # systems to test    
 fgpt_sketches = [
-                 (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False,'nb_neighbors_max':2,
+                 (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False,'nb_neighbors_max':5,
                                                                      'delta_t_max':60.0}),
       XMDCTSparsePairsSketch(**{'scales':[1024, 4096],'n_atoms':1,
-                                 'nature':'MDCT'})),
+                                 'nature':'LOMDCT'})),
                      (XMDCTBDB(None, load=False,**{'wall':False}),
                       XMDCTSparseSketch(**{'scales':[1024, 4096],'n_atoms':2,
                                                   'nature':'LOMDCT'})),     
@@ -189,7 +189,7 @@ fgpt_sketches = [
                  ]
 
 # tests
-for sparsity in [100,]:
+for sparsity in [20,]:
     NoiseTest(np.logspace(-5, 0, 20), sparsity, ntest=5)
 #    TimeShiftTest(np.linspace(0,3*fs, 50), sparsity)
     

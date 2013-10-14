@@ -162,10 +162,10 @@ class STFTPeaksBDB(FgptHandle):
                 values.append(t1 + offset)
         return keys, values
     
-    def populate(self, fgpt, params, file_index, offset=0, debug=False, max_pairs=None, display=False):
+    def populate(self, fgpt, params, file_index, offset=0, debug=False, max_pairs=None, display=False,ax=None):
         """ populate by creating pairs of peaks """
         # get all non zero elements            
-        keys, values = self._build_pairs(fgpt, params, offset, display=display)
+        keys, values = self._build_pairs(fgpt, params, offset, display=display,ax=ax)
         if self.params['wall']:
             print " %d key/value pairs"%len(keys)
         Set = list(set(zip(keys, values)))
@@ -328,7 +328,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 
 
 
-    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False, max_pairs=None, debug=False):
+    def populate(self, fgpt, params, fileIndex, offset=0, largebases=False,
+                 max_pairs=None, debug=False, display=False, ax=None):
         ''' Populate the database using the given fingerprint and parameters
         
         Here the fingerprint object is the PyMP.approx class
@@ -361,8 +362,10 @@ Resolution: Time: %1.3f (s) %2.2f Hz
 #        lst = zip(F,T);
 #        for item in Set:
 #            print item ,  lst.count(item)
-
+    
         self.add(list(Set), fileIndex)
+        if display:
+            self.draw_fgpt(fgpt, params, ax)
 
     def kform(self, atom):
         if self.keyformat is None:
