@@ -27,7 +27,7 @@ scales = [128,1024,8192]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
 nb_atoms = 100
-l_lambda = 0.0
+l_lambda = 10.0
 
 # let us put some 1/f biais
 biaises = []
@@ -35,11 +35,11 @@ Ws = []
 for s in scales:
 #    biaises.append(np.ones((s,)))
 #    biaises.append(1.0/np.arange(1.,float(s)/2))    
-#    biais = np.maximum(0.001, np.sqrt(1.0/np.linspace(1.,float(s)/2, s/2)))
-    biais = np.maximum(0.001, np.linspace(1, 0.0,s/2))
+    biais = np.maximum(0.001, 1.0/np.linspace(1.,float(s)/2, s/2))
+#    biais = np.maximum(0.001, np.linspace(1, 0.0,s/2))
 #    biais = np.zeros((s/2,))
     biaises.append(biais)
-    W = (2.0/float(nb_atoms))*np.eye(s/2,s/2)
+#    W = (2.0/float(nb_atoms))*np.eye(s/2,s/2)
     W = np.zeros((s/2,s/2))
     Ws.append(W)
 

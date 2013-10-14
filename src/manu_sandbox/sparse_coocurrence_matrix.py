@@ -35,14 +35,17 @@ from scipy.sparse import dok_matrix
 #sp_mat = coo_matrix((M,M))
 #sp_mat = np.zeros((M,M), dtype=np.int8)
 # Coarse frequency dependency matrix
+
 F = int(fs)
 T = int(seg_dur*fs + 2*scales[-1])
 freq_sp_mat = dok_matrix((F/2,F/2))
 freq_biais = []
 subsampfact = 1
-freq_sp_tens = dok_matrix(((F/(2*subsampfact))**2,F/(2*subsampfact)))
 
+freq_sp_tens = dok_matrix(((F/(2*subsampfact))**2,F/(2*subsampfact)))
 time_sp_mat = dok_matrix((T,T))
+
+
 ## Computing all the sparse rep
 for fIdx, file_name in enumerate(file_names[:max_file_num]):
     l_sig =  LongSignal(file_name,frame_duration=seg_dur, mono=True)

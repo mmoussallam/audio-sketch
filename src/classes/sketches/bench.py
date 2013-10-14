@@ -531,6 +531,13 @@ class XMDCTSparseSketch(AudioSketch):
         """ In this case it is quite simple : just return the approx objects """
         return self.sp_rep if sparse else self.rep
 
+
+class XMDCTSparsePairsSketch(XMDCTSparseSketch):
+    """ same as above but will be used for pairs of atoms as keys """
+    def __init__(self, original_sig=None, **kwargs):
+        """ just call the superclass constructor nothing needs to be changed """
+        super(XMDCTSparsePairsSketch, self).__init__(original_sig=None, **kwargs)
+
 class WaveletSparseSketch(XMDCTSparseSketch):
     """ Same as Above but using a wavelet dictionary """
     def __init__(self, original_sig=None, **kwargs):

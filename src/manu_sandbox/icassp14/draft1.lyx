@@ -474,6 +474,82 @@ cy plane learned on a base, and the keys distribution.
  
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/All100Atoms_GTZAN_100files_7xMDCT.png
+	lyxscale 20
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical distribution of the first 100 atoms observed on 600 audio segments
+ of 5 seconds each taken from the GTZAN dataset.
+ The dictionary is a union of 7 MDCT scales replicated such as to form a
+ highly overcomplete shift-invariant dictionary.
+ Atoms are uniformly selected in time while a strong biais on frequencies
+ can be observed.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/empirical_cooc_mat_GTZAN_20files_100atoms_3xMDCT.png
+	lyxscale 25
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical Co-occurrence matrix (sparse pattern)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Proposed Framework
 \end_layout
@@ -523,7 +599,7 @@ To test this assumption we can design an algorithm that will target the
 \end_layout
 
 \begin_layout Standard
-This is non-convex, the litterature can be understood as suboptimal algorithm
+This is NP hard, the litterature can be understood as suboptimal algorithm
  on this problem:
 \end_layout
 

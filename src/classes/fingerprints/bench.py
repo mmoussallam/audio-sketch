@@ -80,7 +80,7 @@ class STFTPeaksBDB(FgptHandle):
             
             Bin_value = int(self.format_value(fileIndex, t1))
             Bin_key = int(self.format_key(key))
-            
+#            print Bin_value, Bin_key
             # To retrieve each element
             Bbin = struct.pack('<I4', Bin_value)
             Kbin = struct.pack('<I4', Bin_key)
@@ -409,3 +409,129 @@ Resolution: Time: %1.3f (s) %2.2f Hz
     def draw_fgpt(self, fgpt, params, ax=None):
         """ Draw the fingerprint """
         fgpt.plot_tf()
+        
+class SparseFramePairsBDB(STFTPeaksBDB):
+    '''
+    PyMP approx berkeley database handle
+    build pairs of atoms as keys
+    '''
+    keyformat = 0
+        # closing the db for now ?
+#        self.dbObj.close();
+
+    def __init__(self, dbName, load=False,                
+                 persistent=True,dbenv=None, **kwargs):
+        '''
+        Constructor
+        '''
+        # Call superclass constructor
+        super(SparseFramePairsBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)                
+        
+        self.params['delta_f_max'] = 667 # in hertz
+        self.params['delta_f_min'] = 25 # in hertz
+        self.params['delta_f_bits'] = 6 # in hertz
+        self.params['delta_t_max'] = 0.5
+        self.params['delta_t_min'] = 0.05
+        self.params['time_res'] = 1
+        self.params['freq_res'] = 22
+        self.params['nb_neighbors_max'] = 5
+        
+        
+        # populating optional parameters
+        for karg in kwargs:
+            self.params[karg] = kwargs[karg]
+
+        self.alpha = ceil((self.params['fmax'])/(2**self.params['f1_n_bits']-1))
+        self.beta = ceil((self.params['delta_f_max'])/(2**self.params['delta_f_bits']-1))
+
+    def __repr__(self):
+        return """ 
+%s handler (based on Berkeley DB): %s
+Key in %d bits,
+Resolution: Time: %1.3f (s) %2.2f Hz 
+""" % (self.__class__.__name__, self.db_name,
+       self.params['key_total_nbits'],self.params['time_res'], self.params['freq_res'])
+            
+
+    def _build_pairs(self, sparse_rep, params, offset=0, display=False,ax=None):
+        """ build pairs given a PyMP.approx object: need to find 
+            pairs.. first idea: take every pairwise combination """
+        keys = []
+        values =[]
+        if display:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111) 
+            sparse_rep.plot_tf()
+        for atIdx, atom in enumerate(sparse_rep.atoms):
+            f1 = atom.reduced_frequency * atom.fs
+            t_anchor = (atom.time_position + atom.length/2) / atom.fs
+            proximities = [((neigh.time_position + neigh.length/2) / neigh.fs) - t_anchor for neigh in sparse_rep.atoms[atIdx+1:]]
+            # find the nb_max_closest
+            closest = np.argsort(np.abs(proximities))[:self.params['nb_neighbors_max']]
+            # find its neighbors
+            for relAtomIdx in closest:
+                
+                neigh = sparse_rep.atoms[atIdx+1+relAtomIdx]
+                neighb_f = neigh.reduced_frequency * neigh.fs
+                neighb_t = (neigh.time_position + neigh.length/2) / neigh.fs
+                if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
+                    continue
+                if abs(neighb_f - f1) > self.params['delta_f_max']:
+                    continue
+                # in same zone: build the pair
+                if display:          
+#                    print  t_anchor, f1, neighb_t - t_anchor, neighb_f - f1    
+#                    ax.arrow(120,120,50,50,head_width=0.05, head_length=0.1, fc='k', ec='k')  
+                    ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+#                
+#                print (f1,  neighb_f-f1, neighb_t - t_anchor) , t_anchor
+                keys.append((f1, neighb_f-f1, neighb_t - t_anchor))
+                values.append(t_anchor + offset)
+        return keys, values
+
+    def format_key(self, key):
+        """ Format the Key as [f1 , delta_f, delta_t] 
+        
+        The message is formated as [F1 | Sign| Delta_f | sign | Delta_t]
+        """
+        (f1, delta_f, delta_t) = key
+        f1mult =  2 ** (self.params['delta_f_bits'] + self.params['dt_n_bits'] + 2) 
+        deltafmult = 2 ** (self.params['dt_n_bits'] + 1)
+        return floor((f1 / self.alpha) * f1mult) + \
+              (delta_f>0) * 2**(self.params['delta_f_bits'] + self.params['dt_n_bits'] + 1) \
+             + floor((abs(delta_f) / self.beta) * deltafmult) + \
+             + (delta_t>0) *  2 ** (self.params['dt_n_bits']) + \
+             floor((abs(delta_t)) / self.gamma)
+
+
+    def retrieve(self, fgpt, params, offset=0, nbCandidates=10, precision=1.0,debug=False):
+        '''
+        Retrieve in base the candidates based on the sparse rep and return best candidate
+        '''
+        if not isinstance(fgpt, PyMP.approx.Approx):
+            raise TypeError('Given fingerprint is not a PyMP approx')
+                
+        # refactoring : 2D histogram: col = offset, line = songIndex
+        # implemented as a double dictionary : key = songIndex , value =
+        # {offset : nbCount}
+        histogram = np.zeros((floor(self.params['time_max'] / precision), nbCandidates))                       
+        
+        keys, values = self._build_pairs(fgpt, params, offset)
+        # results is a list of histogram coordinates, for each element, we need to increment
+        # the corresponding value in histogram by one.
+        results = map(self.get , keys)
+        if debug:
+            print "Found %d out of %d keys"%(len(results), len(keys))
+        # or maybe we can just sum all the values in the desired dimension?
+#        print keys[1:10]
+#        print results
+        for keyIdx in range(len(keys)): 
+#            if len(results[keyIdx][0])>1:
+#                print  results[keyIdx]          
+            histogram[results[keyIdx]] +=1            
+
+        # voting for best candidate
+        return histogram

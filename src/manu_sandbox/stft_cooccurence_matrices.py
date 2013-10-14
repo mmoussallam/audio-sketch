@@ -9,7 +9,7 @@ empirical distributions and cooccurrence matrices
 import os, sys
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
 sys.path.append(SKETCH_ROOT)
-from src.manu_sandbox.settingup import *
+from src.settingup import *
 mem = Memory('/tmp/audio-sketch/')
 
 @mem.cache

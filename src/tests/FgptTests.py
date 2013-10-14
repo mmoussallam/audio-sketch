@@ -48,9 +48,12 @@ fgpt_sketches = [
 #     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
 #   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
 #    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-      XMDCTSparseSketch(**{'scales':[1024,8192],'n_atoms':1,
-                                 'nature':'SpreadMDCT'})),
+#     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+#      XMDCTSparseSketch(**{'scales':[1024,8192],'n_atoms':1,
+#                                 'nature':'SpreadMDCT'})),
+    (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False}),
+      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
+                                 'nature':'LOMDCT'})),
 #    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
 #     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
 #        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
@@ -100,14 +103,15 @@ class FgptTest(unittest.TestCase):
     def add_get_test(self, skhandle, fgpthandle, display=False):
         # Initialize the sketch handle
         skhandle.recompute(single_test_file1)
-        skhandle.sparsify(300)
+        skhandle.sparsify(20)
         print "Calling sketch handle fgpt method"
         fgpt = skhandle.fgpt(sparse=True)
         params = skhandle.params
         if display:
             print fgpt
         print "Checking that the fgpt handle is able to process the result - populate..",                    
-        fgpthandle.populate(fgpt, skhandle.params, 0)
+        fgpthandle.populate(fgpt, skhandle.params, 0,display=True)
+#        plt.show()
         print " retrieve"
         anchor = np.sum(fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=1))
         print "fgpt handle has built and retrieved %d keys "%anchor        
