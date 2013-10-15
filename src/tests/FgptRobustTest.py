@@ -171,16 +171,16 @@ fs = 11025
 sparsity = 100
 # systems to test    
 fgpt_sketches = [
-                 (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False,'nb_neighbors_max':5,
-                                                                     'delta_t_max':60.0}),
-      XMDCTSparsePairsSketch(**{'scales':[1024, 4096],'n_atoms':1,
+                 (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False,'nb_neighbors_max':4,
+                                                                     'delta_t_max':3.0}),
+      XMDCTSparsePairsSketch(**{'scales':[64,512, 4096],'n_atoms':1,
                                  'nature':'LOMDCT'})),
                      (XMDCTBDB(None, load=False,**{'wall':False}),
                       XMDCTSparseSketch(**{'scales':[1024, 4096],'n_atoms':2,
                                                   'nature':'LOMDCT'})),     
               #       (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
                #      SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
+                (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':3.0}),
                  STFTPeaksSketch(**{'scale':1024, 'step':512})), 
 #                     (CochleoPeaksBDB(None, **{'wall':False}),
 #                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),

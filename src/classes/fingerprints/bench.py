@@ -132,8 +132,8 @@ class STFTPeaksBDB(FgptHandle):
             import matplotlib.cm as cm
             if ax is None:        
                 fig = plt.figure()
-                ax = fig.add_subplot(111)            
-            ax.spy(sparse_stft[0,:,:], cmap=cm.bone_r, aspect='auto')
+                ax = fig.add_subplot(111)                 
+#            ax.spy(sparse_stft[0,:,:], cmap=cm.bone_r, aspect='auto')
             
         peak_indexes = np.nonzero(sparse_stft[0,:,:])
         f_target_width = 3*params['f_width']
@@ -154,8 +154,9 @@ class STFTPeaksBDB(FgptHandle):
                 t1 = float(peak_ind[1]) *time_step
                 # HACK HERE: rounding at 1 decimals to robustify
                 delta_t = np.round(float(target_points_j[i]) *time_step, decimals=1)
-                if display:                    
-                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
+                if display:    
+                    ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+#                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
 #                
 #                print (f1, f2, delta_t) , t1
                 keys.append((f1, f2, delta_t))
@@ -219,7 +220,7 @@ class XMDCTBDB(FgptHandle):
 #        self.dbObj.close();
 
     def __init__(self, dbName, load=False,                
-                 persistent=True,dbenv=None, **kwargs):
+                 persistent=False, dbenv=None, **kwargs):
         '''
         Constructor
         '''
@@ -423,7 +424,7 @@ class SparseFramePairsBDB(STFTPeaksBDB):
 #        self.dbObj.close();
 
     def __init__(self, dbName, load=False,                
-                 persistent=True,dbenv=None, **kwargs):
+                 persistent=None,dbenv=None, **kwargs):
         '''
         Constructor
         '''
@@ -471,15 +472,20 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         for atIdx, atom in enumerate(sparse_rep.atoms):
             f1 = int(atom.reduced_frequency * atom.fs)
             t_anchor = np.round((atom.time_position + atom.length/2) / atom.fs, 3) # precision up to the milisecond seem more than enough
-            proximities = [((neigh.time_position + neigh.length/2) / neigh.fs) - t_anchor for neigh in sparse_rep.atoms[atIdx+1:]]
+            proximities = [np.abs(((neigh.time_position + neigh.length/2) / neigh.fs) - t_anchor) for neigh in sparse_rep.atoms]
             # find the nb_max_closest
-            closest = np.argsort(np.abs(proximities))[:self.params['nb_neighbors_max']]
+            closest = np.argsort(np.abs(proximities))
             # find its neighbors
+            j= 0
             for relAtomIdx in closest:
-                
-                neigh = sparse_rep.atoms[atIdx+1+relAtomIdx]
+                if j>self.params['nb_neighbors_max']:
+                    break
+                neigh = sparse_rep.atoms[relAtomIdx]
                 neighb_f = int(neigh.reduced_frequency * neigh.fs)
                 neighb_t = np.round((neigh.time_position + neigh.length/2) / neigh.fs, 3)
+                # New rule: keep only positive time differences
+                if (neighb_t <= t_anchor) or (neighb_f <= f1):
+                    continue
                 if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
                     continue
                 if abs(neighb_f - f1) > self.params['delta_f_max']:
@@ -491,6 +497,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                     ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
 #                
 #                print (f1,  neighb_f-f1, neighb_t - t_anchor) , t_anchor
+                j += 1
                 keys.append((f1, neighb_f-f1, neighb_t - t_anchor))
                 values.append(t_anchor + offset)
         return keys, values

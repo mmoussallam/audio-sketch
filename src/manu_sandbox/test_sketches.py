@@ -24,7 +24,7 @@ ax1 = plt.gca()
 fgpthandle = SparseFramePairsBDB('xMdctPairs.db',
                                  load=False,**{'wall':False,'nb_neighbors_max':5,
                                                'delta_t_max':3.0})
-skhandle = XMDCTSparsePairsSketch(**{'scales':[1024, 4096],'n_atoms':1,
+skhandle = XMDCTSparsePairsSketch(**{'scales':[64,512, 4096],'n_atoms':1,
                                  'nature':'LOMDCT','pad':False})
 
 # do what you have to do
@@ -42,6 +42,9 @@ plt.subplot(222)
 ax2 = plt.gca()
 target = np.sum(fgpthandle.retrieve(noisy_fgpt, skhandle.params, 0,nbCandidates=1))
 fgpthandle.populate(noisy_fgpt, skhandle.params, 0, display=True,ax=plt.gca())                 
+print target/anchor
+print fgpthandle.get_stats()['nkeys']
+print (fgpthandle.get_stats()['ndata'] + fgpthandle.get_stats()['nkeys'])*32
 
 keys, values = fgpthandle._build_pairs(fgpt, skhandle.params, 0)
 noisy_keys, noisy_values = fgpthandle._build_pairs(noisy_fgpt, skhandle.params, 0)
@@ -67,13 +70,13 @@ fgpt = skhandle2.fgpt(sparse=True)
 fgpthandle2.populate(fgpt, skhandle2.params, 0, display=True,ax=plt.gca())
 anchor2 = np.sum(fgpthandle2.retrieve(fgpt, skhandle2.params, 0,nbCandidates=1))
 # and do the same under noisy conditions
-      
+print (fgpthandle2.get_stats()['ndata'] + fgpthandle2.get_stats()['nkeys'])*32
 skhandle2.recompute(noisy)
 skhandle2.sparsify(sparsity)
 noisy_fgpt = skhandle2.fgpt(sparse=True)
 plt.subplot(224)
 target2 = np.sum(fgpthandle2.retrieve(noisy_fgpt, skhandle.params, 0,nbCandidates=1))
 fgpthandle2.populate(noisy_fgpt, skhandle2.params, 0, display=True,ax=plt.gca())                 
-
+print target2/anchor2
 
 plt.show()

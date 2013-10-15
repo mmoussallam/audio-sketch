@@ -54,7 +54,7 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [5,10]
+sparsities = [5,10,30,50]
 seg_dur = 5
 fs = 8000
 step = 3.0
@@ -63,8 +63,8 @@ test = True
 
 ## Initialize the sketchifier
 setups = [
-          ((SparseFramePairsBDB,{'wall':False}),1,
-      XMDCTSparsePairsSketch(**{'scales':[512,4096],'n_atoms':1,
+          ((SparseFramePairsBDB,{'wall':False,'nb_neighbors_max':3,'delta_t_max':3.0}),1,
+      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
                                  'nature':'LOMDCT'})),
 #          ((XMDCTBDB,{'wall':False}),
 #           1,

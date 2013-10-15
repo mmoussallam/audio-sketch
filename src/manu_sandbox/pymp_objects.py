@@ -15,13 +15,14 @@ class PenalizedMDCTDico(Dico):
     """ inherit from Dico, apply a penalty mask based on 
     a Boltzmann machine model (biais + co-occurence) """
     
-    def __init__(self,scales, biaises, Ws, lambdas, **kwargs):
+    def __init__(self,scales, biaises, Ws, lambdas,debug_level=0, **kwargs):
         # caling superclass constructor
         
         super(PenalizedMDCTDico,self).__init__(scales, **kwargs)
         self.biaises = biaises
         self.ws = Ws
         self.lambdas = lambdas
+        self.debug = debug_level
         
     def initialize(self, residual_signal):
         ''' Create the collection of blocks specified by the MDCT sizes '''
@@ -31,7 +32,8 @@ class PenalizedMDCTDico(Dico):
         self.ending_touched_index = -1
         for scale, biais, Ws , lambd in zip(self.sizes, self.biaises, self.ws, self.lambdas):
             self.blocks.append(PenalizedMDCTBlock(scale,
-                                           residual_signal, biais, Ws, lambd))
+                                           residual_signal, biais, Ws, lambd,
+                                           debug_level=self.debug))
 
     def get_best_atom(self, debug):
         if self.best_current_block == None:

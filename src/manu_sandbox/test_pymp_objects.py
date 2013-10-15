@@ -35,7 +35,7 @@ Ws = []
 for s in scales:
 #    biaises.append(np.ones((s,)))
 #    biaises.append(1.0/np.arange(1.,float(s)/2))    
-    biais = np.maximum(0.001, 1.0/np.linspace(1.,float(s)/2, s/2))
+    biais = np.maximum(0.00001, 1.0/np.linspace(1.,float(s)/2, s/2))
 #    biais = np.maximum(0.001, np.linspace(1, 0.0,s/2))
 #    biais = np.zeros((s/2,))
     biaises.append(biais)

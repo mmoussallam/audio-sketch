@@ -400,7 +400,8 @@ class XMDCTSparseSketch(AudioSketch):
                        'nature': 'MDCT',
                          'n_atoms': 1000,
                          'SRR': 30,
-                         'pad':True}
+                         'pad':True,
+                         'debug':0}
 
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -466,7 +467,7 @@ class XMDCTSparseSketch(AudioSketch):
                          self.params['n_atoms'],
                          silent_fail=True,
                          pad=self.params['pad'],
-                         debug=0)[0]
+                         debug=self.params['debug'])[0]
 
     def represent(self, fig=None, sparse=False):
         if fig is None:
