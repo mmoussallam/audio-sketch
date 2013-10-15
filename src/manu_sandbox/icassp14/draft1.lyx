@@ -659,7 +659,8 @@ p(s_{i}=1)=\frac{1}{1+\exp\left(\frac{-\Delta E_{i}}{T}\right)}
 
 \end_inset
 
-
+in our case however, we are going to have a simpler expression since we
+ are going to assume that we know the state of all the others units
 \end_layout
 
 \begin_layout Standard
