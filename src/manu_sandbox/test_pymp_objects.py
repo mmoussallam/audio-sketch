@@ -23,26 +23,32 @@ exemp_sig = Signal(str(file_names[0]), mono=True, normalize=True)
 exemp_sig.crop(0, 4*8192)
 exemp_sig.pad(4*8192)
 # Standard decomposition
-scales = [128,1024,8192]
+scales = [2048]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
 nb_atoms = 100
-l_lambda = 10.0
+l_lambda = 0.1
 
 # let us put some 1/f biais
 biaises = []
 Ws = []
 for s in scales:
-#    biaises.append(np.ones((s,)))
+    biais = np.zeros((s/2,))
 #    biaises.append(1.0/np.arange(1.,float(s)/2))    
-    biais = np.maximum(0.00001, 1.0/np.linspace(1.,float(s)/2, s/2))
+#    biais = np.maximum(0.00001, 1.0/np.linspace(1.,float(s)/2, s/2))
 #    biais = np.maximum(0.001, np.linspace(1, 0.0,s/2))
 #    biais = np.zeros((s/2,))
     biaises.append(biais)
 #    W = (2.0/float(nb_atoms))*np.eye(s/2,s/2)
+#    W = np.zeros((s/2,s/2))
+    # forbid frequency neighborhood: put large values close to the diagonal
     W = np.zeros((s/2,s/2))
+    for k in range(-int(2*np.log2(s)),int(2*np.log2(s))):
+        W += np.eye(s/2,s/2,k)
+    
     Ws.append(W)
 
+print "Start"
 std_dico = Dico(scales)
 pen_dico = PenalizedMDCTDico(scales, biaises, Ws,
                              len(scales)*[l_lambda])
@@ -66,11 +72,11 @@ print std_app
 print pen_app
 print spr_app
 
-plt.figure()
-plt.plot(np.abs(pen_dico.blocks[1].projs_matrix))
-plt.plot(pen_dico.blocks[1].pen_mask,'r')
-plt.plot(np.abs(pen_dico.blocks[1].projs_matrix) - l_lambda* pen_dico.blocks[1].pen_mask,'k--')
-#plt.show()
+#plt.figure()
+#plt.plot(np.abs(pen_dico.blocks[1].projs_matrix))
+#plt.plot(pen_dico.blocks[1].pen_mask,'r')
+#plt.plot(np.abs(pen_dico.blocks[1].projs_matrix) - l_lambda* pen_dico.blocks[1].pen_mask,'k--')
+##plt.show()
 
 plt.figure()
 plt.subplot(221)

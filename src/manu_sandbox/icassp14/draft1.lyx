@@ -478,7 +478,7 @@ cy plane learned on a base, and the keys distribution.
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -599,7 +599,7 @@ To test this assumption we can design an algorithm that will target the
 \end_layout
 
 \begin_layout Standard
-This is NP hard, the litterature can be understood as suboptimal algorithm
+This is NP hard, the literature can be understood as suboptimal algorithm
  on this problem:
 \end_layout
 
@@ -628,6 +628,41 @@ p(s)\propto\exp(b^{T}s+s^{T}Ws)
 
 \end_inset
 
+This model seems fitted for our case since we can experimentally observe
+ both the biais 
+\begin_inset Formula $b$
+\end_inset
+
+ and the interaction between atoms captured in the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix.
+ More importantly, we can evaluate the probability of an atoms state using
+ the difference of energy:
+\begin_inset Formula 
+\[
+\Delta E_{i}=\sum_{j}w_{ij}+b_{i}
+\]
+
+\end_inset
+
+and the notion of Temperature 
+\begin_inset Formula $T$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+p(s_{i}=1)=\frac{1}{1+\exp\left(\frac{-\Delta E_{i}}{T}\right)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 with 
 \begin_inset Formula $b$
 \end_inset
@@ -642,10 +677,31 @@ with
 \end_inset
 
  of its frequency, time localization and length.
- We can assume separability of these internal variables:
+ We are going to assume separability of 
+\begin_inset Formula $f$
+\end_inset
+
+ and 
+\begin_inset Formula $t$
+\end_inset
+
+ marginalized over the scale:
+\begin_inset Formula 
+\begin{eqnarray*}
+p(f,t,l) & = & p(f,t|l)p(l)\\
+ & = & p(f|l)p(t|l)p(l)
+\end{eqnarray*}
+
+\end_inset
+
+ then we have a standard model for 
+\begin_inset Formula $p(l)$
+\end_inset
+
+ and we set Boltzmann machines on the marginal distributions
 \begin_inset Formula 
 \[
-p(\phi_{i}(f_{i},t_{i},l_{i}))=p(f_{i})p(t_{i})p(l_{i})
+p(f,|l)\propto\exp(b_{f}s+sW_{f}s)
 \]
 
 \end_inset
@@ -715,6 +771,66 @@ with
 \end_inset
 
  being the index of the atom just selected.
+\end_layout
+
+\begin_layout Subsection
+Particular cases
+\end_layout
+
+\begin_layout Standard
+A particular case is of course when 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+ is set to zero, we come back to the Cotton2010 algorithm.
+ In order to get Wang2003 results, what ca we do? we can put 
+\begin_inset Formula $\infty$
+\end_inset
+
+ in neighborhood cells of the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix which basically will prevent the selection of atoms in the direct
+ neighborhood.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/KeyPoints_and_pairs.pdf
+	width 16cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Keypoints and pairs built with Wang03, Cotton10 and Ours 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
