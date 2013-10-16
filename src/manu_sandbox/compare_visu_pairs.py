@@ -68,8 +68,8 @@ Ws = []
 lambdas = []
 for s in scales:    
     # ultra penalize low frequencies
-    biais = np.linspace(1.0,0.0,s/2)
-#    biais = np.zeros((s/2,))
+#    biais = np.linspace(1.0,0.0,s/2)
+    biais = np.zeros((s/2,))
 #    biais = np.maximum(0.00001, biais)    
     biaises.append(biais)
     W = np.zeros((s/2,s/2))
@@ -77,7 +77,7 @@ for s in scales:
     for k in range(-s/32,s/32):
         W += np.eye(s/2,s/2,k)
     Ws.append(W)
-    lambdas.append(1.0)
+    lambdas.append(3.0)
 
 M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
                                  'lambdas':lambdas,

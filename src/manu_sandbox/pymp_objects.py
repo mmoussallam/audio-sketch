@@ -35,14 +35,57 @@ class PenalizedMDCTDico(Dico):
                                            residual_signal, biais, Ws, lambd,
                                            debug_level=self.debug))
 
-    def get_best_atom(self, debug):
-        if self.best_current_block == None:
-            raise ValueError("no best block constructed, make sure inner product have been updated")
+    def update(self, residualSignal, iteratioNumber=0, debug=0):
+        ''' Update the projections in each block, only where it needs to be done as specified '''
+        self.max_block_score = 0
+        self.best_current_block = None
+        
+        # update each block
+        for block in self.blocks:
+            startingTouchedFrame = int(
+                math.floor(self.starting_touched_index / (block.scale / 2)))
+            if self.ending_touched_index > 0:
+                endingTouchedFrame = int(math.floor(self.ending_touched_index /
+                                        (block.scale / 2))) + 1  # TODO check this
+            else:
+                endingTouchedFrame = -1
+            _Logger.info("block: " + str(block.scale) + " : " +
+                         str(startingTouchedFrame) + " " + str(endingTouchedFrame))
 
+            block.update(
+                residualSignal, startingTouchedFrame, endingTouchedFrame)
+
+            if abs(block.max_value) > self.max_block_score:
+#                print block.max_value
+                self.max_block_score = abs(block.max_value)
+                self.best_current_block = block
+
+    def get_best_atom(self, debug):
+        if self.best_current_block == None:            
+#            import matplotlib.pyplot as plt
+#            plt.figure()
+#            for bI, b in enumerate(self.blocks):
+#                plt.subplot(len(self.blocks),1, bI+1)
+#                plt.plot(b.pen_projs_matrix)
+#                plt.plot(b.projs_matrix,'k--')
+#            plt.show()
+#            raise ValueError("no best block constructed, make sure inner product have been updated")
+            print "FALLBACK MODE : the penalization has produced a weird result"        
+            for block in self.blocks:
+                self.best_score_tree = 0
+                self.pen_projs_matrix = 0
+                bmax = np.abs(block.projs_matrix).max()
+                if bmax > self.max_block_score:
+#                    print bmax
+                    self.best_current_block = block
+                    block.maxIdx = np.abs(block.projs_matrix).argmax()
+                    block.max_value = block.projs_matrix[block.maxIdx]
+                    
         if debug > 2:
             self.best_current_block.plot_proj_matrix()
 
         best_atom = self.best_current_block.get_max_atom()
+#        print best_atom
         for blocki in range(len(self.blocks)):            
             self.blocks[blocki].update_mask(best_atom)
 
@@ -52,7 +95,9 @@ class PenalizedMDCTBlock(Block):
     """ inherit from Block, change the selection by using
     a penalty based on a predefined occurence matrix W 
     
-    Should not need to modify something else than the compute_transform
+    Given a Wf matrix and a Wt matrix that will associate a weight
+    to any chosen atom to all the projection: use this to penalize the 
+    normalized projections
     """
     
     def __init__(self, length=0, res_sig=None, biais=None, W=None, lambd=0.01,
@@ -71,6 +116,7 @@ class PenalizedMDCTBlock(Block):
         self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
         self.projs_matrix = np.zeros(len(self.framed_data_matrix))
+        self.pen_projs_matrix = np.zeros(len(self.framed_data_matrix))
         if biais is None:
            self.biais = np.zeros_like(self.projs_matrix) 
         else:
@@ -106,7 +152,29 @@ class PenalizedMDCTBlock(Block):
             add_term = add_term[:self.projs_matrix.shape[0]]  
             
             self.pen_mask += add_term
-    
+            
+    def find_max(self):
+        """Search among the inner products the one that maximizes correlation
+        the best candidate for each frame is already stored in the best_score_tree """
+        treeMaxIdx = self.best_score_tree.argmax()
+        # get the max in the penalized projection
+        maxIdx = self.pen_projs_matrix[treeMaxIdx * self.scale /
+            2: (treeMaxIdx + 1) * self.scale / 2].argmax()
+        
+#        if maxIdx==0:
+#            import matplotlib.pyplot as plt
+#            plt.figure()
+#            plt.plot(self.best_score_tree)
+##            plt.show()
+#            plt.figure()
+#            plt.plot(self.pen_projs_matrix)
+#            plt.plot(self.projs_matrix)
+#            plt.show()
+        
+        self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
+        self.max_value = self.projs_matrix[self.maxIdx]
+#        print treeMaxIdx, maxIdx, self.maxIdx, self.max_value
+            
     # inner product computation through MDCT
     def compute_transform(self, startingFrame=1, endFrame=-1):
         """ inner product computation through MDCT """
@@ -120,21 +188,29 @@ class PenalizedMDCTBlock(Block):
         if startingFrame < 1:
             startingFrame = 2
 
-        # @TODO REMOVE: ONLY FOR BENCHMARKING
-        self.nb_up_frame += endFrame-startingFrame
-        # Wrapping C code call for fast implementation
-#        if self.use_c_optim:
+        # normalize the data
+#        res_norm = np.linalg.norm(self.framed_data_matrix)
+#        self.framed_data_matrix /= res_norm 
+        entropies = np.log(1.0+np.exp(-self.pen_mask))/(1.0+np.exp(-self.pen_mask)) - (np.log(2)/2.0)
+#        entropies = -self.pen_mask
+#        import matplotlib.pyplot as plt
+#        plt.figure()
+#        plt.plot(entropies)       
+#        plt.plot(self.pen_mask,'r--') 
+#        plt.show()
         
-        # Specificity: Use the updated penalty mask        
+        #Specificity: Use the updated penalty mask        
         try:
-            parallelProjections.project_penalized_mdct(self.framed_data_matrix, self.best_score_tree,
-                                             self.projs_matrix,
-                                             self.pen_mask,
-                                             self.locCoeff,
-                                             self.post_twid_vec,
-                                             startingFrame,
-                                             endFrame,
-                                             self.scale, self.lambd)
+            parallelProjections.project_penalized_mdct(self.framed_data_matrix,
+                                                       self.best_score_tree,
+                                                     self.projs_matrix,
+                                                     self.pen_projs_matrix,
+                                                     entropies,
+                                                     self.locCoeff,
+                                                     self.post_twid_vec,
+                                                     startingFrame,
+                                                     endFrame,
+                                                     self.scale, self.lambd)
 
         except SystemError:
             print sys.exc_info()[0]
@@ -143,3 +219,7 @@ class PenalizedMDCTBlock(Block):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             raise
+        
+        # remultiplies the projections
+#        self.framed_data_matrix *= res_norm
+#        self.projs_matrix *= res_norm

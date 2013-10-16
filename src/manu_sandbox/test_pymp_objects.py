@@ -27,7 +27,7 @@ scales = [2048]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
 nb_atoms = 100
-l_lambda = 0.1
+l_lambda = 2.8
 
 # let us put some 1/f biais
 biaises = []
@@ -54,10 +54,13 @@ pen_dico = PenalizedMDCTDico(scales, biaises, Ws,
                              len(scales)*[l_lambda])
 spread_dico = SpreadDico(scales, penalty=0, maskSize=3)
 
-
+t = time.time()
 std_app , std_dec, = greedy(exemp_sig, std_dico, 100, nb_atoms, debug=1, pad=False)
+print time.time() - t
 pen_app , pen_dec = greedy(exemp_sig, pen_dico, 100, nb_atoms, debug=1, pad=False)
+print time.time() - t
 spr_app , spr_dec = greedy(exemp_sig, spread_dico, 100, nb_atoms, debug=1, pad=False)
+print time.time() - t
 
 # tell us when atoms stops being alike
 t = 0
