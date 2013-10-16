@@ -18,7 +18,8 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
         
         # default parameters
         self.params['biaises'] = None
-        self.params['Ws'] = None
+        self.params['Wfs'] = None
+        self.params['Wts'] = None
         self.params['lambdas'] = None
         self.params['debug'] = 0
         # replace with user-provided
@@ -33,10 +34,10 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
                                                          1.0/np.linspace(1.,float(s)/2, s/2)))
 
         # default W: a zero matrix
-        if self.params['Ws'] is None:
-            self.params['Ws'] = []
+        if self.params['Wfs'] is None:
+            self.params['Wfs'] = []
             for s in self.params['scales']:
-                self.params['Ws'].append(np.zeros((s/2,s/2)))
+                self.params['Wfs'].append(np.zeros((s/2,s/2)))        
 
         # default lambdas = 1
         if self.params['lambdas'] is None:
@@ -48,7 +49,8 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
         """ only difference, use a specialy designed dictionary here """
         mdct_dico = PenalizedMDCTDico(self.params['scales'],
                                       self.params['biaises'], 
-                                      self.params['Ws'],
+                                      self.params['Wfs'],
+                                      self.params['Wts'],
                                       self.params['lambdas'],
                                       debug_level=self.params['debug'])
         

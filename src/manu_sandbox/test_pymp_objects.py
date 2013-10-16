@@ -23,15 +23,16 @@ exemp_sig = Signal(str(file_names[0]), mono=True, normalize=True)
 exemp_sig.crop(0, 4*8192)
 exemp_sig.pad(4*8192)
 # Standard decomposition
-scales = [2048]
+scales = [64,512,4096]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
 nb_atoms = 100
-l_lambda = 2.8
+l_lambda = 2.0
 
 # let us put some 1/f biais
 biaises = []
-Ws = []
+Wfs = []
+Wts= []
 for s in scales:
     biais = np.zeros((s/2,))
 #    biaises.append(1.0/np.arange(1.,float(s)/2))    
@@ -42,15 +43,17 @@ for s in scales:
 #    W = (2.0/float(nb_atoms))*np.eye(s/2,s/2)
 #    W = np.zeros((s/2,s/2))
     # forbid frequency neighborhood: put large values close to the diagonal
-    W = np.zeros((s/2,s/2))
+    Wf = np.zeros((s/2,s/2))
     for k in range(-int(2*np.log2(s)),int(2*np.log2(s))):
-        W += np.eye(s/2,s/2,k)
+        Wf += np.eye(s/2,s/2,k)
     
-    Ws.append(W)
+    Wfs.append(Wf)
+    Wts.append(8*(scales[-1]/s))
 
+print Wts
 print "Start"
 std_dico = Dico(scales)
-pen_dico = PenalizedMDCTDico(scales, biaises, Ws,
+pen_dico = PenalizedMDCTDico(scales, biaises, Wfs,Wts,
                              len(scales)*[l_lambda])
 spread_dico = SpreadDico(scales, penalty=0, maskSize=3)
 

@@ -764,7 +764,7 @@ Algorithm
 A standard MP with a modified selection rule specifying:
 \begin_inset Formula 
 \[
-\arg\max_{\phi}|\langle r^{n},\phi_{i}\rangle|+\lambda_{H}p(\phi_{i}|s_{n-1})
+\arg\max_{\phi}|\langle r^{n},\phi_{i}\rangle|(1+\lambda_{H}H(\phi_{i}|s_{n-1}))
 \]
 
 \end_inset

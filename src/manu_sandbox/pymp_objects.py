@@ -15,12 +15,13 @@ class PenalizedMDCTDico(Dico):
     """ inherit from Dico, apply a penalty mask based on 
     a Boltzmann machine model (biais + co-occurence) """
     
-    def __init__(self,scales, biaises, Ws, lambdas,debug_level=0, **kwargs):
+    def __init__(self,scales, biaises, Wfs, Wts, lambdas,debug_level=0, **kwargs):
         # caling superclass constructor
         
         super(PenalizedMDCTDico,self).__init__(scales, **kwargs)
         self.biaises = biaises
-        self.ws = Ws
+        self.wfs = Wfs
+        self.wts = Wts
         self.lambdas = lambdas
         self.debug = debug_level
         
@@ -30,9 +31,9 @@ class PenalizedMDCTDico(Dico):
         self.best_current_block = None
         self.starting_touched_index = 0
         self.ending_touched_index = -1
-        for scale, biais, Ws , lambd in zip(self.sizes, self.biaises, self.ws, self.lambdas):
+        for scale, biais, Ws, Wt , lambd in zip(self.sizes, self.biaises, self.wfs,self.wts, self.lambdas):
             self.blocks.append(PenalizedMDCTBlock(scale,
-                                           residual_signal, biais, Ws, lambd,
+                                           residual_signal, biais, Ws, Wt, lambd,
                                            debug_level=self.debug))
 
     def update(self, residualSignal, iteratioNumber=0, debug=0):
@@ -100,7 +101,7 @@ class PenalizedMDCTBlock(Block):
     normalized projections
     """
     
-    def __init__(self, length=0, res_sig=None, biais=None, W=None, lambd=0.01,
+    def __init__(self, length=0, res_sig=None, biais=None, Wf=None, Wt=None, lambd=0.01,
                  debug_level=None):
         
         if debug_level is not None:
@@ -122,7 +123,8 @@ class PenalizedMDCTBlock(Block):
         else:
            self.biais = biais
         
-        self.W = W 
+        self.Wf = Wf
+        self.Wt = Wt 
         
         self.lambd = lambd
         _Logger.info('new PenalizedMDCTBlock block constructed size : ' + str(self.scale))
@@ -135,24 +137,43 @@ class PenalizedMDCTBlock(Block):
         else:
             self.pen_mask = self.biais    
         self.add_mask = np.zeros_like(self.biais)
+        self.entropies = np.zeros_like(self.pen_mask)
         
     def update_mask(self, new_atom):
         """ Update the current mask by adding the contribution of pairwise products
             with the given index"""
-        if self.W is not None: 
+        if self.Wf is not None: 
             # convert last selected atom into an index
             # so far it will only be a frequency index
 #            freq = int(new_atom.reduced_frequency *  new_atom.fs)
             # The Ws matrix is assumed scaled to this frequency
             atom_idx_in_w =  int(new_atom.reduced_frequency * self.scale)
 #            print self.add_mask.shape, self.W.shape
-            self.add_mask += self.W[atom_idx_in_w,:]
+#            self.add_mask += self.W[atom_idx_in_w,:]
+            self.add_mask = self.Wf[atom_idx_in_w,:]
             # now tile it and add to the penalty mask term
-            add_term = np.tile(self.add_mask, self.frame_num+1) 
-            add_term = add_term[:self.projs_matrix.shape[0]]  
-            
+            add_term = np.tile(self.add_mask, self.frame_num)             
+#            add_term = add_term[:self.projs_matrix.shape[0]]  
             self.pen_mask += add_term
-            
+            self.entropies = self._entropy(self.pen_mask)
+            # replicate it only on neighboring frames: don't need to 
+            # penalize far from this point
+#            new_mask = self.Wf[atom_idx_in_w,:]
+#            trans_frame = new_atom.time_position / (self.scale/2)
+#            # HEURISTIC HERE: SHOULD BE REPLACED BY A Wt matrix
+#            if self.Wt is not None:
+#                nb_tile_frames = self.Wt
+#            else:
+#                nb_tile_frames = int(np.log2(new_atom.length))
+#            
+##            print nb_tile_frames, self.frame_num
+#            add_term = np.tile(new_mask, nb_tile_frames)
+#            start_pos = max(0,self.scale/4 + (trans_frame- nb_tile_frames/2)*(self.scale/2)) 
+#            
+##            print nb_tile_frames, start_pos
+#            self.pen_mask[start_pos:start_pos+add_term.shape[0]] += add_term
+#            self.entropies[start_pos:start_pos+add_term.shape[0]] = self._entropy(self.pen_mask[start_pos:start_pos+add_term.shape[0]])
+#    
     def find_max(self):
         """Search among the inner products the one that maximizes correlation
         the best candidate for each frame is already stored in the best_score_tree """
@@ -162,19 +183,22 @@ class PenalizedMDCTBlock(Block):
             2: (treeMaxIdx + 1) * self.scale / 2].argmax()
         
 #        if maxIdx==0:
-#            import matplotlib.pyplot as plt
-#            plt.figure()
-#            plt.plot(self.best_score_tree)
-##            plt.show()
-#            plt.figure()
-#            plt.plot(self.pen_projs_matrix)
-#            plt.plot(self.projs_matrix)
-#            plt.show()
+#        import matplotlib.pyplot as plt
+##            plt.figure()
+##            plt.plot(self.best_score_tree)
+###            plt.show()
+#        plt.figure()
+#        plt.plot(self.pen_projs_matrix)
+#        plt.plot(self.projs_matrix)
+#        plt.show()
         
         self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
         self.max_value = self.projs_matrix[self.maxIdx]
 #        print treeMaxIdx, maxIdx, self.maxIdx, self.max_value
-            
+        
+    def _entropy(self, x):
+        return np.log(1.0+np.exp(-x))/(1.0+np.exp(-x)) - (np.log(2)/2.0)
+        
     # inner product computation through MDCT
     def compute_transform(self, startingFrame=1, endFrame=-1):
         """ inner product computation through MDCT """
@@ -191,21 +215,21 @@ class PenalizedMDCTBlock(Block):
         # normalize the data
 #        res_norm = np.linalg.norm(self.framed_data_matrix)
 #        self.framed_data_matrix /= res_norm 
-        entropies = np.log(1.0+np.exp(-self.pen_mask))/(1.0+np.exp(-self.pen_mask)) - (np.log(2)/2.0)
+#        self.entropies = np.log(1.0+np.exp(-self.pen_mask))/(1.0+np.exp(-self.pen_mask)) - (np.log(2)/2.0)
 #        entropies = -self.pen_mask
 #        import matplotlib.pyplot as plt
 #        plt.figure()
 #        plt.plot(entropies)       
 #        plt.plot(self.pen_mask,'r--') 
 #        plt.show()
-        
+#        
         #Specificity: Use the updated penalty mask        
         try:
             parallelProjections.project_penalized_mdct(self.framed_data_matrix,
                                                        self.best_score_tree,
                                                      self.projs_matrix,
                                                      self.pen_projs_matrix,
-                                                     entropies,
+                                                     self.entropies,
                                                      self.locCoeff,
                                                      self.post_twid_vec,
                                                      startingFrame,
@@ -223,3 +247,10 @@ class PenalizedMDCTBlock(Block):
         # remultiplies the projections
 #        self.framed_data_matrix *= res_norm
 #        self.projs_matrix *= res_norm
+
+    def draw_mask(self):
+        """ draw the mask """
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.imshow(self.entropies.reshape((self.scale/2,self.frame_num)))
+#        plt.show()
