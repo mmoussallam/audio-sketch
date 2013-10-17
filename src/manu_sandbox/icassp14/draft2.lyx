@@ -213,7 +213,7 @@ Our message can be summarized like this: One need a balance between the
  The former guarantees good recognition rates, while the latter provides
  robustness.
  State of the art techniques that concentrate on the first (feature-based
- fingerptints, Shazam method etc..) and try to maximize the entropy of the
+ fingerprints, Shazam method etc..) and try to maximize the entropy of the
  fingerprint distribution.
  Techniques concentrated on the second (Cotton and Ellis using MP, Baluja
  using Wavelet Thresholding, etc) experience higher robustness levels but
@@ -231,6 +231,10 @@ Sparse Representation, Audio Fingerprinting
 
 \begin_layout Section
 Introduction
+\end_layout
+
+\begin_layout Subsection
+Standard audio fingerprinting approaches
 \end_layout
 
 \begin_layout Standard
@@ -259,143 +263,401 @@ An audio fingerprint is a collection of signal-characteristic features that
  present some robustness to distortions and can be efficiently compared
  to others.
  There are two big families of audio fingerprinting systems, the first one
- adopts a bag if features approach and draw low-dimensional vectors (eg.
- Chromas etc..
- 
+ adopts a bag of features approach.
+ A low-dimensional vector of features (eg.
+ Chroma, MFCC, etc..) is thus used as the fingerprint.
+ It has essentially been proposed in the Phillips system 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Haitsma"
 
 \end_inset
 
-).
- 
+ with binarized Chroma.
+ A review of such methods can be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cano_review"
+
+\end_inset
+
+ and more recent avatars are based on finer frequency models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Betser_article,Dupraz_article"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-The second one has first emerged with the work of Wang03 and is based on
- the idea of selecting points of interest in a Time-Frequency representation,
- pairing them and using each of these 
+The second family of methods is similar in spirit to some feature extraction
+ methods developed in image processing (ref vers SIFT?).
+ It has first emerged with the work of Wang 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+ and is based on the idea of selecting a subset of 
 \emph on
-keys
+keypoints
+\emph default
+ in a Time-Frequency representation, pairing them to form 
+\emph on
+landmarks
+\emph default
+ and using each of these 
+\emph on
+landmarks
 \emph default
  as an index in a structured database (e.g.
- a hash-table).
- This approach has led to the well known Shazam system 
+ a hash-table or any fast indexing system).
+ This approach gave birth to the well known Shazam system 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Wang_com"
 
 \end_inset
 
-, but also to the work of Baluja
+, but also led to the works of Baluja
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Baluja2007"
 
 \end_inset
 
-, Cotton
+, Cotton and Ellis
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Cotton2010"
 
 \end_inset
 
- etc.
- It is very similar to the SIFT descriptors computed in image processing.
+ among others.
+ While in his seminal work 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+, Wang selected 
+\emph on
+keypoints
+\emph default
+ as local maxima in a simple spectrogram, Baluja proposes to threshold wavelets
+ coefficients, Cotton and Ellis 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ use a greedy algorithm on a multiscale Gabor dictionary and Fenet 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+ propose a logarithmic transform instead of windowed Fourier.
 \end_layout
 
 \begin_layout Standard
-We propose a general framework for this family of methods, using the formalism
- inherited from the dictionary based audio processing community.
- Indeed, such methods share a common architecture to build a fingerprint
-\end_layout
+All of these methods share a common formalism, that is conveniently exposed
+ using a dictionary-based point of view.
+ Given a dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
 
-\begin_layout Itemize
-Select points of interest among a collection of possible ones
-\end_layout
+, one seeks a combination of 
+\begin_inset Formula $k$
+\end_inset
 
-\begin_layout Itemize
-Build Keys as the pairing of neighboring points
-\end_layout
+ elements of 
+\begin_inset Formula $\Phi$
+\end_inset
 
-\begin_layout Itemize
-Use an efficient search on keys
-\end_layout
+ (labeled 
+\emph on
+atoms
+\emph default
+) that can be efficiently used as 
+\emph on
+keypoints
+\emph default
+ in a fingerprinting system.
+ State of the art methods, mainly proposes different dictionaries (e.g.
+ Gabor 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com"
 
-\begin_layout Standard
-This objectives are threefold:
-\end_layout
+\end_inset
 
-\begin_layout Itemize
-Select as few points as necessary (more keys=higher rate/memory consumption)
-\end_layout
+, Wavelets
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Baluja2007"
 
-\begin_layout Itemize
-Select points that keys are robust to small distortions 
-\end_layout
+\end_inset
 
-\begin_layout Itemize
-Build discriminative keys so that to different signals do not share to many
- keys
-\end_layout
+, Union of Gabor
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
 
-\begin_layout Section
-Audio Fingerprints
-\end_layout
+\end_inset
 
-\begin_layout Subsection
-Problem statement and metrics
-\end_layout
-
-\begin_layout Standard
-In this study we're interested in the object recognition problem which is
- a particular audio fingerprint case.
- Given a database of sounds, we want to be able to quickly find an object
- in it.
- Binary Metric: is it rightfully located or not.
- Parameters: 1) size of base (number of keys) 2) computation time.
-\end_layout
-
-\begin_layout Subsection
-State of the art techniques
-\end_layout
-
-\begin_layout Standard
-There are many many studies on the subject.
- Nowadays, people agree to consider the Shazam method (at least the one
- described in the 2003 paper) as the most effective.
- Issues:
-\end_layout
-
-\begin_layout Itemize
-Noise sensitivity
-\end_layout
-
-\begin_layout Itemize
-No reconstruction
-\end_layout
-
-\begin_layout Subsection
-Dictionary based techniques
-\end_layout
-
-\begin_layout Standard
-The one presented in [Cotton/Ellis2010] is based on pairs of MP atoms.
- Even simpler the one in 
+, MDCT 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Moussallam2012c"
 
 \end_inset
 
-.
- More generally we can include Shazam in the dictionary-based method: local
- peak-picking in a Gabor dictionary then pairs of points are used as keys.
- Here we can show the probability distribution of the points in the time-frequen
-cy plane learned on a base, and the keys distribution.
+, Logarithmic 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+..) and selection algorithms (Local Peak Picking 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com,ismir"
+
+\end_inset
+
+, Thresholding 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Baluja2007"
+
+\end_inset
+
+, Matching Pursuit 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010,Moussallam2012c"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+A unifying framework
+\end_layout
+
+\begin_layout Standard
+Quite naturally, one would hope to design a unifying framework for all these
+ methods.
+ Mainly what distinguish them is the stress that is imposed either on the
+ robustness of the landmarks or their discriminative power.
+ A robust landmark is one that remain unaltered by distortions such as additive
+ noise, compression, time or pitch shifting etc.
+ The discriminative power is harder to quantize, but will directly be linked
+ to recognition performances.
+ A landmark is discriminative when it is highly characteristic of an objects
+ fingerprint, that is, it is unlikely to appear in the fingerprint of an
+ object that is fairly different.
+\end_layout
+
+\begin_layout Standard
+Unfortunately, robustness and discriminative power seem to be concurrent
+ objectives.
+ Indeed, such discriminant information will be found in the high frequencies
+ of audio signals, but these frequencies are the most easily altered by
+ distortions.
+ Additionally, for the search to be efficient, the number of keypoints and
+ landmarks must be kept as low as possible.
  
+\end_layout
+
+\begin_layout Standard
+In this work, we first propose a formulation of the fingerprint design problem
+ as a multi-objective optimization of a dictionary-based processing system.
+ Then we introduce a proxy of the discriminative power using information
+ theoretic tools.
+ Using a structured sparsity model for the keypoints (e.g.
+ atoms of the dictionary) one can model the probability of selecting a keypoint
+ and even the probability of their combinations which allows to use entropy
+ measure to characterize the quantity of information carried by a single
+ landmark.
+ We then propose a general greedy algorithm to build (suboptimal) solutions
+ and show that some particular parameter sets corresponds to state of the
+ art algorithm described above.
+\end_layout
+
+\begin_layout Standard
+Finally, we expose on some real scale fingerprint-based recognition experiments,
+ that is it possible to reach better points in a pareto diagram, given the
+ right knowledge is introduced in the model, mainly by learning the landmark
+ distribution parameters on real data.
+\end_layout
+
+\begin_layout Section
+Dictionary Based Audio Fingerprints
+\end_layout
+
+\begin_layout Subsection
+Problem statement
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\boldsymbol{y}\in\mathbb{E}^{N}$
+\end_inset
+
+ be a 
+\begin_inset Formula $N$
+\end_inset
+
+- dimensional discrete signal (
+\begin_inset Formula $\boldsymbol{E}=\mathbb{R}$
+\end_inset
+
+ or 
+\begin_inset Formula $\mathbb{C}$
+\end_inset
+
+) and 
+\begin_inset Formula $\boldsymbol{\Phi}=\{\phi_{i}\}_{i=1..M}$
+\end_inset
+
+ a dictionary of 
+\begin_inset Formula $M$
+\end_inset
+
+ 
+\emph on
+atoms 
+\emph default
+
+\begin_inset Formula $\boldsymbol{\phi}_{i}$
+\end_inset
+
+ of same dimension than 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+, one speaks of a 
+\emph on
+representation
+\emph default
+ 
+\begin_inset Formula $\hat{y}$
+\end_inset
+
+ of 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ in 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ as a linear combinations of the atoms: 
+\begin_inset Formula 
+\begin{equation}
+\hat{y}=\sum_{i=1}^{M}\alpha_{i}\phi_{i}
+\end{equation}
+
+\end_inset
+
+where the weights coefficients stacked in an 
+\begin_inset Formula $M-$
+\end_inset
+
+dimensional vector 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ now carry the information.
+ The nature and quantity of information conveyed by each (or a combination)
+ of these 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ is entirely determined by how the dictionary is designed and what
+\emph on
+ a priori 
+\emph default
+knowledge on the signal is available.
+ 
+\end_layout
+
+\begin_layout Standard
+In an audio fingerprint context, it is interesting to further decompose
+ 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ as the element-wise product 
+\begin_inset Formula $\boldsymbol{\alpha}=\boldsymbol{x}\odot\boldsymbol{s}$
+\end_inset
+
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is real or complex valued and 
+\begin_inset Formula $\boldsymbol{s}$
+\end_inset
+
+ is called the support and restricted to binary values.
+ 
+\begin_inset Formula $s_{i}=$
+\end_inset
+
+1 if the atom is selected as a keypoint and zero otherwise.
+\end_layout
+
+\begin_layout Paragraph
+Formalizing fingerprint properties as constraints
+\end_layout
+
+\begin_layout Standard
+In this formalism, limiting the number of keypoints can be straightforwardly
+ transcribed as a sparsity constraint on 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ The robustness property is harder to characterize since different types
+ of distortions may occur.
+ For the sake of clarity, let us consider only the case of additive white
+ Gaussian noise.
+ The best way to resist such distortion is to select atoms minimizing a
+ reconstruction error.
+\end_layout
+
+\begin_layout Standard
+More generally, most types of robustness can be enforced by constraints
+ of 
+\emph on
+descriptiveness
+\emph default
+ of the keypoints.
+ Expressing the discriminative power, however, is more challenging.
+ This can be done by using information theoretic metrics in general and
+ entropy in particular.
+ Figure 1 displays the empirical distribution of keypoints selected with
+ C10 algorithm in the Time-Frequency plane.
+ Clearly, low-frequency points have a much higher probability of being selected.
+ Intuitively, they provide a less discriminant information on a signal that
+ the least probables ones.
+ If one is able to fully evaluate the probability distribution of the support
+ then one would want to constrain the entropy to be the highest possible.
 \end_layout
 
 \begin_layout Standard
@@ -433,6 +695,48 @@ Empirical distribution of the first 100 atoms observed on 600 audio segments
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The problem of finding 
+\begin_inset Formula $k$
+\end_inset
+
+ keypoints that have maximum descriptive and discriminative potentials can
+ be stated as :
+\begin_inset Formula 
+\begin{equation}
+\min_{s}\|y-\sum_{i=1}^{M}x_{i}\cdot s_{i}\cdot\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k
+\end{equation}
+
+\end_inset
+
+here 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ is the entropy of the vector 
+\begin_inset Formula $s$
+\end_inset
+
+ given the dictionary.
+\end_layout
+
+\begin_layout Subsection
+State of the art techniques
+\end_layout
+
+\begin_layout Standard
+This is NP hard, the literature can be understood as suboptimal algorithm
+ on this problem:
+\end_layout
+
+\begin_layout Itemize
+Shazam: ad-hoc method to maximize the entropy
+\end_layout
+
+\begin_layout Itemize
+Cotton, Baluja, Moussallam: no entropy penalty: all on robustness
 \end_layout
 
 \begin_layout Standard
@@ -478,73 +782,12 @@ Empirical Co-occurrence matrix (sparse pattern)
 Proposed Framework
 \end_layout
 
-\begin_layout Standard
-MP-based fingerprints are robust to noise, but less discriminative.
- TF-spreaded fingerprints are more discriminative but less robust.
- There seem to be a potential equilibrium between both constrains.
-\end_layout
-
-\begin_layout Standard
-To test this assumption we can design an algorithm that will target the
- following problem:
-\begin_inset Formula 
-\[
-\min\lambda_{R}\|y-\sum_{i=1}^{M}\alpha_{i}\phi_{i}\|_{2}+\lambda_{H}H_{\Phi}(\alpha)
-\]
-
-\end_inset
-
- where 
-\begin_inset Formula $H_{\Phi}(\alpha)$
-\end_inset
-
- is the entropy of the vector 
-\begin_inset Formula $\alpha$
-\end_inset
-
- given the dictionary.
- Additionally on can think of a practical constraint on the 
-\begin_inset Formula $\ell_{0}$
-\end_inset
-
- norm of 
-\begin_inset Formula $\alpha$
-\end_inset
-
-:
-\begin_inset Formula 
-\[
-\min\lambda_{R}\|y-\sum_{i=1}^{M}\alpha_{i}\phi_{i}\|_{2}+\lambda_{H}H_{\Phi}(\alpha)\mbox{ s.t }\|\alpha\|_{0}=k
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-This is NP hard, the literature can be understood as suboptimal algorithm
- on this problem:
-\end_layout
-
-\begin_layout Itemize
-Shazam method : Local Peak Picking
-\end_layout
-
-\begin_layout Itemize
-Cotton/Ellis method: put 
-\begin_inset Formula $\lambda_{H}$
-\end_inset
-
-to zero
-\end_layout
-
 \begin_layout Subsection
 Structured Sparsity model
 \end_layout
 
 \begin_layout Standard
-Using a Boltzmann machine as the distribution of the index:
+Using a Boltzmann machine as the distribution of the support:
 \begin_inset Formula 
 \[
 p(s)\propto\exp(b^{T}s+s^{T}Ws)
@@ -703,7 +946,7 @@ with
 \end_inset
 
  and the second term simply add up the pairwise codependency of an atom
- with all previsously selected atoms.
+ with all the previously selected ones.
  A nice property is that this second term is quite simple to update:
 \begin_inset Formula 
 \begin{eqnarray*}
@@ -744,9 +987,9 @@ A particular case is of course when
 
 \begin_layout Standard
 \begin_inset Float figure
-wide false
+wide true
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -785,6 +1028,15 @@ Experiments
 \end_layout
 
 \begin_layout Standard
+In this study we're interested in the object recognition problem which is
+ a particular audio fingerprint case.
+ Given a database of sounds, we want to be able to quickly find an object
+ in it.
+ Binary Metric: is it rightfully located or not.
+ Parameters: 1) size of base (number of keys) 2) computation time.
+\end_layout
+
+\begin_layout Standard
 So we must see how the modified criterion affects the recognition rate and
  robustness.
  We can compare to Shazam [Wang2003], [Cotton/Ellis2010] (pairs of MP atoms)
@@ -796,13 +1048,23 @@ Conclusion
 \end_layout
 
 \begin_layout Standard
-Using a dictionary-based framwork, we can efficiently characterize the concurren
-t objectives that a recognition system must deal with.
+Using a dictionary-based framework, we can efficiently characterize the
+ concurrent objectives that a recognition system must deal with.
  The problem can be stated as: how to select a sparse set of elements that
  are effective at describing my signal (e.g.
  reconstruct it) and allow me to discriminate it from others.
  State of the art methods appears to be extremum points on a pareto front,
  we propose a greedy algorithm to reach other points on this front.
+ There is further work to be done with the structured sparsity model, especially
+ one could try a much more global optimization by using Bayesian versions
+ of the MP
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dremeau2012"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
