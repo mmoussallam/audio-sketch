@@ -484,7 +484,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 neighb_f = int(neigh.reduced_frequency * neigh.fs)
                 neighb_t = np.round((neigh.time_position + neigh.length/2) / neigh.fs, 3)
                 # New rule: keep only positive time differences
-                if (neighb_t <= t_anchor) or (neighb_f <= f1):
+                if (neighb_t < t_anchor) or (neighb_f <= f1):
                     continue
                 if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
                     continue

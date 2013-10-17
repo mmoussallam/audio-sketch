@@ -108,6 +108,9 @@ class FgptHandle(object):
         ''' retrieve the size on disk '''
         return os.stat(self.db_name).st_size        
     
+    def get_kv_size(self):
+        return self.dbObj.stat()['nkeys'] + self.dbObj.stat()['ndata']
+        
     def add(self, Pairs, fileIndex):
         ''' add all key/value pairs to base '''
         raise NotImplementedError("Not Implemented")

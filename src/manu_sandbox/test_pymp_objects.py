@@ -32,7 +32,7 @@ l_lambda = 2.0
 # let us put some 1/f biais
 biaises = []
 Wfs = []
-Wts= []
+Wts= [500,80,20]
 for s in scales:
     biais = np.zeros((s/2,))
 #    biaises.append(1.0/np.arange(1.,float(s)/2))    
@@ -48,7 +48,7 @@ for s in scales:
         Wf += np.eye(s/2,s/2,k)
     
     Wfs.append(Wf)
-    Wts.append(8*(scales[-1]/s))
+#    Wts.append(8*(scales[-1]/s))
 
 print Wts
 print "Start"

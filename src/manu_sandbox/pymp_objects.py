@@ -150,30 +150,33 @@ class PenalizedMDCTBlock(Block):
             atom_idx_in_w =  int(new_atom.reduced_frequency * self.scale)
 #            print self.add_mask.shape, self.W.shape
 #            self.add_mask += self.W[atom_idx_in_w,:]
-            self.add_mask = self.Wf[atom_idx_in_w,:]
-            # now tile it and add to the penalty mask term
-            add_term = np.tile(self.add_mask, self.frame_num)             
-#            add_term = add_term[:self.projs_matrix.shape[0]]  
-            self.pen_mask += add_term
-            self.entropies = self._entropy(self.pen_mask)
+#            self.add_mask = self.Wf[atom_idx_in_w,:]
+#            # now tile it and add to the penalty mask term
+#            add_term = np.tile(self.add_mask, self.frame_num)             
+##            add_term = add_term[:self.projs_matrix.shape[0]]  
+#            self.pen_mask += add_term
+#            self.entropies = self._entropy(self.pen_mask)
             # replicate it only on neighboring frames: don't need to 
             # penalize far from this point
-#            new_mask = self.Wf[atom_idx_in_w,:]
-#            trans_frame = new_atom.time_position / (self.scale/2)
-#            # HEURISTIC HERE: SHOULD BE REPLACED BY A Wt matrix
-#            if self.Wt is not None:
-#                nb_tile_frames = self.Wt
-#            else:
-#                nb_tile_frames = int(np.log2(new_atom.length))
-#            
-##            print nb_tile_frames, self.frame_num
-#            add_term = np.tile(new_mask, nb_tile_frames)
-#            start_pos = max(0,self.scale/4 + (trans_frame- nb_tile_frames/2)*(self.scale/2)) 
-#            
-##            print nb_tile_frames, start_pos
-#            self.pen_mask[start_pos:start_pos+add_term.shape[0]] += add_term
-#            self.entropies[start_pos:start_pos+add_term.shape[0]] = self._entropy(self.pen_mask[start_pos:start_pos+add_term.shape[0]])
-#    
+            new_mask = self.Wf[atom_idx_in_w,:]
+            trans_frame = new_atom.time_position / (self.scale/2)
+            # HEURISTIC HERE: SHOULD BE REPLACED BY A Wt matrix
+            if self.Wt is not None:
+                nb_tile_frames = self.Wt
+            else:
+                nb_tile_frames = int(np.log2(new_atom.length))
+            
+#            print nb_tile_frames, self.frame_num
+            add_term = np.tile(new_mask, nb_tile_frames)
+            start_pos = max(0,self.scale/4 + (trans_frame- nb_tile_frames/2)*(self.scale/2)) 
+            L = min(add_term.shape[0], self.pen_mask.shape[0]-start_pos)
+#            print nb_tile_frames, start_pos
+            self.pen_mask[start_pos:start_pos+L] += add_term[:L]
+            self.entropies[start_pos:start_pos+L] = self._entropy(self.pen_mask[start_pos:start_pos+L])
+#            import matplotlib.pyplot as plt
+#            plt.imshow(self.pen_mask[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
+#            plt.show()            
+
     def find_max(self):
         """Search among the inner products the one that maximizes correlation
         the best candidate for each frame is already stored in the best_score_tree """
@@ -251,6 +254,6 @@ class PenalizedMDCTBlock(Block):
     def draw_mask(self):
         """ draw the mask """
         import matplotlib.pyplot as plt
-        plt.figure()
-        plt.imshow(self.entropies.reshape((self.scale/2,self.frame_num)))
+#        plt.figure()
+        plt.imshow(self.pen_mask[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
 #        plt.show()

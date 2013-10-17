@@ -15,7 +15,7 @@ import matplotlib
 single_test_file1 = op.join(SND_DB_PATH,'jingles/panzani.wav')
 fs = 8000
 tempdir = '.'
-sparsity = 30
+sparsity = 40
 figure_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/figures')
 # let's take a signal and build the fingerprint with pairs of atoms or plain atoms
 
@@ -28,6 +28,8 @@ orig_sig.write(op.join(tempdir, 'orig.wav'))
 def _Process(fgpthandle, skhandle,nb_points):
     orig_sig.spectrogram(2048,256,ax=plt.gca(),order=0.5,log=False,cbar=False,
                          cmap=cm.bone_r, extent=[0,orig_sig.get_duration(),0, fs/2])
+    if skhandle.params.has_key('n_atoms'):
+        skhandle.params['n_atoms'] = nb_points
     skhandle.recompute(op.join(tempdir, 'orig.wav'))
     skhandle.sparsify(nb_points)
     fgpt = skhandle.fgpt(sparse=True)
@@ -68,8 +70,8 @@ M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall'
 
 biaises = []
 Ws = []
-Wt = [64,16,4]
-lambdas = [100,10,10]
+Wt = [600, 90, 20]
+lambdas = [10,10,10]
 for s in scales:    
     # ultra penalize low frequencies
 #    biais = np.linspace(1.0,0.0,s/2)
@@ -77,20 +79,20 @@ for s in scales:
 #    biais = np.maximum(0.00001, biais)    
     biaises.append(biais)
     W = np.zeros((s/2,s/2))
-#    for k in range(-int(2*np.log2(s)),int(2*np.log2(s))):
-    for k in range(-5,5):
+    for k in range(-int(np.log2(s)),int(np.log2(s))):
+#    for k in range(-5,5):
         W += np.eye(s/2,s/2,k)
     Ws.append(W)  
 #    Wt.append(5*(scales[-1]/s))  
 #    lambdas.append(10.0)
 
-M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
+M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':sparsity,
                                  'lambdas':lambdas,
                                  'biaises':biaises,
                                  'Wts':Wt,
                                  'Wfs':Ws,'pad':False,'debug':1})
 plt.subplot(133)
-_Process(M12_fgpthandle, M12_skhandle, 2*sparsity)
+_Process(M12_fgpthandle, M12_skhandle,2* sparsity)
 [f.freq_bin for f in M12_skhandle.rep.atoms]
 
 plt.ylabel('')
@@ -98,8 +100,20 @@ plt.yticks([])
 plt.subplots_adjust(left=0.08,bottom=0.09,right=0.98,top=0.95, wspace=0.09)
 plt.savefig(op.join(figure_path, 'KeyPoints_and_pairs.pdf'))
 
-#for bI, block in enumerate(M12_skhandle.rep.dico.blocks):
-#    plt.subplot(1, len(scales), bI+1)
-#    plt.imshow(block.pen_mask[:(block.scale/2)*block.frame_num].reshape((block.frame_num,block.scale/2)))
-
 plt.show()
+
+for bI, block in enumerate(M12_skhandle.rep.dico.blocks):
+    plt.subplot(1, len(scales), bI+1)    
+    block.draw_mask()
+    plt.colorbar()
+    
+plt.show()
+
+###### cprofile
+prof_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
+                                 'lambdas':lambdas,
+                                 'biaises':biaises,
+                                 'Wts':Wt,
+                                 'Wfs':Ws,'pad':False,'debug':1})
+import cProfile
+cProfile.runctx('prof_skhandle.sparsify(100)',globals(), locals())
