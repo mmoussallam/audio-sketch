@@ -56,6 +56,43 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
         
         return mdct_dico
     
+    def recompute(self, signal=None, **kwargs):
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        if signal is not None:
+            if isinstance(signal, str):
+                # TODO allow for stereo signals
+                signal = Signal(signal, normalize=True, mono=True)
+            self.orig_signal = signal
+
+        if self.orig_signal is None:
+            raise ValueError("No original Sound has been given")
+        
+        if self.params.has_key('fs'):            
+            self.orig_signal.downsample(self.params['fs'])
+#            print "Downsampling"
+            
+        if self.params.has_key('crop'):            
+            self.orig_signal.crop(0, self.params['crop'])
+#            print "Cropping"
+        
+        if self.params.has_key('pad'):
+            self.orig_signal.pad(self.params['pad'])
+#            print "Padding"
+            
+        self.params['fs'] = self.orig_signal.fs
+        dico = self._get_dico()
+
+        from PyMP import mp
+        self.rep = mp.mp(self.orig_signal,
+                         dico,
+                         self.params['SRR'],
+                         self.params['n_atoms'],
+                         silent_fail=True,
+                         pad=False,
+                         debug=self.params['debug'])[0]
+    
 if __name__ == "__main__":    
     
     SND_DB_PATH = os.environ['SND_DB_PATH']

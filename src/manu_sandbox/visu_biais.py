@@ -32,12 +32,12 @@ times = []
 
 
 # calibrate the atom number
-M = int(len(scales)*seg_dur*fs + 2*scales[-1])
+M = np.sum([s/2 * seg_dur*fs for s in scales])
 from scipy.sparse import dok_matrix
 #sp_mat = coo_matrix((M,M))
 #sp_mat = np.zeros((M,M), dtype=np.int8)
 # Coarse frequency dependency matrix
-
+print M
 freq_biais = []
 time_biais = []
 scale_biais = []

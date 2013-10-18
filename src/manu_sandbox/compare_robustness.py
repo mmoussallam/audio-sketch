@@ -73,14 +73,18 @@ def _Process(fgpthandle, skhandle,nb_points, snrs, ntest, n_segments):
             if n_processed_segments>=n_segments:
                 break
             sub_sig = l_sig.get_sub_signal(segIdx,1, mono=True)
-            noisescores[n_processed_segments,:,:] = _process_sig(fgpthandle, skhandle, sub_sig, snrs, ntest, nb_points)
+            try:
+                noisescores[n_processed_segments,:,:] = _process_sig(fgpthandle, skhandle, sub_sig, snrs, ntest, nb_points)
+            except:
+                print "Problem with filename, segment ",segIdx
+                continue
             n_processed_segments += 1
     return noisescores
 ###################################################################
 sparsity = 30
-ntest = 5
-snrs = [-5,0,5,10,20]#0,5,10,20]
-nsegs = 200
+ntest = 2
+snrs = [-10,-5,0,5,10,20,30]#0,5,10,20]
+nsegs = 600
 suffix = '%dsnrs_%dsegs_%dtests_%dsparsity'%(len(snrs),nsegs,ntest,sparsity)
 duration = seg_dur*nsegs
 plt.figure()
@@ -113,7 +117,7 @@ savemat(op.join(output_path,'C10_%s.mat'%suffix),{'scores':C10_scores,
                                                  'snrs':snrs})
 ##################### Proposed #######################
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1,10]
+Lambdas = [10,100]
 for l in Lambdas:
     M13_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs_%d.db'%l,load=False,**{'wall':False,
                                                                           'nb_neighbors_max':3,

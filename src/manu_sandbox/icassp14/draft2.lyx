@@ -281,7 +281,14 @@ key "Cano_review"
 
 \end_inset
 
- and more recent avatars are based on finer frequency models 
+ and more recent avatars are based on wavelet transforms 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Baluja2007"
+
+\end_inset
+
+ or finer frequency models 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Betser_article,Dupraz_article"
@@ -322,17 +329,17 @@ key "Wang_com"
 
 \end_inset
 
-, but also led to the works of Baluja
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Baluja2007"
-
-\end_inset
-
-, Cotton and Ellis
+, but also led to the works of Cotton and Ellis
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Cotton2010"
+
+\end_inset
+
+ and Fenet et al 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
 
 \end_inset
 
@@ -348,8 +355,7 @@ key "Wang"
 \emph on
 keypoints
 \emph default
- as local maxima in a simple spectrogram, Baluja proposes to threshold wavelets
- coefficients, Cotton and Ellis 
+ as local maxima in a simple spectrogram, Cotton and Ellis 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Cotton2010"
@@ -402,13 +408,6 @@ key "Wang,Wang_com"
 
 \end_inset
 
-, Wavelets
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Baluja2007"
-
-\end_inset
-
 , Union of Gabor
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -434,13 +433,6 @@ key "ismir"
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Wang,Wang_com,ismir"
-
-\end_inset
-
-, Thresholding 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Baluja2007"
 
 \end_inset
 
@@ -507,10 +499,6 @@ Finally, we expose on some real scale fingerprint-based recognition experiments,
 
 \begin_layout Section
 Dictionary Based Audio Fingerprints
-\end_layout
-
-\begin_layout Subsection
-Problem statement
 \end_layout
 
 \begin_layout Standard
@@ -622,7 +610,7 @@ In an audio fingerprint context, it is interesting to further decompose
 1 if the atom is selected as a keypoint and zero otherwise.
 \end_layout
 
-\begin_layout Paragraph
+\begin_layout Subsection
 Formalizing fingerprint properties as constraints
 \end_layout
 
@@ -651,13 +639,94 @@ descriptiveness
  Expressing the discriminative power, however, is more challenging.
  This can be done by using information theoretic metrics in general and
  entropy in particular.
- Figure 1 displays the empirical distribution of keypoints selected with
- C10 algorithm in the Time-Frequency plane.
- Clearly, low-frequency points have a much higher probability of being selected.
+ Audio signals often exhibit more energetic low than high-frequencies.
+ Corresponding keypoints thus have a higher probability of being selected.
  Intuitively, they provide a less discriminant information on a signal that
  the least probables ones.
  If one is able to fully evaluate the probability distribution of the support
- then one would want to constrain the entropy to be the highest possible.
+ then one would want to constrain the 
+\emph on
+entropy
+\emph default
+ to be the highest possible.
+\end_layout
+
+\begin_layout Standard
+The problem of finding 
+\begin_inset Formula $k$
+\end_inset
+
+ keypoints that have maximum descriptive and discriminative potentials can
+ thus be stated as :
+\begin_inset Formula 
+\begin{equation}
+\mathcal{P}_{\lambda,k}=\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
+\end{equation}
+
+\end_inset
+
+here 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ is the entropy of the vector 
+\begin_inset Formula $s$
+\end_inset
+
+ given the dictionary.
+\end_layout
+
+\begin_layout Subsection
+Probabilistic modeling of the sparse support
+\end_layout
+
+\begin_layout Standard
+By definition, 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ only exists when the probabilistic distribution of 
+\begin_inset Formula $s$
+\end_inset
+
+ is available.
+ Experimentally, one is able to characterize quite efficiently this distribution.
+ Let 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ be a time-frequency dictionary, and let us observe the solutions to 
+\begin_inset Formula $\mathcal{P}_{0,k}$
+\end_inset
+
+, that is the sparse reconstruction problem without entropic constraint.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Biais"
+
+\end_inset
+
+ displays the empirical distribution of keypoints selected with a algorithm
+ from the Matching Pursuit (MP 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Mallat_TSP1993"
+
+\end_inset
+
+) family as in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010,Moussallam2012c"
+
+\end_inset
+
+.
+ The dictionary is a union of 7 MDCT scales replicated such as to form a
+ highly overcomplete shift-invariant dictionary.
+ Atoms are uniformly selected in time while a strong biais on their frequency
+ localization can be observed.
 \end_layout
 
 \begin_layout Standard
@@ -680,12 +749,16 @@ status collapsed
 
 \begin_layout Plain Layout
 Empirical distribution of the first 100 atoms observed on 600 audio segments
- of 5 seconds each taken from the GTZAN dataset.
- The dictionary is a union of 7 MDCT scales replicated such as to form a
- highly overcomplete shift-invariant dictionary.
- Atoms are uniformly selected in time while a strong biais on frequencies
- can be observed.
-\end_layout
+ of 4 seconds each, taken from the GTZAN dataset.
+ Signals are downsampled to 8KHz, are of size 
+\begin_inset Formula $N=32000$
+\end_inset
+
+, the highly overcomplete dictionary is made of roughly 65 millions atoms.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Biais"
 
 \end_inset
 
@@ -697,46 +770,9 @@ Empirical distribution of the first 100 atoms observed on 600 audio segments
 
 \end_layout
 
-\begin_layout Standard
-The problem of finding 
-\begin_inset Formula $k$
 \end_inset
 
- keypoints that have maximum descriptive and discriminative potentials can
- be stated as :
-\begin_inset Formula 
-\begin{equation}
-\min_{s}\|y-\sum_{i=1}^{M}x_{i}\cdot s_{i}\cdot\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k
-\end{equation}
 
-\end_inset
-
-here 
-\begin_inset Formula $H_{\Phi}(s)$
-\end_inset
-
- is the entropy of the vector 
-\begin_inset Formula $s$
-\end_inset
-
- given the dictionary.
-\end_layout
-
-\begin_layout Subsection
-State of the art techniques
-\end_layout
-
-\begin_layout Standard
-This is NP hard, the literature can be understood as suboptimal algorithm
- on this problem:
-\end_layout
-
-\begin_layout Itemize
-Shazam: ad-hoc method to maximize the entropy
-\end_layout
-
-\begin_layout Itemize
-Cotton, Baluja, Moussallam: no entropy penalty: all on robustness
 \end_layout
 
 \begin_layout Standard
@@ -762,6 +798,13 @@ status collapsed
 
 \begin_layout Plain Layout
 Empirical Co-occurrence matrix (sparse pattern)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Covariance"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -769,13 +812,106 @@ Empirical Co-occurrence matrix (sparse pattern)
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+At en even deeper level, one can empirically observe the covariance matrix
+ of the support.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Covariance"
+
+\end_inset
+
+ shows the sparsity pattern of such matrix for a union of 3 MDCT scales
+ of length 8, 64 and 512ms.
+ Strong correlations can be observed that can be grouped in two categories:
+\end_layout
+
+\begin_layout Itemize
+Neighborhood correlations: keypoints close to each other in the time-frequency
+ plane are often jointly selected.
+\end_layout
+
+\begin_layout Itemize
+Harmonic correlations: in the larger scale, keypoints on harmonic frequencies
+ also have a higher probability of joint appearance.
+\end_layout
+
+\begin_layout Standard
+This basically tells us that landmarks build on neighboring and harmonically
+ related keypoints are less informative (i.e.
+ discriminative) than others.
+\end_layout
+
+\begin_layout Standard
+Problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
+
+\end_inset
+
+ is, in general, NP-hard to solve.
+ The literature can be understood as suboptimal methods to adress this problem:
+\end_layout
+
+\begin_layout Itemize
+The Shazam system 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang_com"
+
+\end_inset
+
+ and its extensions 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+, never explicitly expresses the entropic constraint.
+ However, their strategy is to ensure the selected keypoints are spread
+ all over the time-frequency plane.
+ Basically, this amounts to forbidding the construction of landmarks from
+ neighboring keypoints which are the less discriminative.
+ Overall, the local peak-picking strategy can be understood as an entropy-orient
+ed strategy and can lead to robustness issues.
+\end_layout
+
+\begin_layout Itemize
+Systems such as the one proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ put all the emphasis on the robustness to distortions.
+ Their landmarks are tailored for retrieval of highly distorted objects,
+ but it might be at the expense of their discriminativeness.
+\end_layout
+
+\begin_layout Standard
+Finally, let us draw a parallel with some fingerprinting techniques such
+ as the Distortion Discriminant Analysis exposed by Burges 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Burges2003"
+
+\end_inset
+
+, to our knowledge, would also fit in this framework but with a dictionary
+ learning paradigm.
 \end_layout
 
 \begin_layout Section
@@ -787,137 +923,190 @@ Structured Sparsity model
 \end_layout
 
 \begin_layout Standard
-Using a Boltzmann machine as the distribution of the support:
+Empirical evidence suggest the sparsity pattern of the support vector in
+ time-frequency dictionaries is highly structured.
+ Boltzmann machines seem to be the most expressive model for the distribution
+ of 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ 
 \begin_inset Formula 
-\[
+\begin{equation}
 p(s)\propto\exp(b^{T}s+s^{T}Ws)
-\]
+\end{equation}
 
 \end_inset
 
-This model seems fitted for our case since we can experimentally observe
- both the biais 
+This distribution has first been proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hinton1986"
+
+\end_inset
+
+.
+ It models the interaction in a graph of connected nodes (keypoints in our
+ case) using two parameters: a biais 
 \begin_inset Formula $b$
 \end_inset
 
- and the interaction between atoms captured in the 
-\begin_inset Formula $W$
-\end_inset
-
- matrix.
- More importantly, we can evaluate the probability of an atoms state using
- the difference of energy:
-\begin_inset Formula 
-\[
-\Delta E_{i}=\sum_{j}w_{ij}+b_{i}
-\]
-
-\end_inset
-
-and the notion of Temperature 
-\begin_inset Formula $T$
-\end_inset
-
- that can be dropped out for now.
-\begin_inset Formula 
-\[
-p(s_{i}=1)=\frac{1}{1+\exp\left(\frac{-\Delta E_{i}}{T}\right)}
-\]
-
-\end_inset
-
-in our case however, we are going to have a simpler expression since we
- are going to assume that we know the state of all the others units.
- Indeed, at iteration 
-\begin_inset Formula $n$
-\end_inset
-
- we know the set 
-\begin_inset Formula $\Gamma^{n}$
-\end_inset
-
- of already selected atom.
- A probability can thus be 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-p(s_{i}=1)=\frac{1}{1+\exp\left[-\left(\sum_{j\in\Gamma^{n}}w_{ij}+b_{i}\right)\right]}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-with 
-\begin_inset Formula $b$
-\end_inset
-
- being a biais and 
-\begin_inset Formula $W$
-\end_inset
-
- a correlation matrix between an atom and the others.
- To go a little further, an TF atom can be indexed by a triplet 
-\begin_inset Formula $(f,t,l)$
-\end_inset
-
- of its frequency, time localization and length.
- For the biais, we are going to assume separability of 
-\begin_inset Formula $f$
-\end_inset
-
- and 
-\begin_inset Formula $t$
-\end_inset
-
- marginalized over the scale:
-\begin_inset Formula 
-\begin{eqnarray*}
-p(f,t,l) & = & p(f,t|l)p(l)\\
- & = & p(f|l)p(t|l)p(l)
-\end{eqnarray*}
-
-\end_inset
-
- then we have a standard model for 
-\begin_inset Formula $p(l)$
-\end_inset
-
- and we set Boltzmann machines on the marginal distributions
-\begin_inset Formula 
-\[
-p(f,|l)\propto\exp(b_{f}s+sW_{f}s)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection
-Model Learning
-\end_layout
-
-\begin_layout Standard
-We will use Hebbian learning in this context, which means given a training
- set we can compute empirical averages for 
-\begin_inset Formula $b$
-\end_inset
-
- and 
+ and a connectivity matrix 
 \begin_inset Formula $W$
 \end_inset
 
 .
- Here I will provide nice pictures of how the atoms are pairwise correlated
- in a multiscale TF dictionary as well as proving that the biais is only
- visible on the frequency and scale parameters (atoms are uniformly located
- in time, which by the way justifies to get rid of the absolute time information
- in the fingerprint key).
+ This model has recently appeared in dictionary based processing setups.
+ Dremeau 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dremeau2012"
+
+\end_inset
+
+ show that it generalizes many structured sparsity models.
+ More importantly, we can evaluate the probability of a state using the
+ difference of energy at node 
+\begin_inset Formula $i$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{equation}
+\Delta E_{i}=\sum_{j}w_{ij}+b_{i}
+\end{equation}
+
+\end_inset
+
+and the notion of temperature 
+\begin_inset Formula $T$
+\end_inset
+
+ that can be dropped out (e.g.
+ 
+\begin_inset Formula $T=1$
+\end_inset
+
+).
+ Fixing the states of all other variables, the probability of node 
+\begin_inset Formula $i$
+\end_inset
+
+ being turned on (i.e.
+ keypoint 
+\begin_inset Formula $i$
+\end_inset
+
+ being selected) writes: 
+\begin_inset Formula 
+\begin{equation}
+p(s_{i}=1|\{s_{j\neq i}\})=\frac{1}{1+\exp\left(-\Delta E_{i}\right)}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Reducing model complexity
+\end_layout
+
+\begin_layout Standard
+The expressiveness of the Boltzmann machine is essentially captured by the
+ 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix which is of size 
+\begin_inset Formula $M\times M$
+\end_inset
+
+ where 
+\begin_inset Formula $M$
+\end_inset
+
+ is the number of atoms in the dictionary.
+ Clearly, for real scale data, the resulting model complexity will become
+ prohibitive.
+ Fortunately, the considered dictionaries are further structured.
+ Let assume each atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ can be indexed by a unique triplet 
+\begin_inset Formula $(f_{i},t_{i},l_{i})\in\mathcal{F}\times\mathcal{T}\times\mathcal{L}$
+\end_inset
+
+ of its frequency and time centroids and length.
+ A way to drastically reduce the complexity is to assume separability of
+ the time and frequency centroids variables.
+ Such hypothesis seem reasonable, keypoints frequency localization will
+ essentially be linked to other keypoints frequencies and lengths, independently
+ of their time position.
+ Symmetrically, time localizations may be considered apart from the frequency
+ localization.
+\end_layout
+
+\begin_layout Standard
+In practice, this implies cutting many vertices in the Boltzmann machine,
+ or equivalently putting many elements of 
+\begin_inset Formula $W$
+\end_inset
+
+ to zero.
+ The biais can be rewritten as :
+\begin_inset Formula 
+\begin{equation}
+b_{i}=b(f_{i},t_{i},l_{i})=b(f_{i},l_{i})
+\end{equation}
+
+\end_inset
+
+since we have seen empirically that keypoints are uniformly located in time.
+ Similarly, each element 
+\begin_inset Formula $w_{ij}$
+\end_inset
+
+ of the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix can be expressed as a product:
+\begin_inset Formula 
+\begin{eqnarray*}
+w_{ij} & = & w\left[\left(f_{i},t_{i},l_{i}\right)\left(f_{j},t_{j},l_{j}\right)\right]\\
+ & = & w^{F}\left[\left(f_{i},l_{i}\right)\left(f_{j},l_{j}\right)\right]w^{T}\left[\left(t_{i},l_{i}\right)\left(t_{j},l_{j}\right)\right]\\
+ & = & w_{ij}^{F}w_{ij}^{T}
+\end{eqnarray*}
+
+\end_inset
+
+where 
+\begin_inset Formula $w_{ij}^{F}\mbox{ and }w_{ij}^{T}$
+\end_inset
+
+ are taken in two factoring matrices 
+\begin_inset Formula $W_{F}$
+\end_inset
+
+ and 
+\begin_inset Formula $W_{T}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+TODO: nice plotting of synthetic W matrices and Real ones learned as expectation
+ over training samples.
+ The pluri-diagonal model expresses neighboring correlations while sub-diagonals
+ in Wf show the harmonic relationships.
 \end_layout
 
 \begin_layout Subsection
@@ -925,71 +1114,139 @@ Algorithm
 \end_layout
 
 \begin_layout Standard
-A standard MP with a modified selection rule specifying:
-\begin_inset Formula 
-\[
-\arg\max_{\phi}|\langle r^{n},\phi_{i}\rangle|(1+\lambda_{H}H(\phi_{i}|s_{n-1}))
-\]
+Addressing problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
 
 \end_inset
 
-with 
-\begin_inset Formula $p(\phi_{i}|s_{n-1})=b_{i}+\sum_{j\in\Gamma^{n-1}}w_{ij}$
+ is a complicated issue.
+ Indeed, even with 
+\begin_inset Formula $\lambda=0$
 \end_inset
 
- where 
-\begin_inset Formula $b_{i}$
-\end_inset
-
- is the biais of the atom 
-\begin_inset Formula $\phi_{i}$
-\end_inset
-
- and the second term simply add up the pairwise codependency of an atom
- with all the previously selected ones.
- A nice property is that this second term is quite simple to update:
-\begin_inset Formula 
-\begin{eqnarray*}
-H(\phi_{i}|s_{n}) & = & -p(\phi_{i}|s_{n})\log\left[p(\phi_{i}|s_{n})\right]\\
- & = & -\left(p(\phi_{i}|s_{n-1})+w_{ij^{\star}}\right)\log\left[p(\phi_{i}|s_{n-1})+w_{ij^{\star}}\right]
-\end{eqnarray*}
-
-\end_inset
-
-with 
-\begin_inset Formula $j^{\star}$
-\end_inset
-
- being the index of the atom just selected.
-\end_layout
-
-\begin_layout Subsection
-Particular cases
+, it requires either a relaxation of the sparsity constraint or the use
+ of suboptimal greedy algorithms such as MP.
+ Given that the hard sparsity constraint is strict in this case, we have
+ chosen to modify an MP algorithm by simply changing the atom selection
+ rule.
+ 
 \end_layout
 
 \begin_layout Standard
-A particular case is of course when 
-\begin_inset Formula $\lambda_{H}$
+Such algorithm makes a series of local decisions (i.e.
+ keypoint selection), based only on the knowledge of the previous choices
+ (i.e.
+ which keypoints have already been selected).
+ The residual signal 
+\begin_inset Formula $r^{n}$
 \end_inset
 
- is set to zero, we come back to the Cotton2010 algorithm.
- In order to get Wang2003 results, what ca we do? we can put 
-\begin_inset Formula $\infty$
+ is usually updated by subtracting from the original signal its projection
+ on the subspace spanned by the selected atoms.
+ At iteration 
+\begin_inset Formula $n$
 \end_inset
 
- in neighborhood cells of the 
+ the decision boils down to solving:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\arg\max_{\phi}|\langle r^{n},\phi_{i}\rangle|(1+\lambda_{H}H(\phi_{i}|s_{n-1}))
+\end{equation}
+
+\end_inset
+
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $H(\phi_{i}|s_{n-1})$
+\end_inset
+
+ is the
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ entropy of choosing atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ knowing the support 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+ and writes: 
+\begin_inset Formula 
+\begin{eqnarray}
+H(\phi_{i}|s_{n-1}) & = & -p(\phi_{i}|s_{n-1})\log\left[p(\phi_{i}|s_{n-1})\right]\nonumber \\
+ & = & \frac{\log\left[1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}\right]}{1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}}
+\end{eqnarray}
+
+\end_inset
+
+with 
+\begin_inset Formula $\Gamma_{n-1}$
+\end_inset
+
+ being the indices of the non zero elements of 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+, or the keypoints selected so far.
+ An advantage of this algorithm is that it can be quickly implemented with
+ existing TF-based MP libraries such as PyMP
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/mmoussallam/PyMP
+\end_layout
+
+\end_inset
+
+.
+ Another advantage is the special case 
+\begin_inset Formula $\lambda_{H}=0$
+\end_inset
+
+ exactly corresponds to the Cotton and Ellis method, while with proper choice
+ of the 
 \begin_inset Formula $W$
 \end_inset
 
- matrix which basically will prevent the selection of atoms in the direct
- neighborhood.
+ matrix, the case 
+\begin_inset Formula $\lambda_{H}=\infty$
+\end_inset
+
+ is very close to the Shazam framework.
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float figure
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -1006,15 +1263,46 @@ status collapsed
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Keypoints and pairs built with Wang03, Cotton10 and Ours 
+Visualization
+\emph on
+ 
+\emph default
+of the TF 
+\emph on
+landmarks
+\emph default
+ built by the algorithm.
+ From left to right 
+\begin_inset Formula $\lambda_{H}=0$
+\end_inset
+
+ (similar to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+), 
+\begin_inset Formula $\lambda_{H}=10$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{H}=\infty$
+\end_inset
+
+ (similar to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+)
 \end_layout
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -1037,6 +1325,55 @@ In this study we're interested in the object recognition problem which is
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/robustness_7snrs_600segs_2tests_30sparsity.pdf
+	width 6cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Robustness results with synthetic 
+\begin_inset Formula $W$
+\end_inset
+
+ and varying 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+.
+ The proportion of identical landmarks is averaged over 5 trials of random
+ Gaussian noise on each of 600 random segments of 5 seconds taken in the
+ GTZAN dataset.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 So we must see how the modified criterion affects the recognition rate and
  robustness.
  We can compare to Shazam [Wang2003], [Cotton/Ellis2010] (pairs of MP atoms)
@@ -1044,7 +1381,7 @@ So we must see how the modified criterion affects the recognition rate and
 \end_layout
 
 \begin_layout Section
-Conclusion
+Discussion
 \end_layout
 
 \begin_layout Standard
@@ -1062,6 +1399,13 @@ Using a dictionary-based framework, we can efficiently characterize the
 LatexCommand cite
 key "Dremeau2012"
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
 \end_inset
 
 

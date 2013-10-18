@@ -15,7 +15,7 @@ import matplotlib
 single_test_file1 = op.join(SND_DB_PATH,'jingles/panzani.wav')
 fs = 8000
 tempdir = '.'
-sparsity = 40
+sparsity = 35
 figure_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/figures')
 # let's take a signal and build the fingerprint with pairs of atoms or plain atoms
 
@@ -38,7 +38,7 @@ def _Process(fgpthandle, skhandle,nb_points):
     plt.ylim([0, fs/2])
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
-    plt.title('%d keys'%np.count_nonzero([d for d in plt.gca().get_children() if isinstance(d, matplotlib.patches.FancyArrow)]))
+    plt.title('%d Landmarks'%np.count_nonzero([d for d in plt.gca().get_children() if isinstance(d, matplotlib.patches.FancyArrow)]))
     return fgpt
 
 # WANG 2003
@@ -46,9 +46,11 @@ W03_fgpthandle = STFTPeaksBDB('STFTPPPairs.db',load=False,**{'wall':False,
                                                              'delta_t_max':3.0})
 W03_skhandle = STFTPeaksSketch(**{'scale':2048,'step':512})
 
-plt.figure(figsize=(12,6))
-plt.subplot(131)
+plt.figure(figsize=(12,4))
+plt.subplot(133)
 _Process(W03_fgpthandle, W03_skhandle,sparsity)
+plt.ylabel('')
+plt.yticks([])
 
 # Cotton 2010
 scales = [64,512,2048]
@@ -58,10 +60,9 @@ C10_fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':Fal
 C10_skhandle = XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,
                                  'nature':'LOMDCT','pad':False})
 
-plt.subplot(132)
-_Process(C10_fgpthandle, C10_skhandle,2*sparsity)
-plt.ylabel('')
-plt.yticks([])
+plt.subplot(131)
+_Process(C10_fgpthandle, C10_skhandle,1.5*sparsity)
+
 # Proposed
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall':False,
@@ -91,29 +92,29 @@ M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':sparsity,
                                  'biaises':biaises,
                                  'Wts':Wt,
                                  'Wfs':Ws,'pad':False,'debug':1})
-plt.subplot(133)
-_Process(M12_fgpthandle, M12_skhandle,2* sparsity)
+plt.subplot(132)
+_Process(M12_fgpthandle, M12_skhandle,1.5*sparsity)
 [f.freq_bin for f in M12_skhandle.rep.atoms]
 
 plt.ylabel('')
 plt.yticks([])
-plt.subplots_adjust(left=0.08,bottom=0.09,right=0.98,top=0.95, wspace=0.09)
+plt.subplots_adjust(left=0.08,bottom=0.13,right=0.98,top=0.91, wspace=0.09)
 plt.savefig(op.join(figure_path, 'KeyPoints_and_pairs.pdf'))
 
 plt.show()
 
-for bI, block in enumerate(M12_skhandle.rep.dico.blocks):
-    plt.subplot(1, len(scales), bI+1)    
-    block.draw_mask()
-    plt.colorbar()
-    
-plt.show()
-
-###### cprofile
-prof_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
-                                 'lambdas':lambdas,
-                                 'biaises':biaises,
-                                 'Wts':Wt,
-                                 'Wfs':Ws,'pad':False,'debug':1})
-import cProfile
-cProfile.runctx('prof_skhandle.sparsify(100)',globals(), locals())
+#for bI, block in enumerate(M12_skhandle.rep.dico.blocks):
+#    plt.subplot(1, len(scales), bI+1)    
+#    block.draw_mask()
+#    plt.colorbar()
+#    
+#plt.show()
+#
+####### cprofile
+#prof_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
+#                                 'lambdas':lambdas,
+#                                 'biaises':biaises,
+#                                 'Wts':Wt,
+#                                 'Wfs':Ws,'pad':False,'debug':1})
+#import cProfile
+#cProfile.runctx('prof_skhandle.sparsify(100)',globals(), locals())
