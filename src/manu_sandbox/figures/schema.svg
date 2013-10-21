@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="schema.svg">
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="160.58198"
+     inkscape:cy="932.53982"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1918"
+     inkscape:window-height="1005"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mend"
+       style="overflow:visible;">
+      <path
+         id="path3826"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path3820"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3787"
+       transform="matrix(0.55844156,0,0,0.5,219.61792,91.32961)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800">
+      <path
+         transform="translate(-62.629458,51.012704)"
+         sodipodi:type="arc"
+         style="fill:#a9c8c7;fill-opacity:1;stroke:none"
+         id="path2987"
+         sodipodi:cx="164.1498"
+         sodipodi:cy="142.21474"
+         sodipodi:rx="38.890873"
+         sodipodi:ry="12.121831"
+         d="m 203.04067,142.21474 c 0,6.6947 -17.41204,12.12183 -38.89087,12.12183 -21.47884,0 -38.89088,-5.42713 -38.89088,-12.12183 0,-6.69471 17.41204,-12.12183 38.89088,-12.12183 21.47883,0 38.89087,5.42712 38.89087,12.12183 z" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3757"
+         d="m 63.166106,105.98139 0,87.10639"
+         style="fill:none;stroke:#000000;stroke-width:1.01927769px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1.01927769px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 139.87147,105.98139 0,87.10639"
+         id="path3761"
+         inkscape:connector-curvature="0" />
+      <path
+         transform="translate(-62.629458,-35.860415)"
+         d="m 203.04067,142.21474 c 0,6.6947 -17.41204,12.12183 -38.89087,12.12183 -21.47884,0 -38.89088,-5.42713 -38.89088,-12.12183 0,-6.69471 17.41204,-12.12183 38.89088,-12.12183 21.47883,0 38.89087,5.42712 38.89087,12.12183 z"
+         sodipodi:ry="12.121831"
+         sodipodi:rx="38.890873"
+         sodipodi:cy="142.21474"
+         sodipodi:cx="164.1498"
+         id="path2985"
+         style="fill:#a9c8c7;fill-opacity:1;stroke:none"
+         sodipodi:type="arc" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3769"
+         d="m 63.722716,151.40675 0,-41.97917 0.69448,0.7243 c 7.57408,7.89934 36.786514,11.25258 58.433854,6.7075 6.58306,-1.38217 11.88664,-3.49892 14.92848,-5.9582 l 1.45209,-1.17398 -0.0199,41.8707 c -0.011,23.02889 -0.0777,41.72149 -0.1483,41.53911 -0.0706,-0.18238 -0.84666,-0.86502 -1.72458,-1.51697 -9.27447,-6.88745 -34.22149,-9.6967 -54.549464,-6.14274 -7.92262,1.38512 -14.91856,4.02738 -17.79878,6.72233 l -1.26785,1.18629 0,-41.97917 z"
+         style="fill:#a9c8c7;fill-opacity:1;stroke:none" />
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3794"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(14.414627,7.7239099)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion3796"><rect
+           id="rect3798"
+           width="159.6041"
+           height="55.053314"
+           x="155.56349"
+           y="28.067501"
+           style="font-size:14px" /></flowRegion><flowPara
+         id="flowPara3800">Query</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4460"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:12px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion4462"><rect
+           id="rect4464"
+           width="158.34142"
+           height="40.911179"
+           x="193.44421"
+           y="127.31499"
+           style="font-size:12px" /></flowRegion><flowPara
+         id="flowPara4466" /></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:0.92761725px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="M 191.79295,53.076467 191.4358,200.89359"
+       id="path4488"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#2a587e;stroke-width:0.875;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect5351"
+       width="69.112534"
+       height="25.87919"
+       x="156.89255"
+       y="64.505043"
+       rx="4.2508554"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4468"
+       style="font-size:8px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-34.019943,-75.882524)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion4470"><rect
+           id="rect4472"
+           width="88.991341"
+           height="36.965935"
+           x="181.32239"
+           y="142.97235"
+           style="font-size:8px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
+         id="flowPara4966">keypoint</flowPara><flowPara
+         id="flowPara5347"> selection</flowPara></flowRoot>    <g
+       id="g5340"
+       transform="translate(0.50507355,-10)"
+       style="stroke-width:0.875;stroke-miterlimit:4;stroke-dasharray:none"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#2a587e;stroke-width:0.875;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect4956"
+         width="69.112534"
+         height="25.87919"
+         x="156.38747"
+         y="106.50504"
+         rx="4.2508554" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot4958"
+         style="font-size:8px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;stroke-width:0.875;stroke-miterlimit:4;stroke-dasharray:none"
+         transform="translate(-35.357139,-33.357143)"><flowRegion
+           id="flowRegion4960"><rect
+             id="rect4962"
+             width="90.777046"
+             height="35.537373"
+             x="181.32239"
+             y="142.97235"
+             style="font-size:8px;text-align:center;text-anchor:middle;stroke-width:0.875;stroke-miterlimit:4;stroke-dasharray:none" /></flowRegion><flowPara
+           id="flowPara4964"> Landmarks construction</flowPara></flowRoot>    </g>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#2a587e;stroke-width:0.875;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect5042"
+       width="69.112534"
+       height="25.87919"
+       x="156.89255"
+       y="131.9416"
+       rx="4.2508554"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5044"
+       style="font-size:8px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-34.166428,-8.4256592)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion5046"><rect
+           id="rect5048"
+           width="88.991341"
+           height="36.965935"
+           x="181.32239"
+           y="142.97235"
+           style="font-size:8px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
+         id="flowPara5054"> Search Keys</flowPara><flowPara
+         id="flowPara5058">in database</flowPara></flowRoot>    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="rect5052"
+       width="2.0203052"
+       height="0.50507629"
+       x="190.43866"
+       y="151.14622"
+       rx="4.2508554"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <g
+       id="g5076"
+       transform="translate(-3.6834672,-53.039167)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800">
+      <g
+         id="g5030">
+        <path
+           inkscape:connector-curvature="0"
+           id="path4970"
+           d="m 235.8155,172.6248 75.76145,0"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4972"
+           d="m 242.88657,179.1908 0,-59.599"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+        <path
+           d="m 244.28571,93.612183 c 0,0.8876 -3.03806,1.607142 -6.78571,1.607142 -3.74765,0 -6.78571,-0.719542 -6.78571,-1.607142 0,-0.887601 3.03806,-1.607143 6.78571,-1.607143 3.74765,0 6.78571,0.719542 6.78571,1.607143 z"
+           sodipodi:ry="1.6071428"
+           sodipodi:rx="6.7857141"
+           sodipodi:cy="93.612183"
+           sodipodi:cx="237.5"
+           id="path4974"
+           style="fill:#0a1b66;fill-opacity:1;stroke:none"
+           sodipodi:type="arc"
+           transform="translate(19.642858,67.785715)" />
+        <path
+           d="m 248.49752,65.316879 c 0,3.97498 -0.84799,7.197337 -1.89403,7.197337 -1.04605,0 -1.89404,-3.222357 -1.89404,-7.197337 0,-3.974979 0.84799,-7.197336 1.89404,-7.197336 1.04604,0 1.89403,3.222357 1.89403,7.197336 z"
+           sodipodi:ry="7.1973367"
+           sodipodi:rx="1.8940361"
+           sodipodi:cy="65.316879"
+           sodipodi:cx="246.60349"
+           id="path4976"
+           style="fill:#0a1b66;fill-opacity:1;stroke:none"
+           sodipodi:type="arc"
+           transform="translate(19.642858,67.785715)" />
+        <path
+           d="m 275.51912,88.424118 c 0,0.976311 -3.73115,1.767767 -8.33376,1.767767 -4.6026,0 -8.33375,-0.791456 -8.33375,-1.767767 0,-0.976311 3.73115,-1.767767 8.33375,-1.767767 4.60261,0 8.33376,0.791456 8.33376,1.767767 z"
+           sodipodi:ry="1.767767"
+           sodipodi:rx="8.3337584"
+           sodipodi:cy="88.424118"
+           sodipodi:cx="267.18536"
+           id="path4978"
+           style="fill:#0a1b66;fill-opacity:1;stroke:none"
+           sodipodi:type="arc"
+           transform="translate(19.642858,67.785715)" />
+        <path
+           d="m 277.79196,64.559258 c 0,1.18552 -3.39195,2.146574 -7.57614,2.146574 -4.18419,0 -7.57614,-0.961054 -7.57614,-2.146574 0,-1.185521 3.39195,-2.146575 7.57614,-2.146575 4.18419,0 7.57614,0.961054 7.57614,2.146575 z"
+           sodipodi:ry="2.1465743"
+           sodipodi:rx="7.5761442"
+           sodipodi:cy="64.559258"
+           sodipodi:cx="270.21582"
+           id="path4980"
+           style="fill:#0a1b66;fill-opacity:1;stroke:none"
+           sodipodi:type="arc"
+           transform="translate(19.642858,67.785715)" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4982"
+           d="m 266.42857,133.36218 -9.64285,27.85714"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4984"
+           d="M 266.60715,134.07647 290.625,132.11218"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4986"
+           d="m 257.41072,160.50504 29.375,-4.64286 4.10714,-23.75"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4988"
+           d="m 266.16072,133.63004 19.91071,22.05357"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <flowRoot
+         transform="matrix(0,-1,1,0,118.83141,462.21022)"
+         style="font-size:6px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5060"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5062"><rect
+             y="114.43555"
+             x="300.01532"
+             height="10.606602"
+             width="47.477169"
+             id="rect5064" /></flowRegion><flowPara
+           id="flowPara5066">Frequency</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5068"
+         style="font-size:6px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-30.557115,59.18147)"><flowRegion
+           id="flowRegion5070"><rect
+             id="rect5072"
+             width="47.477169"
+             height="10.606602"
+             x="300.01532"
+             y="114.43555" /></flowRegion><flowPara
+           id="flowPara5074">Time</flowPara></flowRoot>    </g>
+    <rect
+       rx="4.2508554"
+       y="168.11769"
+       x="156.89255"
+       height="19.391047"
+       width="69.112534"
+       id="rect5097"
+       style="fill:#ffffff;fill-opacity:1;stroke:#2a587e;stroke-width:0.875;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <flowRoot
+       transform="translate(-34.150803,29.867489)"
+       style="font-size:8px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       id="flowRoot5099"
+       xml:space="preserve"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion5101"><rect
+           style="font-size:8px;text-align:center;text-anchor:middle"
+           y="142.97235"
+           x="181.32239"
+           height="36.965935"
+           width="88.991341"
+           id="rect5103" /></flowRegion><flowPara
+         id="flowPara5107"> Majority Vote</flowPara></flowRoot>    <rect
+       rx="4.2508554"
+       y="185.14622"
+       x="190.43866"
+       height="0.50507629"
+       width="2.0203052"
+       id="rect5109"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 228.04194,144.67033 29.7995,13.38452"
+       id="path5113"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 258.09398,176.23759 -30.05204,5.80838"
+       id="path5115"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5301"
+       style="font-size:6px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(2.5253814,-15.979695)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion5303"><rect
+           id="rect5305"
+           width="64.144684"
+           height="20.455589"
+           x="258.34653"
+           y="177.065" /></flowRegion><flowPara
+         id="flowPara5307">Hashtable</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5366"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-6.9068015,-12.785714)"
+       inkscape:export-filename="/home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png"
+       inkscape:export-xdpi="800"
+       inkscape:export-ydpi="800"><flowRegion
+         id="flowRegion5368"><rect
+           id="rect5370"
+           width="93.928574"
+           height="17.142857"
+           x="171.42857"
+           y="212.36218"
+           style="font-size:14px" /></flowRegion><flowPara
+         id="flowPara5372">Answer</flowPara></flowRoot>  </g>
+</svg>

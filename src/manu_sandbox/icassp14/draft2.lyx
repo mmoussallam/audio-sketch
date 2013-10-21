@@ -27,7 +27,8 @@
 %\author{Manuel Moussallam}
 %\date{}
 
-
+\name{Manuel Moussallam and Laurent Daudet}
+\address{Institut Langevin, Univ. Paris 7 Diderot - ESPCI ParisTech, 1 rue Jussieu 75005 Paris}
 
 \pdfinfo{%
   /Title    (Icassp14_draft)
@@ -787,7 +788,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/WF_WT_200files_1xMDCT_100k.pdf
+	filename ../figures/WF_WT_200files_1xMDCT_100k.pdf
 	width 8cm
 
 \end_inset
@@ -856,6 +857,10 @@ This basically tells us that landmarks build on neighboring and harmonically
  discriminative) than others.
 \end_layout
 
+\begin_layout Subsection
+Relation to existing work
+\end_layout
+
 \begin_layout Standard
 Problem 
 \begin_inset CommandInset ref
@@ -865,7 +870,9 @@ reference "eq:problem_full"
 \end_inset
 
  is, in general, NP-hard to solve.
- The literature can be understood as suboptimal methods to adress this problem:
+ Many works in the literature can be understood as suboptimal methods to
+ tackle this problem.
+ It is especially obvious for two of them:
 \end_layout
 
 \begin_layout Itemize
@@ -884,12 +891,12 @@ key "ismir"
 \end_inset
 
 , never explicitly expresses the entropic constraint.
- However, their strategy is to ensure the selected keypoints are spread
- all over the time-frequency plane.
+ However, their strategy is to enforce the selection of keypoints that are
+ spread all over the time-frequency plane.
  Basically, this amounts to forbidding the construction of landmarks from
  neighboring keypoints which are the less discriminative.
- Overall, the local peak-picking strategy can be understood as an entropy-orient
-ed strategy and can lead to robustness issues.
+ Overall, this local peak-picking strategy can be understood as an entropy-orien
+ted one.
 \end_layout
 
 \begin_layout Itemize
@@ -933,13 +940,12 @@ Structured Sparsity model
 \begin_layout Standard
 Empirical evidence suggest the sparsity pattern of the support vector in
  time-frequency dictionaries is highly structured.
- Boltzmann machines seem to be the most expressive model for the distribution
- of 
+ We propose to use Boltzmann machines as a model for the distribution of
+ 
 \begin_inset Formula $s$
 \end_inset
 
-.
- 
+: 
 \begin_inset Formula 
 \begin{equation}
 p(s)\propto\exp(b^{T}s+s^{T}Ws)
@@ -978,7 +984,7 @@ key "Dremeau2012"
 \end_inset
 
  show that it generalizes many structured sparsity models.
- More importantly, we can evaluate the probability of a state using the
+ Under this model, we can evaluate the probability of a state using the
  difference of energy at node 
 \begin_inset Formula $i$
 \end_inset
@@ -1019,6 +1025,10 @@ p(s_{i}=1|\{s_{j\neq i}\})=\frac{1}{1+\exp\left(-\Delta E_{i}\right)}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Reducing model complexity
 \end_layout
 
 \begin_layout Standard
@@ -1343,6 +1353,76 @@ In the framework described above, many parameters need to be chosen.
 \end_inset
 
  matrix.
+ 4 possible choices are presented in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Fingerprint-parameters"
+
+\end_inset
+
+.
+ We will adopt the notation W03 and C10 by reference to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ respectively since these special cases can be formalized equivalently.
+ Note however that all results presented here are obtained with our own
+ implementation.
+ 
+\end_layout
+
+\begin_layout Standard
+Experiments are run in a framework that is similar in nature to the one
+ presented in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,ismir,Cotton2010"
+
+\end_inset
+
+.
+ Landmarks are binarized and stored as index keys in a Hashtable implemented
+ using the open source Berkeley DataBase C Library
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://www.oracle.com/us/products/database/berkeley-db/overview/index.html
+\end_layout
+
+\end_inset
+
+.
+ Such key is the combination 
+\begin_inset Formula $(f_{1},f_{2},\Delta t)$
+\end_inset
+
+ where 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ are the frequency centroids of the two keypoints and 
+\begin_inset Formula $\Delta_{t}$
+\end_inset
+
+ the difference between their time centroids.
+ At each key can be associated one or more values that are combinations
+ of the file index and the time of occurrence of the landmark in the file.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1375,7 +1455,7 @@ Parameter
 \begin_inset Text
 
 \begin_layout Plain Layout
-Wang03
+W03
 \end_layout
 
 \end_inset
@@ -1384,7 +1464,7 @@ Wang03
 \begin_inset Text
 
 \begin_layout Plain Layout
-Cotton10
+C10
 \end_layout
 
 \end_inset
@@ -1537,7 +1617,7 @@ multiscale
 \begin_inset Text
 
 \begin_layout Plain Layout
-implicit
+no
 \end_layout
 
 \end_inset
@@ -1587,7 +1667,7 @@ learned
 \begin_inset Text
 
 \begin_layout Plain Layout
-implicit diagonal
+implicit 
 \end_layout
 
 \end_inset
@@ -1605,7 +1685,7 @@ no
 \begin_inset Text
 
 \begin_layout Plain Layout
-fixed diagonal
+fixed
 \end_layout
 
 \end_inset
@@ -1632,6 +1712,13 @@ learned
 
 \begin_layout Plain Layout
 Fingerprint parameters
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Fingerprint-parameters"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1648,13 +1735,22 @@ Fingerprint parameters
 
 \end_layout
 
+\begin_layout Subsection
+Robustness
+\end_layout
+
 \begin_layout Standard
-In this study we're interested in the object recognition problem which is
- a particular audio fingerprint case.
- Given a database of sounds, we want to be able to quickly find an object
- in it.
- Binary Metric: is it rightfully located or not.
- Parameters: 1) size of base (number of keys) 2) computation time.
+We concentrate here on the robustness to additive noise.
+ An interesting metric is the proportion of landmarks that remain unaltered
+ by noise addition.
+ Results are summarized in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Robustness-results"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -1690,6 +1786,13 @@ Robustness results with synthetic
  The proportion of identical landmarks is averaged over 5 trials of random
  Gaussian noise on each of 600 random segments of 5 seconds taken in the
  GTZAN dataset.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Robustness-results"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1706,11 +1809,62 @@ Robustness results with synthetic
 
 \end_layout
 
+\begin_layout Subsection
+Recognition 
+\end_layout
+
 \begin_layout Standard
-So we must see how the modified criterion affects the recognition rate and
- robustness.
- We can compare to Shazam [Wang2003], [Cotton/Ellis2010] (pairs of MP atoms)
- and [Fenet/Moussallam2012] (single MP atoms).
+The primary objective of a fingerprint system is its recognition performance.
+ The main parameter affecting the quality of the results is the sparsity,
+ or equivalently the number of landmarks per seconds on which to base the
+ decision.
+ For each query, the system returns a best candidate file in the database
+ and an estimated time of occurrence.
+ The score is simply the ratio of the number of correctly retrieved segments
+ over the number of queries.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png
+	lyxscale 25
+	width 4cm
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fingerprinting scheme common to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,ismir,Moussallam2012c,Cotton2010"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
