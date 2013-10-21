@@ -25,6 +25,8 @@ set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)
 
+nb_files = 100
+file_names = file_names[:nb_files]
 def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     ################# This is a complete experimental run given the setup ############## 
     # create the base:
@@ -44,7 +46,7 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, 
-                         step = step, tolerance = 7.5, shuffle=True, debug=False,
+                         step = step, tolerance = 7.5, shuffle=1001, debug=False,
                          n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
@@ -52,17 +54,17 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     return scores, stats
 
 
-sparsities = [5,10,30,50]
+sparsities = [5,10,30,50,75,100]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 0.25
+test_proportion = 1.0
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1,10,100]
+Lambdas = [0,1,10]
 scales = [64,512,4096]
-Kmaxes = [1,5,10]
+Kmaxes = [1,10]
 #################### WANG 2003
 #    print fgpthandlename, sk
 for sparsity in sparsities:    
@@ -85,10 +87,10 @@ for sparsity in sparsities:
             M13_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
                                              'lambdas':lambdas,
                                              'biaises':biaises,
-                                             'Wts':Wt,'fs':fs,'crop':(seg_dur-1)*8192,
+                                             'Wts':Wt,'fs':fs,#'crop':(seg_dur-1)*8192,
                                              'Wfs':Ws,'pad':2*8192,'debug':1})
             sk_id = "M13_Kmax%d_lambH%d"%(Kmax,l)
-            db_name = "%s_%s_k%d_%dsec_%dfs.db"%(set_id, sk_id, sparsity,
+            db_name = "%s_%d_%s_k%d_%dsec_%dfs.db"%(set_id,nb_files, sk_id, sparsity,
                                                 int(seg_dur), int(fs))
             
             M13_fgpthandle = SparseFramePairsBDB(op.join(db_path, db_name),load=False,persistent=True,
@@ -104,12 +106,13 @@ for sparsity in sparsities:
                 continue
             ttest = time.time() - tstart
             # saving the results
-            score_name = "%s_%s_k%d_%dsec_%dfs_test%d_step%d.mat"%(set_id, sk_id, sparsity, 
-                                                    int(seg_dur), int(fs), int(100.0*test_proportion),int(step))
+            score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files, sk_id, sparsity, 
+                                                    int(seg_dur), int(fs), int(100.0*test_proportion),
+                                                    int(step),len(scales))
             
             
             savemat(op.join(output_path,score_name), {'score':scores, 'time':ttest,
-                                                     'size':stats.st_size})
+                                                     'size':M13_fgpthandle.get_kv_size()})
             del M13_skhandle, M13_fgpthandle
     
         # Run Wang 03

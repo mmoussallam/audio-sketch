@@ -99,7 +99,7 @@ _Process(M12_fgpthandle, M12_skhandle,1.5*sparsity)
 plt.ylabel('')
 plt.yticks([])
 plt.subplots_adjust(left=0.08,bottom=0.13,right=0.98,top=0.91, wspace=0.09)
-plt.savefig(op.join(figure_path, 'KeyPoints_and_pairs.pdf'))
+#plt.savefig(op.join(figure_path, 'KeyPoints_and_pairs.pdf'))
 
 plt.show()
 

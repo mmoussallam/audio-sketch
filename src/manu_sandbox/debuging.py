@@ -26,15 +26,15 @@ audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)[:10]
 
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-sparsity = 100
-sparsities = [5,10,30,50]
+sparsity = 10
+#sparsities = [5,10,30,50]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 0.25
+test_proportion = 1.0
 scales = [64,512,4096]
 l = 0
-kmax = 1
+kmax = 10
 biaises = []
 Ws = []
 Wt = [0,0,0]            
@@ -49,7 +49,7 @@ for sidx, s in enumerate(scales):
 M13_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':sparsity,
                                  'lambdas':lambdas,
                                  'biaises':biaises,
-                                 'Wts':Wt,'fs':fs,'crop':4*8192,
+                                 'Wts':Wt,'fs':fs,#'crop':4*8192,
                                  'Wfs':Ws,'pad':2*8192,'debug':1})
 sk_id = "M13_Kmax%d_lambH%d"%(kmax,l)
 db_name = "%s_%s_k%d_%dsec_%dfs.db"%(set_id, sk_id, sparsity,
@@ -71,8 +71,22 @@ M13_fgpthandle = SparseFramePairsBDB(op.join(db_path, db_name),load=False,persis
 #    M13_skhandle.sparsify(sparsity)
     
 
-db_creation(M13_fgpthandle, M13_skhandle, 5,
-                file_names, 
-                force_recompute = True,
-                seg_duration = seg_dur, 
-                files_path = audio_path, debug=False, n_jobs=1)
+#db_creation(M13_fgpthandle, M13_skhandle, sparsity,
+#                file_names, 
+#                force_recompute = True,
+#                seg_duration = seg_dur, 
+#                files_path = audio_path, debug=False, n_jobs=1)
+#
+#scores, failures = db_test(M13_fgpthandle, M13_skhandle, sparsity,
+#                         file_names, 
+#                         files_path = audio_path,
+#                         test_seg_prop = test_proportion,
+#                         seg_duration = seg_dur, 
+#                         step = step, tolerance = 7.5, shuffle=True, debug=False,
+#                         n_jobs=1)
+#print scores
+
+
+
+
+

@@ -21,7 +21,7 @@ sparsity = 100
 fs = 8000.0
 # the density is approximately of sparsity/seg_dur features per second
 #scales = [2**j for j in range(5,12)]
-scales = [64,512,4096]
+scales = [2048]
 skhandlename = XMDCTSparseSketch
 nature = 'MDCT'
 params = {'downsample':fs,'scales':scales,'nature':nature,'n_atoms':sparsity}

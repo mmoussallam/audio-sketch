@@ -17,6 +17,7 @@
 \usepackage{algorithm}
 \usepackage[usenames]{color}
 \usepackage{tikz}
+\usepackage{spconf}
 \usetikzlibrary{shapes.geometric}
 
 
@@ -194,6 +195,22 @@
 
 \begin_body
 
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ninept
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Title
 A General Framework For Dictionary Based Audio Fingerprinting
 \end_layout
@@ -208,21 +225,7 @@ Institut Langevin, ESPCI ParisTech - Univ Paris Diderot, 1 rue Jussieu 75005
 \end_layout
 
 \begin_layout Abstract
-Our message can be summarized like this: One need a balance between the
- discriminative and the descriptive power of an audio fingerpint.
- The former guarantees good recognition rates, while the latter provides
- robustness.
- State of the art techniques that concentrate on the first (feature-based
- fingerprints, Shazam method etc..) and try to maximize the entropy of the
- fingerprint distribution.
- Techniques concentrated on the second (Cotton and Ellis using MP, Baluja
- using Wavelet Thresholding, etc) experience higher robustness levels but
- have more difficulties to scale up because of a strong biais on their selected
- elements.
- The idea is that audio signals have a strong internal structure, we can
- learn this structure and use it as a probabilistic prior to define an new
- objective function that takes both the descriptive and discriminative power
- into account.
+It rocks
 \end_layout
 
 \begin_layout Keywords
@@ -492,7 +495,7 @@ In this work, we first propose a formulation of the fingerprint design problem
 
 \begin_layout Standard
 Finally, we expose on some real scale fingerprint-based recognition experiments,
- that is it possible to reach better points in a pareto diagram, given the
+ that is it possible to reach better points in a Pareto diagram, given the
  right knowledge is introduced in the model, mainly by learning the landmark
  distribution parameters on real data.
 \end_layout
@@ -657,7 +660,7 @@ The problem of finding
 \end_inset
 
  keypoints that have maximum descriptive and discriminative potentials can
- thus be stated as :
+ thus be stated as:
 \begin_inset Formula 
 \begin{equation}
 \mathcal{P}_{\lambda,k}=\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
@@ -725,7 +728,7 @@ key "Cotton2010,Moussallam2012c"
 .
  The dictionary is a union of 7 MDCT scales replicated such as to form a
  highly overcomplete shift-invariant dictionary.
- Atoms are uniformly selected in time while a strong biais on their frequency
+ Atoms are uniformly selected in time while a strong bias on their frequency
  localization can be observed.
 \end_layout
 
@@ -733,7 +736,7 @@ key "Cotton2010,Moussallam2012c"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -750,11 +753,11 @@ status collapsed
 \begin_layout Plain Layout
 Empirical distribution of the first 100 atoms observed on 600 audio segments
  of 4 seconds each, taken from the GTZAN dataset.
- Signals are downsampled to 8KHz, are of size 
+ Signals are down-sampled to 8KHz, are of size 
 \begin_inset Formula $N=32000$
 \end_inset
 
-, the highly overcomplete dictionary is made of roughly 65 millions atoms.
+, the highly over-complete dictionary is made of roughly 65 millions atoms.
  
 \begin_inset CommandInset label
 LatexCommand label
@@ -779,13 +782,12 @@ name "fig:Empirical-Biais"
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/empirical_cooc_mat_GTZAN_20files_100atoms_3xMDCT.png
-	lyxscale 25
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/WF_WT_200files_1xMDCT_100k.pdf
 	width 8cm
 
 \end_inset
@@ -797,14 +799,20 @@ status collapsed
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Empirical Co-occurrence matrix (sparse pattern)
+Empirical Co-occurrence of Time Frequency atoms observed on the same 600
+ segments.
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Empirical-Covariance"
 
 \end_inset
 
-
+.
+ The empirical bias has been subtracted.
+ Darker regions indicate higher co-occurrences.
+ The strong diagonal components indicates neighborhood relationships both
+ in time and frequency.
+ Harmonic correlations can be observed in the frequency matrix.
 \end_layout
 
 \end_inset
@@ -1011,10 +1019,6 @@ p(s_{i}=1|\{s_{j\neq i}\})=\frac{1}{1+\exp\left(-\Delta E_{i}\right)}
 \end_inset
 
 
-\end_layout
-
-\begin_layout Subsubsection
-Reducing model complexity
 \end_layout
 
 \begin_layout Standard
@@ -1313,6 +1317,335 @@ key "Wang"
 
 \begin_layout Section
 Experiments
+\end_layout
+
+\begin_layout Standard
+In the framework described above, many parameters need to be chosen.
+ The dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
+
+, the sparsity 
+\begin_inset Formula $k$
+\end_inset
+
+ of the representation (i.e.
+ the number of keypoints), 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+, the bias 
+\begin_inset Formula $b$
+\end_inset
+
+ and the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="5">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Parameter
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Wang03
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Cotton10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mixed-I
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mixed-II
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Phi$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+monoscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\in\mathbb{R}^{+}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\in\mathbb{R}^{+}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+implicit
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fixed
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+learned
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+implicit diagonal
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fixed diagonal
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+learned
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fingerprint parameters
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard

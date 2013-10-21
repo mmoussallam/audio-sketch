@@ -22,6 +22,7 @@ sparsity = 100
 fs = 8000.0
 # the density is approximately of sparsity/seg_dur features per second
 #scales = [2**j for j in range(5,12)]
+#scales = [64,512,4096]
 scales = [64,512,4096]
 skhandlename = XMDCTSparseSketch
 nature = 'LOMDCT'
@@ -45,7 +46,7 @@ skhandle.recompute(t_seg)
 L = skhandle.rep.recomposed_signal.length
 M = len(scales)*L
 sp_mat = dok_matrix((M,M))
-
+pad=4096
 Wfs = []
 Wts = []
 for s in scales:
@@ -53,7 +54,7 @@ for s in scales:
 #    T = L/(s/2)
 #    Wts.append(dok_matrix((T,T)))
     Wfs.append(np.zeros((s/2,s/2), dtype=np.int16))
-    T = L/(s/2)
+    T = seg_dur*100#/(s/2)
     Wts.append(np.zeros((T,T), dtype=np.int16))
 
 ## Computing all the sparse rep
@@ -64,7 +65,7 @@ for fIdx, file_name in enumerate(file_names[:max_file_num]):
     for segIdx in range(l_sig.n_seg):
         sub_sig = l_sig.get_sub_signal(segIdx,1, mono=True, normalize=True)
         sub_sig.resample(fs)
-        sub_sig.window(4096)
+        sub_sig.window(pad)
 #        t = time.time()
         skhandle.recompute(sub_sig)
         print skhandle.rep
@@ -87,21 +88,25 @@ for fIdx, file_name in enumerate(file_names[:max_file_num]):
                 trans_anch_bin = int(anch_bin * targ_scale / anch_scale)
                 trans_anch_frame = int(atomAnch.time_position / (targ_scale/2))
                 Wf[trans_anch_bin,targ_bin]  += 1 
-                Wt[trans_anch_frame, targ_frame] += 1 
+                Wt[float(atomAnch.time_position-pad)/fs*100, float(atomTarg.time_position-pad)/fs*100] += 1 
                 
                 
     print "elapsed ",time.time()-t
 
 figure_path = op.join(SKETCH_ROOT,'src/manu_sandbox/figures')
-plt.figure(figsize=(8,12))
+output_path = op.join(SKETCH_ROOT,'src/manu_sandbox/outputs')
+
+plt.figure(figsize=(8,4*len(scales)))
 for sidx,s in enumerate(scales):
+    np.save(op.join(output_path, "W_F_%dfiles_%d_outof_%dxMDCT_%dk"%(max_file_num,sidx, len(scales), sparsity)), np.array(Wfs[sidx]))
+    np.save(op.join(output_path, "W_T_%dfiles_%d_outof_%dxMDCT_%dk"%(max_file_num,sidx, len(scales), sparsity)),np.array(Wts[sidx]))
     plt.subplot(len(scales),2,(sidx*2)+1)
 #    plt.spy(Wfs[sidx],marker='o',markersize=0.5)
     # the biais is simply the sum over the columns
     biais = np.mean(Wfs[sidx], axis=0)
     r_biais = np.maximum(biais,1).reshape(len(biais),1)
     r_biais_mat = np.dot(r_biais, r_biais.T)
-    plt.imshow(np.log(Wfs[sidx]))  
+    plt.imshow(np.log(Wfs[sidx]/r_biais_mat))  
     plt.subplot(len(scales),2,(sidx*2)+2)
     plt.imshow(Wts[sidx])  
                                                                  
