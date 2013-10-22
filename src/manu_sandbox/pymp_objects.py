@@ -138,7 +138,7 @@ class PenalizedMDCTBlock(Block):
             self.pen_mask = self.biais    
         self.add_mask = np.zeros_like(self.biais)
         self.entropies = np.zeros_like(self.pen_mask)
-        
+        self.const = (np.log(2)/2.0)
     def update_mask(self, new_atom):
         """ Update the current mask by adding the contribution of pairwise products
             with the given index"""
@@ -200,7 +200,8 @@ class PenalizedMDCTBlock(Block):
 #        print treeMaxIdx, maxIdx, self.maxIdx, self.max_value
         
     def _entropy(self, x):
-        return np.log(1.0+np.exp(-x))/(1.0+np.exp(-x)) - (np.log(2)/2.0)
+        p = 1.0+np.exp(-x)
+        return np.log(p)/p - self.const
         
     # inner product computation through MDCT
     def compute_transform(self, startingFrame=1, endFrame=-1):
@@ -237,7 +238,7 @@ class PenalizedMDCTBlock(Block):
                                                      self.post_twid_vec,
                                                      startingFrame,
                                                      endFrame,
-                                                     self.scale, self.lambd)
+                                                     self.scale, self.lambd,0)
 
         except SystemError:
             print sys.exc_info()[0]
@@ -257,3 +258,102 @@ class PenalizedMDCTBlock(Block):
 #        plt.figure()
         plt.imshow(self.pen_mask[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
 #        plt.show()
+
+
+class PenalizedLOMDCTDico(PenalizedMDCTDico):
+    """ with LO """
+    def initialize(self, residual_signal):
+        ''' Create the collection of blocks specified by the MDCT sizes '''
+        self.blocks = []
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
+        for scale, biais, Ws, Wt , lambd in zip(self.sizes, self.biaises, self.wfs,self.wts, self.lambdas):
+            self.blocks.append(PenalizedLOMDCTBlock(scale,
+                                           residual_signal, biais, Ws, Wt, lambd,
+                                           debug_level=self.debug))
+
+class PenalizedLOMDCTBlock(PenalizedMDCTBlock):
+    """ inherit from both LOBlock and penalized MDCT """
+    def compute_transform(self, startingFrame=1, endFrame=-1):
+        """ inner product computation through MDCT """
+        if self.w_long is None:
+            self.initialize()
+
+        if endFrame < 0:
+            endFrame = self.frame_num - 2
+
+        # debug -> changed from 1: be sure signal is properly zero -padded
+        if startingFrame < 1:
+            startingFrame = 2        
+        #Specificity: Use the updated penalty mask        
+        try:
+            parallelProjections.project_penalized_mdct(self.framed_data_matrix,
+                                                       self.best_score_tree,
+                                                     self.projs_matrix,
+                                                     self.pen_projs_matrix,
+                                                     self.entropies,
+                                                     self.locCoeff,
+                                                     self.post_twid_vec,
+                                                     startingFrame,
+                                                     endFrame,
+                                                     self.scale, self.lambd,1)
+
+        except SystemError:
+            print sys.exc_info()[0]
+            print sys.exc_info()[1]
+            raise
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
+        
+
+    def get_max_atom(self, debug=0):
+        self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
+        self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
+
+        # hack here : let us project the atom waveform on the neighbouring
+        # signal in the FFt domain,
+        # so that we can find the maximum correlation and best adapt the time-
+        # shift
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
+        Atom.frame = self.max_frame_idx
+
+        Atom.mdct_value = self.max_value
+        # new version : compute also its waveform through inverse MDCT
+        Atom.waveform = self.synthesize_atom(value=1)
+        Atom.time_shift = 0
+        Atom.proj_score = 0.0
+
+        input1 = self.framed_data_matrix[(self.max_frame_idx - 1.5) *
+             self.scale / 2: (self.max_frame_idx + 2.5) * self.scale / 2]
+        input2 = np.concatenate((np.concatenate(
+            (np.zeros(self.scale / 2), Atom.waveform)), np.zeros(self.scale / 2)))
+
+
+        if len(input1) != len(input2):
+            print self.max_frame_idx, self.maxIdx, self.frame_num
+            print len(input1), len(input2)
+            #if debug>0:
+            print "atom in the borders , no timeShift calculated"
+            return Atom
+
+        # retrieve additional timeShift
+#        if self.use_c_optim:
+        scoreVec = np.array([0.0])
+        Atom.time_shift = parallelProjections.project_atom(
+            input1, input2, scoreVec, self.scale)
+
+        if abs(Atom.time_shift) > Atom.length / 2:
+            print "out of limits: found time shift of", Atom.time_shift
+            Atom.time_shift = 0
+            return Atom
+
+        self.maxTimeShift = Atom.time_shift
+        Atom.time_position += Atom.time_shift
+
+        # retrieve newly projected waveform
+        Atom.proj_score = scoreVec[0]
+        Atom.waveform *= Atom.proj_score
+
+        return Atom

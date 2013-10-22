@@ -17,7 +17,7 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
                            
 from PyMP.mdct.dico import Dico, SpreadDico
 from PyMP.mp import greedy
-from src.manu_sandbox.pymp_objects import PenalizedMDCTDico
+from src.manu_sandbox.pymp_objects import PenalizedMDCTDico, PenalizedLOMDCTDico
                         
 exemp_sig = Signal(str(file_names[0]), mono=True, normalize=True)
 exemp_sig.crop(0, 4*8192)
@@ -27,7 +27,7 @@ scales = [64,512,4096]
 #exemp_sig = Signal(np.random.randn(128), 20, mono=True)
 #scales = [16,64] 
 nb_atoms = 100
-l_lambda = 2.0
+l_lambda = 10.0
 
 # let us put some 1/f biais
 biaises = []
@@ -57,6 +57,9 @@ pen_dico = PenalizedMDCTDico(scales, biaises, Wfs,Wts,
                              len(scales)*[l_lambda])
 spread_dico = SpreadDico(scales, penalty=0, maskSize=3)
 
+pen_lodico = PenalizedLOMDCTDico(scales, biaises, Wfs,Wts,
+                             len(scales)*[l_lambda])
+
 t = time.time()
 std_app , std_dec, = greedy(exemp_sig, std_dico, 100, nb_atoms, debug=1, pad=False)
 print time.time() - t
@@ -64,7 +67,8 @@ pen_app , pen_dec = greedy(exemp_sig, pen_dico, 100, nb_atoms, debug=1, pad=Fals
 print time.time() - t
 spr_app , spr_dec = greedy(exemp_sig, spread_dico, 100, nb_atoms, debug=1, pad=False)
 print time.time() - t
-
+penlo_app , penlo_dec = greedy(exemp_sig, pen_lodico, 100, nb_atoms, debug=1, pad=False)
+print time.time() - t
 # tell us when atoms stops being alike
 t = 0
 for atomA, atomB in zip(std_app.atoms, pen_app.atoms):
@@ -77,6 +81,7 @@ print "%d out of %d atoms are similar"%(t, std_app.atom_number)
 print std_app
 print pen_app
 print spr_app
+print penlo_app
 
 #plt.figure()
 #plt.plot(np.abs(pen_dico.blocks[1].projs_matrix))
@@ -92,9 +97,13 @@ pen_app.plot_tf()
 plt.subplot(223)
 spr_app.plot_tf()
 plt.subplot(224)
+penlo_app.plot_tf()
+
+plt.figure()
 plt.plot(std_dec)
 plt.plot(pen_dec,'k--')
 plt.plot(spr_dec,'r-.')
+plt.plot(penlo_dec,'c-.')
 plt.show()
 
 

@@ -1,7 +1,8 @@
 '''
-manu_sandbox.compare_recognition  -  Created on Oct 18, 2013
+manu_sandbox.compare_recognition_monoscale  -  Created on Oct 22, 2013
 @author: M. Moussallam
 '''
+
 import sys, os
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
@@ -34,6 +35,7 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
         db_creation(fgpthandle, skhandle, sparsity,
                 file_names, 
                 force_recompute = True,
+                step = float(seg_dur)*0.5,
                 seg_duration = seg_dur, 
                 files_path = audio_path, debug=False, n_jobs=1)
     
@@ -54,66 +56,76 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     return scores, stats
 
 
-sparsities = [5,10,30]
+sparsities = [5,10,30,50,100,150]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 1.0
+test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [1,]
-scales = [64,512,4096]
-Kmaxes = [1,5]
+Lambdas = [0,1,5]
+scales = [2048]
+nature = 'LOMDCT'
 #################### WANG 2003
 #    print fgpthandlename, sk
 for sparsity in sparsities:    
-
+    
+    # W parameters same as W03
+    W03_skhandle = STFTPeaksSketch(**{'scale':scales[0],'step':scales[0]/4})
+    noisy_test = Signal(np.random.randn(seg_dur*fs), mono=True)
+    noisy_test.pad(2*8192)
+    W03_skhandle.recompute(noisy_test)
+    W03_skhandle.sparsify(sparsity)
+    
+    print "Parameters", W03_skhandle.params['f_width'],W03_skhandle.params['t_width']
+    Kmax = W03_skhandle.params['f_width']/2
+    # define the skhandle
+    biaises = []
+    Ws = []
+    Wt = [W03_skhandle.params['t_width']]           
+    
+    for sidx, s in enumerate(scales):    
+        # ultra penalize low frequencies                
+        biaises.append(0.000001*np.zeros((s/2,))) # no biais for now
+        W = np.zeros((s/2,s/2))
+        for k in range(-Kmax,Kmax):
+            W += np.eye(s/2,s/2,k)
+        Ws.append(W)    
     # Run with various Lambdas and Kmax    
     for l in Lambdas:
-        for Kmax in Kmaxes:
-            # define the skhandle
-            biaises = []
-            Ws = []
-            Wt = [512,96,20]           
-            lambdas = [l]*len(scales)
-            for sidx, s in enumerate(scales):    
-                # ultra penalize low frequencies                
-                biaises.append(0.000001*np.zeros((s/2,))) # no biais for now
-                W = np.zeros((s/2,s/2))
-                for k in range(-(sidx+1)*Kmax,(sidx+1)*Kmax):
-                    W += np.eye(s/2,s/2,k)
-                Ws.append(W)    
-            M13_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
-                                             'lambdas':lambdas,
-                                             'biaises':biaises,
-                                             'Wts':Wt,'fs':fs,#'crop':(seg_dur-1)*8192,
-                                             'Wfs':Ws,'pad':2*8192,'debug':1})
-            sk_id = "M13_Kmax%d_lambH%d"%(Kmax,l)
-            db_name = "%s_%d_%s_k%d_%dsec_%dfs.db"%(set_id,nb_files, sk_id, sparsity,
-                                                int(seg_dur), int(fs))
-            
-            M13_fgpthandle = SparseFramePairsBDB(op.join(db_path, db_name),load=False,persistent=True,
-                                                 **{'wall':False,
-                                                    'nb_neighbors_max':3,
-                                                    'delta_t_max':3.0})    
+        lambdas = [l]*len(scales)
+        M13_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
+                                                    'nature':nature,
+                                         'lambdas':lambdas,
+                                         'biaises':biaises,
+                                         'Wts':Wt,'fs':fs,#'crop':(seg_dur-1)*8192,
+                                         'Wfs':Ws,'pad':2*8192,'debug':1})
+        sk_id = "M13_Kmax%d_lambH%d_%s"%(Kmax,l,nature)
+        db_name = "%s_%d_%s_k%d_%dsec_%dfs.db"%(set_id,nb_files, sk_id, sparsity,
+                                            int(seg_dur), int(fs))
+        
+        M13_fgpthandle = SparseFramePairsBDB(op.join(db_path, db_name),load=False,persistent=True,
+                                             **{'wall':False,
+                                                'nb_neighbors_max':3,
+                                                'delta_t_max':3.0})    
 
-            tstart = time.time()
-            try:
-                scores, stats =  _run_reco_expe(M13_fgpthandle, M13_skhandle, sparsity, test_proportion)
-            except:
-                print "FATAL ERROR on this one ", Kmax, l, sparsity
-                continue
-            ttest = time.time() - tstart
-            # saving the results
-            score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files, sk_id, sparsity, 
-                                                    int(seg_dur), int(fs), int(100.0*test_proportion),
-                                                    int(step),len(scales))
-            
-            
-            savemat(op.join(output_path,score_name), {'score':scores, 'time':ttest,
-                                                     'size':M13_fgpthandle.get_kv_size()})
-            del M13_skhandle, M13_fgpthandle
+        tstart = time.time()
+        try:
+            scores, stats =  _run_reco_expe(M13_fgpthandle, M13_skhandle, sparsity, test_proportion)
+        except:
+            print "FATAL ERROR on this one ", Kmax, l, sparsity
+            continue
+        ttest = time.time() - tstart
+        # saving the results
+        score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files, sk_id, sparsity, 
+                                                int(seg_dur), int(fs), int(100.0*test_proportion),
+                                                int(step),len(scales))
+        
+        
+        savemat(op.join(output_path,score_name), {'score':scores, 'time':ttest,
+                                                 'size':M13_fgpthandle.get_kv_size()})
+        del M13_skhandle, M13_fgpthandle
     
         # Run Wang 03
 #    W03_skhandle = STFTPeaksSketch(**{'scale':2048,'step':512})

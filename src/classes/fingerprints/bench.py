@@ -35,6 +35,8 @@ class STFTPeaksBDB(FgptHandle):
                         'dt_n_bits': 10,
                         'value_total_bits':32,
                         'file_index_n_bits':20,
+                        'TZ_delta_f':0,
+                        'TZ_delta_t':0,
                         'time_n_bits':12,
                         'time_max':60.0* 20.0,
                         'wall':True}
@@ -144,16 +146,26 @@ class STFTPeaksBDB(FgptHandle):
         # then for each of them look in the target zone for other
         for pIdx in range(len(peak_indexes[0])):
             peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
+            
+            target_Imin = max(0,peak_ind[0]+self.params['TZ_delta_f'])
+            target_Imax = min(sparse_stft.shape[1],peak_ind[0]+self.params['TZ_delta_f']+f_target_width);
+            target_Jmin = max(0,peak_ind[1]+self.params['TZ_delta_t']);
+            target_Jmax = min(sparse_stft.shape[2],peak_ind[1]+self.params['TZ_delta_t']+t_target_width);
+#            print peak_ind,target_Imin,target_Imax,target_Jmin,target_Jmax
             target_points_i, target_points_j = np.nonzero(sparse_stft[0,
-                                                        peak_ind[0]: peak_ind[0]+f_target_width,
-                                                        peak_ind[1]: peak_ind[1]+t_target_width])
+                                                        target_Imin: target_Imax,
+                                                        target_Jmin: target_Jmax])
             # now we can build a pair of peaks , and thus a key
-            for i in range(1,len(target_points_i)):
+            for i in range(0,len(target_points_i)):
+                
                 f1 = np.round(float(peak_ind[0]) *freq_step)
-                f2 = np.round(float(peak_ind[0]+target_points_i[i]) * freq_step)
+                f2 = np.round(float(target_points_i[i]+target_Imin) * freq_step)
+                
                 t1 = float(peak_ind[1]) *time_step
                 # HACK HERE: rounding at 1 decimals to robustify
-                delta_t = np.round(float(target_points_j[i]) *time_step, decimals=1)
+                delta_t = np.round(float(target_points_j[i]+self.params['TZ_delta_t']) *time_step, decimals=1)
+                if f1==f2 and delta_t==0:
+                    continue
                 if display:    
                     ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
 #                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
@@ -484,11 +496,13 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 neighb_f = int(neigh.reduced_frequency * neigh.fs)
                 neighb_t = np.round((neigh.time_position + neigh.length/2) / neigh.fs, 3)
                 # New rule: keep only positive time differences
-                if (neighb_t < t_anchor) or (neighb_f <= f1):
+                if (neighb_t < t_anchor): #or (neighb_f <= f1):
                     continue
                 if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
                     continue
                 if abs(neighb_f - f1) > self.params['delta_f_max']:
+                    continue
+                if abs(neighb_f - f1) < self.params['delta_f_min']:
                     continue
                 # in same zone: build the pair
                 if display:          

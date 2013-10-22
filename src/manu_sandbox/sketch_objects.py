@@ -7,7 +7,7 @@ import sys, os
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
 from src.classes.sketches.bench import XMDCTSparseSketch
-from src.manu_sandbox.pymp_objects import PenalizedMDCTDico
+from src.manu_sandbox.pymp_objects import PenalizedMDCTDico, PenalizedLOMDCTDico
 
 class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
     """ I now define my own sketch that will use my specific dictionaries 
@@ -22,6 +22,7 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
         self.params['Wts'] = None
         self.params['lambdas'] = None
         self.params['debug'] = 0
+        self.params['nature'] = 'MDCT'
         # replace with user-provided
         for key in kwargs.keys():
             self.params[key] = kwargs[key]
@@ -47,7 +48,17 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
 
     def _get_dico(self):
         """ only difference, use a specialy designed dictionary here """
-        mdct_dico = PenalizedMDCTDico(self.params['scales'],
+        if self.params['nature'] =='MDCT':
+#            print "Choose MDCT"
+            mdct_dico = PenalizedMDCTDico(self.params['scales'],
+                                      self.params['biaises'], 
+                                      self.params['Wfs'],
+                                      self.params['Wts'],
+                                      self.params['lambdas'],
+                                      debug_level=self.params['debug'])
+        else:
+#            print "Choose LO-MDCT"
+            mdct_dico = PenalizedLOMDCTDico(self.params['scales'],
                                       self.params['biaises'], 
                                       self.params['Wfs'],
                                       self.params['Wts'],

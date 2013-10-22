@@ -1,3 +1,7 @@
+'''
+manu_sandbox.visu_recognition_monoscale  -  Created on Oct 22, 2013
+@author: M. Moussallam
+'''
 import sys, os
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
@@ -11,54 +15,62 @@ db_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/db')
 
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
-sparsities = [5,10,30,50,75,100,150]
+sparsities =  [5,10,30,50,100,150]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 1.0
+test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1]
-scales = [64,512,4096]
-Kmaxes = [1,]
-nb_files = 100
+Lambdas = [0,1,10]
+scales = [2048]
+nb_files = 10
 
  
 legends=[]
 # Run with various Lambdas and Kmax    
-for l in Lambdas:
-    for Kmax in Kmaxes:
-        scores = []
-        cons_scores=[]
-        times=[]
-        sizes=[]
-        for sparsity in sparsities:   
-            sk_id = "M13_Kmax%d_lambH%d"%(Kmax,l)
-            # saving the results
-            score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files,sk_id, sparsity, 
-                                                    int(seg_dur), int(fs),
-                                                    int(100.0*test_proportion),
-                                                    int(step),len(scales))
+for l in Lambdas:    
+    scores = []
+    cons_scores=[]
+    times=[]
+    sizes=[]
+    for sparsity in sparsities:   
+        
+        W03_skhandle = STFTPeaksSketch(**{'scale':scales[0],'step':scales[0]/4})
+        noisy_test = Signal(np.random.randn(seg_dur*fs), mono=True)
+        noisy_test.pad(2*8192)
+        W03_skhandle.recompute(noisy_test)
+        W03_skhandle.sparsify(sparsity)
+        
+        print "Parameters", W03_skhandle.params['f_width'],W03_skhandle.params['t_width']
+        Kmax = W03_skhandle.params['f_width']/2
+        
+        sk_id = "M13_Kmax%d_lambH%d"%(Kmax,l)
+        # saving the results
+        score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files,sk_id, sparsity, 
+                                                int(seg_dur), int(fs),
+                                                int(100.0*test_proportion),
+                                                int(step),len(scales))
 
-            D = loadmat(op.join(output_path,score_name))
-            
-    #        sizes.append(float(D['size'])/(1024.0*1024.0))
-            scores.append(D['score'][0][0])
-            cons_scores.append(1-D['score'][-1][0])
-            times.append(D['time'][0][0])
-            sizes.append(D['size'][0][0])
-            print cons_scores
-        plt.subplot(121)
-        plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),'-', linewidth=2.0)
-        plt.xlabel('DB size (Mbytes)')
-        plt.ylabel('Recognition rate (\%)')
-        plt.subplot(122)
-        plt.semilogx(np.array(times), 100*np.array(cons_scores),'-', linewidth=2.0)    
-        plt.xlabel('Computation Times (s)')
-        plt.ylabel('Recognition rate (\%)')
-            
-        legends.append(("%s "%sk_id))
+        D = loadmat(op.join(output_path,score_name))
+        
+#        sizes.append(float(D['size'])/(1024.0*1024.0))
+        scores.append(D['score'][0][0])
+        cons_scores.append(1-D['score'][-1][0])
+        times.append(D['time'][0][0])
+        sizes.append(D['size'][0][0])
+        print cons_scores
+    plt.subplot(121)
+    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),'-', linewidth=2.0)
+    plt.xlabel('DB size (Mbytes)')
+    plt.ylabel('Recognition rate (\%)')
+    plt.subplot(122)
+    plt.semilogx(np.array(times), 100*np.array(cons_scores),'-', linewidth=2.0)    
+    plt.xlabel('Computation Times (s)')
+    plt.ylabel('Recognition rate (\%)')
+        
+    legends.append(("%s "%sk_id))
 
 # state of the art comparison
 sparsities = [5,10,30,50,100,200]

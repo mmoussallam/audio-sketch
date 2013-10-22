@@ -55,24 +55,26 @@ plt.yticks([])
 # Cotton 2010
 scales = [64,512,2048]
 C10_fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':3,
+                                                                      'nb_neighbors_max':5,
                                                                       'delta_t_max':3.0})
 C10_skhandle = XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,
                                  'nature':'LOMDCT','pad':False})
 
 plt.subplot(131)
-_Process(C10_fgpthandle, C10_skhandle,1.5*sparsity)
+_Process(C10_fgpthandle, C10_skhandle,sparsity)
 
 # Proposed
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':3,
+                                                                      'nb_neighbors_max':5,
+#                                                                      'delta_f_min':10,
+#                                                                      'delta_f_max':667,
                                                                       'delta_t_max':3.0})
 
 biaises = []
 Ws = []
 Wt = [600, 90, 20]
-lambdas = [10,10,10]
+lambdas = [0,0,0]
 for s in scales:    
     # ultra penalize low frequencies
 #    biais = np.linspace(1.0,0.0,s/2)
@@ -87,13 +89,14 @@ for s in scales:
 #    Wt.append(5*(scales[-1]/s))  
 #    lambdas.append(10.0)
 
-M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':sparsity,
+M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
+                                            'nature':'LOMDCT',
                                  'lambdas':lambdas,
                                  'biaises':biaises,
                                  'Wts':Wt,
                                  'Wfs':Ws,'pad':False,'debug':1})
 plt.subplot(132)
-_Process(M12_fgpthandle, M12_skhandle,1.5*sparsity)
+_Process(M12_fgpthandle, M12_skhandle,sparsity)
 [f.freq_bin for f in M12_skhandle.rep.atoms]
 
 plt.ylabel('')
