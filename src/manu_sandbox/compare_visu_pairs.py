@@ -15,7 +15,7 @@ import matplotlib
 single_test_file1 = op.join(SND_DB_PATH,'jingles/panzani.wav')
 fs = 8000
 tempdir = '.'
-sparsity = 35
+sparsity = 50
 figure_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/figures')
 # let's take a signal and build the fingerprint with pairs of atoms or plain atoms
 
@@ -55,7 +55,7 @@ plt.yticks([])
 # Cotton 2010
 scales = [64,512,2048]
 C10_fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':5,
+                                                                      'nb_neighbors_max':3,
                                                                       'delta_t_max':3.0})
 C10_skhandle = XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,
                                  'nature':'LOMDCT','pad':False})
@@ -66,7 +66,7 @@ _Process(C10_fgpthandle, C10_skhandle,sparsity)
 # Proposed
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':5,
+                                                                      'nb_neighbors_max':3,
 #                                                                      'delta_f_min':10,
 #                                                                      'delta_f_max':667,
                                                                       'delta_t_max':3.0})
@@ -74,7 +74,7 @@ M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall'
 biaises = []
 Ws = []
 Wt = [600, 90, 20]
-lambdas = [0,0,0]
+lambdas = [10,10,10]
 for s in scales:    
     # ultra penalize low frequencies
 #    biais = np.linspace(1.0,0.0,s/2)
@@ -90,7 +90,7 @@ for s in scales:
 #    lambdas.append(10.0)
 
 M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
-                                            'nature':'LOMDCT',
+                                            'nature':'MDCT',
                                  'lambdas':lambdas,
                                  'biaises':biaises,
                                  'Wts':Wt,
