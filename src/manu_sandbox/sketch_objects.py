@@ -23,6 +23,7 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
         self.params['lambdas'] = None
         self.params['debug'] = 0
         self.params['nature'] = 'MDCT'
+        self.params['entropic'] = True
         # replace with user-provided
         for key in kwargs.keys():
             self.params[key] = kwargs[key]
@@ -55,7 +56,8 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
                                       self.params['Wfs'],
                                       self.params['Wts'],
                                       self.params['lambdas'],
-                                      debug_level=self.params['debug'])
+                                      debug_level=self.params['debug'],
+                                      entropic=self.params['entropic'])
         else:
 #            print "Choose LO-MDCT"
             mdct_dico = PenalizedLOMDCTDico(self.params['scales'],
@@ -63,7 +65,8 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
                                       self.params['Wfs'],
                                       self.params['Wts'],
                                       self.params['lambdas'],
-                                      debug_level=self.params['debug'])
+                                      debug_level=self.params['debug'],
+                                      entropic=self.params['entropic'])
         
         return mdct_dico
     

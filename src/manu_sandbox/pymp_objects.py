@@ -15,7 +15,7 @@ class PenalizedMDCTDico(Dico):
     """ inherit from Dico, apply a penalty mask based on 
     a Boltzmann machine model (biais + co-occurence) """
     
-    def __init__(self,scales, biaises, Wfs, Wts, lambdas,debug_level=0, **kwargs):
+    def __init__(self,scales, biaises, Wfs, Wts, lambdas,debug_level=0,entropic=True, **kwargs):
         # caling superclass constructor
         
         super(PenalizedMDCTDico,self).__init__(scales, **kwargs)
@@ -24,7 +24,7 @@ class PenalizedMDCTDico(Dico):
         self.wts = Wts
         self.lambdas = lambdas
         self.debug = debug_level
-        
+        self.entropic = entropic
     def initialize(self, residual_signal):
         ''' Create the collection of blocks specified by the MDCT sizes '''
         self.blocks = []
@@ -34,7 +34,7 @@ class PenalizedMDCTDico(Dico):
         for scale, biais, Ws, Wt , lambd in zip(self.sizes, self.biaises, self.wfs,self.wts, self.lambdas):
             self.blocks.append(PenalizedMDCTBlock(scale,
                                            residual_signal, biais, Ws, Wt, lambd,
-                                           debug_level=self.debug))
+                                           debug_level=self.debug,entropic=self.entropic))
 
     def update(self, residualSignal, iteratioNumber=0, debug=0):
         ''' Update the projections in each block, only where it needs to be done as specified '''
@@ -102,7 +102,7 @@ class PenalizedMDCTBlock(Block):
     """
     
     def __init__(self, length=0, res_sig=None, biais=None, Wf=None, Wt=None, lambd=0.01,
-                 debug_level=None):
+                 debug_level=None, entropic=True):
         
         if debug_level is not None:
             _Logger.set_level(debug_level)
@@ -125,7 +125,7 @@ class PenalizedMDCTBlock(Block):
         
         self.Wf = Wf
         self.Wt = Wt 
-        
+        self.entropic = entropic
         self.lambd = lambd
         _Logger.info('new PenalizedMDCTBlock block constructed size : ' + str(self.scale))
         
@@ -137,8 +137,11 @@ class PenalizedMDCTBlock(Block):
         else:
             self.pen_mask = self.biais    
         self.add_mask = np.zeros_like(self.biais)
-        self.entropies = np.zeros_like(self.pen_mask)
+#        self.entropies = self.zeros_like(self.pen_mask)
+        
         self.const = (np.log(2)/2.0)
+        self.entropies = self._entropy(self.pen_mask)
+    
     def update_mask(self, new_atom):
         """ Update the current mask by adding the contribution of pairwise products
             with the given index"""
@@ -172,6 +175,7 @@ class PenalizedMDCTBlock(Block):
             L = min(add_term.shape[0], self.pen_mask.shape[0]-start_pos)
 #            print nb_tile_frames, start_pos
             self.pen_mask[start_pos:start_pos+L] += add_term[:L]
+            
             self.entropies[start_pos:start_pos+L] = self._entropy(self.pen_mask[start_pos:start_pos+L])
 #            import matplotlib.pyplot as plt
 #            plt.imshow(self.pen_mask[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
@@ -200,8 +204,11 @@ class PenalizedMDCTBlock(Block):
 #        print treeMaxIdx, maxIdx, self.maxIdx, self.max_value
         
     def _entropy(self, x):
-        p = 1.0+np.exp(-x)
-        return np.log(p)/p - self.const
+        if self.entropic:
+            p = 1.0+np.exp(-x)
+            return np.log(p)/p - self.const
+        else:
+            return x
         
     # inner product computation through MDCT
     def compute_transform(self, startingFrame=1, endFrame=-1):
@@ -271,7 +278,7 @@ class PenalizedLOMDCTDico(PenalizedMDCTDico):
         for scale, biais, Ws, Wt , lambd in zip(self.sizes, self.biaises, self.wfs,self.wts, self.lambdas):
             self.blocks.append(PenalizedLOMDCTBlock(scale,
                                            residual_signal, biais, Ws, Wt, lambd,
-                                           debug_level=self.debug))
+                                           debug_level=self.debug,entropic=self.entropic))
 
 class PenalizedLOMDCTBlock(PenalizedMDCTBlock):
     """ inherit from both LOBlock and penalized MDCT """

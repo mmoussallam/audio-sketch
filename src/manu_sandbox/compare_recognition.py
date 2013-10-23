@@ -65,7 +65,7 @@ test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 Lambdas = [0,1,5,10]
 scales = [128,512,2048]
-Kmaxes = [1,2,4]
+Kmaxes = [1,4]
 nature = 'LOMDCT'
 #################### WANG 2003
 #    print fgpthandlename, sk

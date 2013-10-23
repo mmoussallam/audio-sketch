@@ -11,19 +11,19 @@ db_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/db')
 
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
-sparsities = [5,10,30,50,75,100,150]
+sparsities = [5,10]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 1.0
+test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1]
-scales = [64,512,4096]
+Lambdas = [0,1,5,10]
+scales = [64,128,256,512,1024,2048]
 Kmaxes = [1,]
-nb_files = 100
-
+nb_files = 10
+nature = 'LOMDCT'
  
 legends=[]
 # Run with various Lambdas and Kmax    
@@ -34,12 +34,12 @@ for l in Lambdas:
         times=[]
         sizes=[]
         for sparsity in sparsities:   
-            sk_id = "M13_Kmax%d_lambH%d"%(Kmax,l)
+            sk_id = "M13_Kmax%d_lambH%d_%dx%s"%(Kmax,l,len(scales),nature)
             # saving the results
-            score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dxMCDT.mat"%(set_id,nb_files,sk_id, sparsity, 
+            score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dx%s.mat"%(set_id,nb_files,sk_id, sparsity, 
                                                     int(seg_dur), int(fs),
                                                     int(100.0*test_proportion),
-                                                    int(step),len(scales))
+                                                    int(step),len(scales),nature)
 
             D = loadmat(op.join(output_path,score_name))
             

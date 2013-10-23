@@ -58,7 +58,7 @@ pen_dico = PenalizedMDCTDico(scales, biaises, Wfs,Wts,
 spread_dico = SpreadDico(scales, penalty=0, maskSize=3)
 
 pen_lodico = PenalizedLOMDCTDico(scales, biaises, Wfs,Wts,
-                             len(scales)*[l_lambda])
+                             len(scales)*[-l_lambda],entropic=False)
 
 t = time.time()
 std_app , std_dec, = greedy(exemp_sig, std_dico, 100, nb_atoms, debug=1, pad=False)

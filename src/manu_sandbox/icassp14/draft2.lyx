@@ -1265,7 +1265,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/KeyPoints_and_pairs.pdf
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/KeyPoints_and_pairs_voicefemale_30k.pdf
 	width 16cm
 
 \end_inset
@@ -1277,16 +1277,14 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Visualization
-\emph on
- 
-\emph default
-of the TF 
+Time-frequency 
 \emph on
 landmarks
 \emph default
- built by the algorithm.
- From left to right 
+ built by the algorithm with varying parameters on a 5s audio excerpt of
+ female speech.
+ Each case has built 100 landmarks.
+ (a): 
 \begin_inset Formula $\lambda_{H}=0$
 \end_inset
 
@@ -1297,22 +1295,45 @@ key "Cotton2010"
 
 \end_inset
 
-), 
+) algorithm selected atoms on a purely energetic basis in a union of 6 scales
+ shift-invariant Gabor dictionary.
+ (b): Same dictionary with 
+\begin_inset Formula $\lambda_{H}=5$
+\end_inset
+
+ the bias is set to zero and 
+\begin_inset Formula $W$
+\end_inset
+
+ is mostly zeros except for immediate neighboring atoms.
+ The penalization led to the selection of a slightly different set of keypoints.
+ (c): Same dictionary with 
 \begin_inset Formula $\lambda_{H}=10$
 \end_inset
 
- and 
-\begin_inset Formula $\lambda_{H}=\infty$
+, a stronger neighboring penalization in 
+\begin_inset Formula $W$
 \end_inset
 
- (similar to 
+ and a strong bias 
+\begin_inset Formula $b$
+\end_inset
+
+ on low-frequencies.
+ This time the algorithm has selected a very different set of keypoints.
+ (d): Monoscale Gabor dictionary with 25% overlap and a selection procedure
+ equivalent to 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Wang"
 
 \end_inset
 
-)
+, similar to what could be obtained with 
+\begin_inset Formula $\lambda_{H}=+\infty$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
@@ -1810,7 +1831,81 @@ name "fig:Robustness-results"
 \end_layout
 
 \begin_layout Subsection
-Recognition 
+Landmarks entropy
+\end_layout
+
+\begin_layout Standard
+We expect keypoints selected with the entropic penalization to have a distributi
+on somehow more 
+\begin_inset Quotes sld
+\end_inset
+
+uniform
+\begin_inset Quotes srd
+\end_inset
+
+ that those selected on purely energetic considerations.
+ Indeed Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Entropy"
+
+\end_inset
+
+ shows empirical distribution measured on the 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/EmpiricalKPLMdistribs_GTZAN_1000_60k_6xLOMDCT_25bins.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical distribution of keypoints and landmarks.
+ Flat distribution has highest entropy and corresponds to cases where each
+ landmark is maximally informative.
+ Keypoints and Landmarks are indexed by increasing frequencies.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Entropy"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Recognition performances
 \end_layout
 
 \begin_layout Standard
@@ -1825,10 +1920,14 @@ The primary objective of a fingerprint system is its recognition performance.
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -1858,7 +1957,8 @@ key "Wang,ismir,Moussallam2012c,Cotton2010"
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 

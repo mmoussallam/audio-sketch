@@ -15,7 +15,7 @@ db_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/db')
 
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
-sparsities =  [5,10,30,50,100,150]
+sparsities =  [5,10,30,50,]
 seg_dur = 5
 fs = 8000
 step = 3.0

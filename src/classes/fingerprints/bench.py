@@ -431,7 +431,7 @@ class SparseFramePairsBDB(STFTPeaksBDB):
     PyMP approx berkeley database handle
     build pairs of atoms as keys
     '''
-    keyformat = 0
+    
         # closing the db for now ?
 #        self.dbObj.close();
 
@@ -442,7 +442,7 @@ class SparseFramePairsBDB(STFTPeaksBDB):
         '''
         # Call superclass constructor
         super(SparseFramePairsBDB, self).__init__(dbName, load=load, persistent=persistent,dbenv=dbenv)                
-        
+        self.keyformat = 0
         self.params['delta_f_max'] = 667 # in hertz
         self.params['delta_f_min'] = 25 # in hertz
         self.params['delta_f_bits'] = 6 # in hertz
@@ -498,6 +498,8 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 # New rule: keep only positive time differences
                 if (neighb_t < t_anchor): #or (neighb_f <= f1):
                     continue
+                if (neighb_t - t_anchor) < self.params['delta_t_min']:
+                    continue
                 if abs(neighb_t - t_anchor) > self.params['delta_t_max']:
                     continue
                 if abs(neighb_f - f1) > self.params['delta_f_max']:
@@ -531,14 +533,15 @@ Resolution: Time: %1.3f (s) %2.2f Hz
         
         The message is formated as [F1 | Sign| Delta_f | sign | Delta_t]
         """
-        (f1, delta_f, delta_t) = key
-        f1mult =  2 ** (self.params['delta_f_bits'] + self.params['dt_n_bits'] + 2) 
-        deltafmult = 2 ** (self.params['dt_n_bits'] + 1)
-        return floor((f1 / self.alpha) * f1mult) + \
-              (delta_f>0) * 2**(self.params['delta_f_bits'] + self.params['dt_n_bits'] + 1) \
-             + floor((abs(delta_f) / self.beta) * deltafmult) + \
-             + (delta_t>0) *  2 ** (self.params['dt_n_bits']) + \
-             floor((abs(delta_t)))
+        if self.keyformat ==0:
+            (f1, delta_f, delta_t) = key
+            f1mult =  2 ** (self.params['delta_f_bits'] + self.params['dt_n_bits'] + 2) 
+            deltafmult = 2 ** (self.params['dt_n_bits'] + 1)
+            return floor((f1 / self.alpha) * f1mult) + \
+                  (delta_f>0) * 2**(self.params['delta_f_bits'] + self.params['dt_n_bits'] + 1) \
+                 + floor((abs(delta_f) / self.beta) * deltafmult) + \
+                 + (delta_t>0) *  2 ** (self.params['dt_n_bits']) + \
+                 floor((abs(delta_t)))
              #floor((abs(delta_t)) / self.gamma)
 
 
