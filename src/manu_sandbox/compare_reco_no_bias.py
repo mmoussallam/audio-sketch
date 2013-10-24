@@ -1,11 +1,8 @@
 '''
-manu_sandbox.compare_reco_with_bias  -  Created on Oct 23, 2013
-
-Let us make some test with a synthetic bias on higher frequencies
-and no co-occurence
-
+manu_sandbox.compare_reco_no_bias  -  Created on Oct 24, 2013
 @author: M. Moussallam
 '''
+
 import sys, os
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
@@ -29,7 +26,7 @@ set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)
 
-nb_files = 100
+nb_files = 10
 file_names = file_names[:nb_files]
 def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     ################# This is a complete experimental run given the setup ############## 
@@ -59,7 +56,7 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     return scores, stats
 
 
-sparsities = [5,10,20,30,50,]
+sparsities = [5,10,20,30,50]
 seg_dur = 5
 fs = 8000
 step = 3.0
@@ -90,8 +87,8 @@ for sparsity in sparsities:
             K = W03_ref.params['f_width']
             T = W03_ref.params['t_width']/2
             print "K = %d, T=%d"%(K,T)
-    #        biais = np.zeros((s/2,))
-            biais = np.linspace(1,1/s,s/2)**2    
+            biais = np.zeros((s/2,))
+#            biais = np.linspace(1,1/s,s/2)**2    
             biaises.append(biais)
             W = np.zeros((s/2,s/2))
             for k in range(-int(K/2),int(K/2)):
@@ -103,8 +100,8 @@ for sparsity in sparsities:
                                          'lambdas':lambdas,
                                          'biaises':biaises,
                                          'Wts':Wt,'fs':fs,#'crop':(seg_dur-1)*8192,
-                                         'Wfs':Ws,'pad':2*8192,'debug':1,'entropic':True})
-        sk_id = "M13_bias_lambH%d_%dx%s"%(l,len(scales),nature)
+                                         'Wfs':Ws,'pad':2*8192,'debug':1})
+        sk_id = "M13_nobias_lambH%d_%dx%s"%(l,len(scales),nature)
         db_name = "%s_%d_%s_k%d_%dsec_%dfs.db"%(set_id,nb_files, sk_id, sparsity,
                                             int(seg_dur), int(fs))
         

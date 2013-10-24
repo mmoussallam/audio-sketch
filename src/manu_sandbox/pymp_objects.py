@@ -161,8 +161,10 @@ class PenalizedMDCTBlock(Block):
 #            self.entropies = self._entropy(self.pen_mask)
             # replicate it only on neighboring frames: don't need to 
             # penalize far from this point
+            
             new_mask = self.Wf[atom_idx_in_w,:]
-            trans_frame = new_atom.time_position / (self.scale/2)
+            trans_frame = int(new_atom.time_position / (self.scale/2))
+#            print atom_idx_in_w, trans_frame
             # HEURISTIC HERE: SHOULD BE REPLACED BY A Wt matrix
             if self.Wt is not None:
                 nb_tile_frames = self.Wt
@@ -171,7 +173,7 @@ class PenalizedMDCTBlock(Block):
             
 #            print nb_tile_frames, self.frame_num
             add_term = np.tile(new_mask, nb_tile_frames)
-            start_pos = max(0,self.scale/4 + (trans_frame- nb_tile_frames/2)*(self.scale/2)) 
+            start_pos = max(0, (trans_frame- nb_tile_frames/2)*(self.scale/2) ) 
             L = min(add_term.shape[0], self.pen_mask.shape[0]-start_pos)
 #            print nb_tile_frames, start_pos
             self.pen_mask[start_pos:start_pos+L] += add_term[:L]
@@ -263,6 +265,9 @@ class PenalizedMDCTBlock(Block):
         """ draw the mask """
         import matplotlib.pyplot as plt
 #        plt.figure()
+        plt.subplot(211)
+        plt.imshow(self.projs_matrix[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
+        plt.subplot(212)
         plt.imshow(self.pen_mask[:(self.scale/2)*self.frame_num].reshape((self.frame_num,self.scale/2)))
 #        plt.show()
 

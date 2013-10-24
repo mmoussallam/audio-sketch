@@ -28,19 +28,21 @@ orig_sig.pad(4096)
 orig_sig.write(op.join(tempdir, 'orig.wav'))
 
 def _Process(fgpthandle, skhandle,nb_points):
-    orig_sig.spectrogram(2048,256,ax=plt.gca(),order=0.5,log=False,cbar=False,
-                         cmap=cm.bone_r, extent=[0,orig_sig.get_duration(),0, fs/2])
+    orig_sig.spectrogram(2048,256,ax=plt.gca(),order=0.5,log=True,cbar=False,
+                         cmap=cm.pink_r, extent=[0,orig_sig.get_duration(),0, fs/2])
     if skhandle.params.has_key('n_atoms'):
         skhandle.params['n_atoms'] = nb_points
     skhandle.recompute(op.join(tempdir, 'orig.wav'))
     skhandle.sparsify(nb_points)
     fgpt = skhandle.fgpt(sparse=True)
     fgpthandle.populate(fgpt, skhandle.params, 0, display=True, ax=plt.gca())
-    plt.xlim([0,orig_sig.get_duration()])
+    plt.xlim([0.5,orig_sig.get_duration()-0.5])
     plt.ylim([0, fs/2])
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
-    plt.title('%d Landmarks'%np.count_nonzero([d for d in plt.gca().get_children() if isinstance(d, matplotlib.patches.FancyArrow)]))
+    nb_landmarks  = np.count_nonzero([d for d in plt.gca().get_children() if isinstance(d, matplotlib.patches.FancyArrow)])
+    print nb_landmarks
+    plt.title('%d Landmarks'%nb_landmarks)
     return fgpt
 
 # WANG 2003
@@ -59,25 +61,25 @@ plt.title('(d)')
 # Cotton 2010
 scales = [64,128,256,512,1024,2048]
 C10_fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':2,
-                                                  'delta_f_min':250,                                                                              
-                                                  'delta_f_max':2000,
-                                                  'delta_t_min':0.5,                                                                              
-                                                  'delta_t_max':2.0})
+                                                                      'nb_neighbors_max':3,
+                                                                  'delta_f_min':250,                                                                              
+                                                                  'delta_f_max':1500,
+                                                                  'delta_t_min':0.1,                                                                              
+                                                                  'delta_t_max':2.0})
 C10_skhandle = XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,
                                  'nature':'LOMDCT','pad':False})
 
 plt.subplot(141)
-_Process(C10_fgpthandle, C10_skhandle,2.5*sparsity)
+_Process(C10_fgpthandle, C10_skhandle,2*sparsity)
 plt.title('(a)')
 # Proposed - 1
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 M12_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':2,
-                                                  'delta_f_min':250,                                                                              
-                                                  'delta_f_max':2000,
-                                                  'delta_t_min':0.5,                                                                              
-                                                  'delta_t_max':2.0})
+                                                                      'nb_neighbors_max':3,
+                                                                  'delta_f_min':250,                                                                              
+                                                                  'delta_f_max':1500,
+                                                                  'delta_t_min':0.1,                                                                              
+                                                                  'delta_t_max':2.0})
 
 biaises = []
 Ws = []
@@ -104,18 +106,18 @@ M12_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
                                  'Wts':Wt,
                                  'Wfs':Ws,'pad':False,'debug':1})
 plt.subplot(142)
-_Process(M12_fgpthandle, M12_skhandle,2*sparsity)
+_Process(M12_fgpthandle, M12_skhandle,1.5*sparsity)
 [f.freq_bin for f in M12_skhandle.rep.atoms]
 plt.ylabel('')
 plt.yticks([])
 plt.title('(b)')
 # Proposed - 2
 M12_fgpthandle_2 = SparseFramePairsBDB('SparseMP_PenPairs_2.db',load=False,**{'wall':False,
-                                                                      'nb_neighbors_max':2,
-                                                  'delta_f_min':250,                                                                              
-                                                  'delta_f_max':2000,
-                                                  'delta_t_min':0.5,                                                                              
-                                                  'delta_t_max':2.0})
+                                                                      'nb_neighbors_max':3,
+                                                                  'delta_f_min':250,                                                                              
+                                                                  'delta_f_max':1000,
+                                                                  'delta_t_min':0.1,                                                                              
+                                                                  'delta_t_max':2.0})
 
 biaises = []
 Ws = []
