@@ -63,9 +63,9 @@ test = True
 
 ## Initialize the sketchifier
 setups = [
-          ((SparseFramePairsBDB,{'wall':False,'nb_neighbors_max':3,'delta_t_max':3.0}),1,
-      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
-                                 'nature':'LOMDCT'})),
+#          ((SparseFramePairsBDB,{'wall':False,'nb_neighbors_max':3,'delta_t_max':3.0}),1,
+#      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
+#                                 'nature':'LOMDCT'})),
 #          ((XMDCTBDB,{'wall':False}),
 #           1,
 #           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':1,
@@ -76,8 +76,8 @@ setups = [
 #                 STFTPeaksSketch(**{'scale':1024, 'step':512,'downsample':fs})), 
 #                     ((CochleoPeaksBDB,{'wall':False}),1,
 #                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
-# ((CQTPeaksBDB,{'wall':False}),1,
-#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs})) 
+ ((CQTPeaksBDB,{'wall':False}),1,
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs})) 
                  ]
 
 for (fgpthandlename, fgptparams),n_jobs,sk in setups:

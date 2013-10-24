@@ -18,7 +18,7 @@ output_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/robustness')
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)
-seg_dur = 4;
+seg_dur = 5;
 def SNR(noisy, orig):
     return 20*np.log10(np.linalg.norm(orig)/np.linalg.norm(orig-noisy))
 
@@ -33,8 +33,8 @@ def addnoise(data, targetSNR):
 def _process_sig(fgpthandle, skhandle, subsig, snrs, ntest, nb_points):
     
     subsig.downsample(fs)
-    subsig.crop(0,seg_dur*8192)
-    subsig.pad(8192)
+    subsig.crop(0,seg_dur*fs)
+    subsig.pad(2*8192)
     # Original decomposition
 #    subsig.write(op.join(tempdir, 'orig.wav'))
     skhandle.recompute(subsig)
@@ -48,7 +48,10 @@ def _process_sig(fgpthandle, skhandle, subsig, snrs, ntest, nb_points):
     noisescores = np.zeros((len(snrs), ntest))
     for isg, targetsnr in enumerate(snrs):
         for itest in range(ntest):
-            noisy = Signal(addnoise(orig_data, targetsnr), subsig.fs, normalize=False)      
+            noisy = Signal(addnoise(orig_data, targetsnr), subsig.fs, normalize=True)    
+            # put zeroes in the borders
+            noisy.data[0:2*8192] = 0
+            noisy.data[-2*8192:] = 0 
 #            print SNR(noisy.data,orig_data)         
 #            snrs[isg,itest] = SNR(noisy.data,orig_data)                
                         
@@ -84,7 +87,7 @@ def _Process(fgpthandle, skhandle,nb_points, snrs, ntest, n_segments):
 sparsity = 30
 ntest = 2
 snrs = [-10,-5,0,5,10,20,30]#0,5,10,20]
-nsegs = 60
+nsegs = 20
 suffix = '%dsnrs_%dsegs_%dtests_%dsparsity'%(len(snrs),nsegs,ntest,sparsity)
 duration = seg_dur*nsegs
 plt.figure()
@@ -102,7 +105,7 @@ savemat(op.join(output_path,'W03_%s.mat'%suffix),{'scores':W03scores,
                                                   'kvpersecs':int(W03kvperseconds),
                                                  'snrs':snrs})
 #################### Cotton 2010
-scales = [64,512,2048]
+scales = [64,128,256,512,1024,2048]
 C10_fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':False,
                                                                       'nb_neighbors_max':3,
                                                                       'delta_t_max':3.0})
@@ -117,33 +120,45 @@ savemat(op.join(output_path,'C10_%s.mat'%suffix),{'scores':C10_scores,
                                                  'snrs':snrs})
 ##################### Proposed #######################
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1,10,100]
+Lambdas = [1,10]
 for l in Lambdas:
     M13_fgpthandle = SparseFramePairsBDB('SparseMP_PenPairs_%d.db'%l,load=False,**{'wall':False,
-                                                                          'nb_neighbors_max':3,
-                                                                          'delta_t_max':3.0})    
+                                                                          'nb_neighbors_max':2,
+                                                                          'delta_f_min':250,                                                                              
+                                                                          'delta_f_max':2000,
+                                                                          'delta_t_min':0.5,                                                                              
+                                                                          'delta_t_max':2.0})    
     biaises = []
     Ws = []
-    Wt = [512,96,24]
-    Kmax = 5
+    Wt = [] 
     lambdas = [l]*len(scales)
-    for s in scales:    
-        # ultra penalize low frequencies
-        biais = np.zeros((s/2,))    
+    for sidx, s in enumerate(scales):    
+        W03_ref = STFTPeaksSketch(**{'scale':s,'step':s/4})
+        W03_ref.recompute(Signal(np.random.randn(fs*seg_dur), fs))
+        W03_ref.sparsify(sparsity)
+        K = W03_ref.params['f_width']
+        T = W03_ref.params['t_width']/2
+        K = 0
+        T = 0
+        print "K = %d, T=%d"%(K,T)
+#        biais = np.zeros((s/2,))
+        biais = np.linspace(1,1/s,s/2)**2    
         biaises.append(biais)
         W = np.zeros((s/2,s/2))
-        for k in range(-Kmax,Kmax):
+        for k in range(-int(K/2),int(K/2)):
             W += np.eye(s/2,s/2,k)
         Ws.append(W)    
+        Wt.append(T)       
     M13_skhandle = XMDCTPenalizedPairsSketch(**{'scales':scales,'n_atoms':1,
                                      'lambdas':lambdas,
                                      'biaises':biaises,
+                                     'nature':'LOMDCT',
                                      'Wts':Wt,
                                      'Wfs':Ws,'pad':False,'debug':0})
     M13_scores = _Process(M13_fgpthandle, M13_skhandle, sparsity, snrs, ntest, nsegs)
     plt.plot(snrs, np.mean(np.mean(M13_scores, axis=2),axis=0))    
     M13kvperseconds = float(M13_fgpthandle.get_kv_size())/float(duration)    
-    savemat(op.join(output_path,'M13_%s_lambda_%d_K_%d.mat'%(suffix,np.sum(lambdas),Kmax)),
+    savemat(op.join(output_path,'M13_%s_lambda_%d.mat'%(suffix,l)),
             {'scores':M13_scores,
              'kvpersecs':int(M13kvperseconds),
              'lambdas':lambdas,

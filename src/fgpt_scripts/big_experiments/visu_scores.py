@@ -29,19 +29,19 @@ db_path = op.join(SKETCH_ROOT,'fgpt_db')
 score_path = op.join(SKETCH_ROOT,'fgpt_scores')
 
 SND_DB_PATH = os.environ['SND_DB_PATH']
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'RWCLearn' # Choose a unique identifier for the dataset considered
 figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
 #sparsities = [200,150,100,50,30,10,7,5,3]
-sparsities = [5,10,30,50]
+sparsities = [5,10,30,50,100]
 setups = [
-          (XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':150,
-                                                  'nature':'LOMDCT'}),8000,sparsities,'rd',.25),
+#          (XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':150,
+#                                                  'nature':'LOMDCT'}),8000,sparsities,'rd',.25),
            (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b+', .25),
-#           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ks', 0.25),
-#           (CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}),8000, sparsities, 'ro', 0.25)    
+           (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ks', 0.25),
+           (CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}),8000, sparsities, 'ro', 0.25)    
               ]
 #sk = STFTPeaksSketch(**{'scale':2048, 'step':512})
 #sk = CochleoPeaksSketch(**{'fs':fs,'step':512})

@@ -86,6 +86,7 @@ for sparsity in sparsities:
             W03_ref.sparsify(sparsity)
             K = W03_ref.params['f_width']
             T = W03_ref.params['t_width']/2
+            
             print "K = %d, T=%d"%(K,T)
             biais = np.zeros((s/2,))
 #            biais = np.linspace(1,1/s,s/2)**2    

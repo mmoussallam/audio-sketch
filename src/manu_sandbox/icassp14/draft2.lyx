@@ -1447,10 +1447,14 @@ http://www.oracle.com/us/products/database/berkeley-db/overview/index.html
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -1747,81 +1751,8 @@ name "tab:Fingerprint-parameters"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
-
-\end_layout
-
-\begin_layout Subsection
-Robustness
-\end_layout
-
-\begin_layout Standard
-We concentrate here on the robustness to additive noise.
- An interesting metric is the proportion of landmarks that remain unaltered
- by noise addition.
- Results are summarized in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:Robustness-results"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename ../figures/robustness_7snrs_600segs_2tests_30sparsity.pdf
-	width 6cm
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption
-
-\begin_layout Plain Layout
-Robustness results with synthetic 
-\begin_inset Formula $W$
-\end_inset
-
- and varying 
-\begin_inset Formula $\lambda_{H}$
-\end_inset
-
-.
- The proportion of identical landmarks is averaged over 5 trials of random
- Gaussian noise on each of 600 random segments of 5 seconds taken in the
- GTZAN dataset.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:Robustness-results"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -1905,7 +1836,7 @@ name "fig:Empirical-Entropy"
 \end_layout
 
 \begin_layout Subsection
-Recognition performances
+Robustness and Recognition performances
 \end_layout
 
 \begin_layout Standard
@@ -1976,7 +1907,18 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/reco_with_biais_GTZAN_100.pdf
+	filename ../figures/robustness_7snrs_600segs_2tests_30sparsity.pdf
+	width 6cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/reco_complete_GTZAN_100.pdf
 	width 8cm
 
 \end_inset
@@ -1988,15 +1930,36 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Recognition performances for isolated 5sec audio excerpts with various settings.
+Top: Robustness results with synthetic 
+\begin_inset Formula $W$
+\end_inset
+
+ and varying 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+.
+ The proportion of identical landmarks is averaged over 5 trials of random
+ Gaussian noise on each of 600 random segments of 5 seconds taken in the
+ GTZAN dataset.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Robustness-results"
+
+\end_inset
+
+.
+ Bottom: Recognition performances for isolated 5sec audio excerpts with
+ various settings, function of the number of keypoints or sparsity 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ 
 \end_layout
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
 
 \end_layout
 

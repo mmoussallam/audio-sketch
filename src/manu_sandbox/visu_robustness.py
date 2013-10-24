@@ -13,10 +13,10 @@ figure_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/figures')
 output_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/robustness')
 
 ##### parameters
-sparsity = 30
-ntest = 2
+sparsity = 10
+ntest = 5
 snrs = [-10,-5,0,5,10,20,30]#0,5,10,20]
-nsegs = 600
+nsegs = 20
 suffix = '%dsnrs_%dsegs_%dtests_%dsparsity'%(len(snrs),nsegs,ntest,sparsity)
 
 legends = []
@@ -33,12 +33,12 @@ C10scores = C10D['scores']
 plt.plot(snrs, np.mean(np.mean(C10scores, axis=2),axis=0),'o-')
 legends.append('C10 - $\lambda_H=0$')
 ### M13
-scales = [64,512,4096]
-Kmax = 5
-Lambdas = [10,]
+scales = [64,128,256,512,1024,2048]
+
+Lambdas = [1,5,10]
 for i, l in enumerate(Lambdas):
     lambdas = [l]*len(scales)
-    M13D = loadmat(op.join(output_path,'M13_%s_lambda_%d_K_%d.mat'%(suffix,np.sum(lambdas),Kmax)))
+    M13D = loadmat(op.join(output_path,'M13_%s_lambda_%d.mat'%(suffix,l)))
     M13_scores = M13D['scores']
     plt.plot(snrs, np.mean(np.mean(M13_scores, axis=2),axis=0),'d-',linewidth=i+1)  
     legends.append('$\lambda_H=%d$'%l)
