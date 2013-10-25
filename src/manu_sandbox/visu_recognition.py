@@ -11,17 +11,17 @@ db_path = op.join(SKETCH_ROOT, 'src/manu_sandbox/outputs/db')
 
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 
-sparsities = [5,10,30,50]
+sparsities = [5,10,30,50,100]
 seg_dur = 5
 fs = 8000
 step = 3.0
-test_proportion = 1.0
+test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
 Lambdas = [1,10]
 scales = [64,128,256,512,1024,2048]
-nb_files = 100
+nb_files = 1000
 nature = 'LOMDCT'
  
 legends=[]
@@ -58,7 +58,7 @@ cons_scores=[]
 times=[]
 sizes=[]
 for sparsity in sparsities:   
-    sk_id = "M13_bias_lambH%d_%dx%s"%(0,len(scales),nature)
+    sk_id = "M13_justbias_lambH%d_%dx%s"%(0,len(scales),nature)
     # saving the results
     score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dx%s.mat"%(set_id,nb_files,sk_id, sparsity, 
                                             int(seg_dur), int(fs),
@@ -112,31 +112,31 @@ for il, l in enumerate(Lambdas):
 ## Get the ones with bias + W
 #for il, l in enumerate(Lambdas):
     
-    scores = []
-    cons_scores=[]
-    times=[]
-    sizes=[]
-    for sparsity in sparsities:   
-        sk_id = "M13_bias_lambH%d_%dx%s"%(l,len(scales),nature)
-        # saving the results
-        score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dx%s.mat"%(set_id,nb_files,sk_id, sparsity, 
-                                                int(seg_dur), int(fs),
-                                                int(100.0*test_proportion),
-                                                int(step),len(scales),nature)
-
-        D = loadmat(op.join(output_path,score_name))
-        
-#        sizes.append(float(D['size'])/(1024.0*1024.0))
-        scores.append(D['score'][0][0])
-        cons_scores.append(1-D['score'][-1][0])
-        times.append(D['time'][0][0])
-        sizes.append(D['size'][0][0])
-        print cons_scores
-    plt.plot(np.array(sparsities), 100*np.array(cons_scores),'d-', linewidth=(il+1.5),markersize=8.0)
-#    plt.xlabel('Sparsity $k$',fontsize=16)
-#    plt.ylabel('Recognition rate (\%)',fontsize=16)
-        
-    legends.append(("$\lambda_H = $%d ($b$,$W$)"%l))
+#    scores = []
+#    cons_scores=[]
+#    times=[]
+#    sizes=[]
+#    for sparsity in sparsities:   
+#        sk_id = "M13_bias_lambH%d_%dx%s"%(l,len(scales),nature)
+#        # saving the results
+#        score_name = "%s_%d_%s_k%d_%dsec_%dfs_test%d_step%d_%dx%s.mat"%(set_id,nb_files,sk_id, sparsity, 
+#                                                int(seg_dur), int(fs),
+#                                                int(100.0*test_proportion),
+#                                                int(step),len(scales),nature)
+#
+#        D = loadmat(op.join(output_path,score_name))
+#        
+##        sizes.append(float(D['size'])/(1024.0*1024.0))
+#        scores.append(D['score'][0][0])
+#        cons_scores.append(1-D['score'][-1][0])
+#        times.append(D['time'][0][0])
+#        sizes.append(D['size'][0][0])
+#        print cons_scores
+#    plt.plot(np.array(sparsities), 100*np.array(cons_scores),'d-', linewidth=(il+1.5),markersize=8.0)
+##    plt.xlabel('Sparsity $k$',fontsize=16)
+##    plt.ylabel('Recognition rate (\%)',fontsize=16)
+#        
+#    legends.append(("$\lambda_H = $%d ($b$,$W$)"%l))
     
 plt.legend(legends,loc='lower right',ncol=2)
 plt.subplots_adjust(left=0.10,bottom=0.18,right=0.97,top=0.96)
