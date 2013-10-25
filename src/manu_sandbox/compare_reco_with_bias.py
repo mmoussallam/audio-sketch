@@ -59,7 +59,7 @@ def _run_reco_expe(fgpthandle, skhandle, sparsity, test_proportion):
     return scores, stats
 
 
-sparsities = [5,10,20,30,50,100]
+sparsities = [50]
 seg_dur = 5
 fs = 8000
 step = 3.0
@@ -67,7 +67,7 @@ test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [0,1,5,10,20]
+Lambdas = [1,5,10,20]
 scales = [64,128,256,512,1024,2048]
 
 nature = 'LOMDCT'

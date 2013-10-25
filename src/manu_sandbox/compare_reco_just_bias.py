@@ -68,7 +68,7 @@ test_proportion = 0.25
 learn = True
 test = True
 from src.manu_sandbox.sketch_objects import XMDCTPenalizedPairsSketch
-Lambdas = [1,5,10,20]
+Lambdas = [0]
 scales = [64,128,256,512,1024,2048]
 
 nature = 'LOMDCT'

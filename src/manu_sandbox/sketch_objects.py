@@ -105,7 +105,8 @@ class XMDCTPenalizedPairsSketch(XMDCTSparseSketch):
                          self.params['n_atoms'],
                          silent_fail=True,
                          pad=False,
-                         debug=self.params['debug'])[0]
+                         debug=self.params['debug'],
+                         max_thread_num=3)[0]
     
 if __name__ == "__main__":    
     
