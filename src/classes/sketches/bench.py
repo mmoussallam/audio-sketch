@@ -235,22 +235,21 @@ class cqtIHTSketch(CQTPeaksSketch):
         A = np.zeros(cand_rep.shape, dtype=complex)
         original = cqt.inverseS(cand_rep,self.params['fs'],self.params['freq_min'],
                  self.params['freq_max'],self.params['bins'],self.params['overl'])
-        original /= np.max(original)
-        original *= 0.9
-        residual = np.copy(original)
+        original /= np.max(original)/0.9
+        #original *= 0.9
+#        residual = np.copy(original)
         
         
-        res_cqt = cqt.cqt_d(residual, self.noyau,
-                            self.params['K'], self.params['freq_min'], 
-                             self.params['bins'],self.params['overl'])
+#        res_cqt = cqt.cqt_d(residual, self.noyau,
+#                            self.params['K'], self.params['freq_min'], 
+#                             self.params['bins'],self.params['overl'])
         n_iter = 0
         while n_iter < self.params['max_iter']:
             #print "IHT Iteration %d"%n_iter
             if n_iter>0:
-                cqt_rec = cqt.cqt_d(res_cqt,self.noyau,
+                projection = cqt.cqt_d(res_cqt,self.noyau,
                             self.params['K'], self.params['freq_min'], 
                             self.params['bins'],self.params['overl'])
-                projection = np.array(cqt_rec)
             else:
                 projection = cand_rep
             # sort the elements            
@@ -264,8 +263,8 @@ class cqtIHTSketch(CQTPeaksSketch):
             rec_a = cqt.inverseS(A,self.params['fs'],self.params['freq_min'],
                              self.params['freq_max'],self.params['bins'],self.params['overl'])
 
-            rec_a /= np.max(rec_a)
-            rec_a *= 0.9
+            rec_a /= np.max(rec_a)/0.9
+            #rec_a *= 0.9
             residual = original - rec_a
             res_cqt = residual
             
@@ -386,7 +385,7 @@ class STFTPeaksSketch(AudioSketch):
             for y_ind in range(0, (n_bins / f) * f, f):                
                 rect_data = self.rep[0, y_ind:y_ind + f, x_ind:x_ind + t]
                 
-                if len(rect_data) > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
+                if f > 0 and (np.sum(np.abs(rect_data) ** 2) > 0):
                     f_index, t_index = unravel_index(np.abs(rect_data).argmax(), rect_data.shape)
 #                    f_index, t_index = divmod(np.abs(rect_data).argmax(), t)                    
                     # add the peak to the sparse rep
