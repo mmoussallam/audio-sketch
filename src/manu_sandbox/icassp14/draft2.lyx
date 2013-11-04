@@ -1,0 +1,2279 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass IEEEtran
+\begin_preamble
+
+%\documentclass[a4paper,10pt]{scrartcl}
+
+\usepackage{amsfonts}\usepackage{amsthm}
+\usepackage{float}
+\usepackage{hyperref}
+\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithme}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage[usenames]{color}
+\usepackage{tikz}
+\usepackage{spconf}
+\usetikzlibrary{shapes.geometric}
+
+
+
+
+%\title{Dictionary based audio fingerprinting}
+%\author{Manuel Moussallam}
+%\date{}
+
+\name{Manuel Moussallam and Laurent Daudet}
+\address{Institut Langevin, Univ. Paris 7 Diderot - ESPCI ParisTech - CNRS UMR 7587 \\ first.last@espci.fr, 1 rue Jussieu 75005 Paris}
+
+\pdfinfo{%
+  /Title    (Icassp14_draft)
+  /Author   (Manuel Moussallam)
+  /Creator  (Manuel Moussallam)
+  /Producer ()
+  /Subject  ()
+  /Keywords ()
+}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children true
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format pdf
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "Icassp14_draft"
+\pdf_author "Manuel Moussallam"
+\pdf_subject "Dictionary Based Audio Fingerprinting"
+\pdf_keywords "Sparse Representation"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\branch chapitre1-intro
+\selected 1
+\filename_suffix 0
+\color #ff0000
+\end_branch
+\branch chapitre2-representation
+\selected 1
+\filename_suffix 0
+\color #005500
+\end_branch
+\branch chapitre3-MP
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre4-redondances
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre5-structures
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre6-hierarchique
+\selected 0
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre7-perspectives
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch AnnexeA
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre-RSSMP
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch chapitre-Mpdynamique
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch AnnexeB
+\selected 0
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch introPartie3
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch resume
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch pageDeGarde
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch Remerciements
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\branch abstract
+\selected 1
+\filename_suffix 0
+\color #faf0e6
+\end_branch
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 2.5cm
+\rightmargin 2.5cm
+\bottommargin 4cm
+\secnumdepth 2
+\tocdepth 1
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language swedish
+\papercolumns 1
+\papersides 2
+\paperpagestyle default
+\bullet 0 1 5 -1
+\bullet 1 0 7 -1
+\bullet 2 0 8 -1
+\tracking_changes false
+\output_changes false
+\html_math_output 3
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ninept
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+A General Framework For Dictionary Based Audio Fingerprinting
+\end_layout
+
+\begin_layout Author
+Manuel Moussallam, Laurent Daudet
+\begin_inset Newline newline
+\end_inset
+
+Institut Langevin, ESPCI ParisTech - Univ Paris Diderot, 1 rue Jussieu 75005
+ Paris, France
+\end_layout
+
+\begin_layout Abstract
+Fingerprint-based Audio recognition system must address concurrent objectives.
+ Indeed, fingerprints must be both robust to distortions and discriminative
+ while their dimension must remain to allow fast comparison.
+ This paper proposes to restate these objectives as a penalized sparse represent
+ation problem.
+ On top of this dictionary-based approach, we propose a structured sparsity
+ model in the form of a probabilistic distribution for the sparse support.
+ A practical suboptimal greedy algorithm is then presented and evaluated
+ on robustness and recognition tasks.
+ We show that some existing methods can be seen as particular cases of this
+ algorithm and that the general framework allows to reach other points of
+ a Pareto-like continuum.
+\end_layout
+
+\begin_layout Keywords
+Sparse Representation, Audio Fingerprinting
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Subsection
+Standard audio fingerprinting approaches
+\end_layout
+
+\begin_layout Standard
+Audio objects recognition systems aim at the automatic retrieval of a signal
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ among a collection of known sounds objects 
+\begin_inset Formula $\{y^{(i)}\}$
+\end_inset
+
+.
+ In practice, such collection can be very large and sounds are complicated
+ objects to compare.
+ For this retrieval to be effective, the search must be performed efficiently,
+ for instance by comparing low-dimensional 
+\emph on
+proxies
+\emph default
+ of the objects, or fingerprints.
+\end_layout
+
+\begin_layout Standard
+An audio fingerprint is a collection of signal-characteristic features that
+ present some robustness to distortions and can be efficiently compared
+ to others.
+ There are two big families of audio fingerprinting systems, the first one
+ adopts a bag of features approach.
+ A low-dimensional vector of features (eg.
+ Chroma, MFCC, etc..) is thus used as the fingerprint.
+ It has essentially been proposed by Haitsma 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Haitsma"
+
+\end_inset
+
+ with binarized Chroma.
+ A review of such methods can be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cano_review"
+
+\end_inset
+
+ with more recent avatars being based on wavelet transforms 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Baluja2007"
+
+\end_inset
+
+ or finer frequency models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Betser_article,Dupraz_article"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The second family of methods is similar in spirit to some feature extraction
+ methods developed in image processing.
+ It has first emerged with the work of Wang 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+ and is based on the idea of selecting a subset of 
+\emph on
+keypoints
+\emph default
+ in a Time-Frequency (TF) representation, pairing them to form 
+\emph on
+landmarks
+\emph default
+ and using each of these 
+\emph on
+landmarks
+\emph default
+ as an index in a structured database (
+\emph on
+e.g.
+
+\emph default
+ a hash-table or any fast indexing system).
+ This approach is at the basis of the well known Shazam service 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang_com"
+
+\end_inset
+
+, but also led to the works of Cotton and Ellis
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ and Fenet
+\emph on
+ et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+ among others.
+ While in his seminal work 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+, Wang selected 
+\emph on
+keypoints
+\emph default
+ as local maxima in a simple spectrogram, Cotton and Ellis 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ use a greedy algorithm on a multiscale Gabor dictionary and Fenet 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+ propose a logarithmic transform instead of windowed Fourier.
+\end_layout
+
+\begin_layout Standard
+All of these methods share a common formalism, that is conveniently exposed
+ using a dictionary-based point of view.
+ Given a dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
+
+, one seeks a combination of 
+\begin_inset Formula $k$
+\end_inset
+
+ elements of 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ (labeled 
+\emph on
+atoms
+\emph default
+) that can be efficiently used as 
+\emph on
+keypoints
+\emph default
+ in a fingerprinting system.
+ State of the art methods, mainly proposes different dictionaries (
+\emph on
+e.g.
+
+\emph default
+ Gabor 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com"
+
+\end_inset
+
+, Union of Gabor
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+, MDCT 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Moussallam2012c"
+
+\end_inset
+
+, Logarithmic 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+..) and selection algorithms (Local Peak Picking 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com,ismir"
+
+\end_inset
+
+, Matching Pursuit 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010,Moussallam2012c"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+A unifying framework
+\end_layout
+
+\begin_layout Standard
+Quite naturally, one would hope to design a unifying framework for all these
+ methods.
+ Mainly what distinguish them is the stress that is imposed either on the
+ robustness of the landmarks or their discriminative power.
+ A robust landmark is one that remain unaltered by distortions such as additive
+ noise, compression, time or pitch shifting etc.
+ The discriminative power is harder to quantize, but will directly be linked
+ to recognition performances.
+ A landmark is discriminative when it is highly characteristic of an objects
+ fingerprint, that is, it is unlikely to appear in the fingerprint of an
+ object that is fairly different.
+\end_layout
+
+\begin_layout Standard
+Unfortunately, robustness and discriminative power seem to be concurrent
+ objectives.
+ Indeed, such discriminant information will be found in the high frequencies
+ of audio signals, but these frequencies are the most easily altered by
+ distortions.
+ Additionally, for the search to be efficient, the number of keypoints and
+ landmarks must be kept as low as possible.
+ 
+\end_layout
+
+\begin_layout Standard
+The purpose of this work is not to propose yet another audio fingerprint
+ system, but to generalize existing ones within a common framework that
+ is theoretically motivated.
+ With this in mind, we first propose a formulation of the fingerprint design
+ problem as a multi-objective optimization of a dictionary-based processing
+ system.
+ Then we introduce a proxy of the discriminative power using information
+ theoretic tools.
+ Using a structured sparsity model for the keypoints (
+\emph on
+e.g.
+
+\emph default
+ atoms of the dictionary) one can model the probability of selecting a keypoint
+ and even the probability of their combinations which allows to use entropy
+ measure to characterize the quantity of information carried by a single
+ landmark.
+ We then propose a general greedy algorithm to build (suboptimal) solutions
+ and show that some particular parameter sets corresponds to state of the
+ art algorithms described above.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Finally, we expose on some real scale fingerprint-based recognition experiments,
+ that is it possible to reach better points in a Pareto diagram, given the
+ right knowledge is introduced in the model, mainly by learning the landmark
+ distribution parameters on real data.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The rest of this paper is organized as follows: Section 2 exposes our proposal
+ to write the fingerprint design problem as a multi-objective sparse representat
+ion one.
+ In Section 3, we present a structured sparsity model using Boltzmann machines
+ and propose a penalized greedy algorithm to build hybrid fingerprints.
+ The behavior of this algorithm and its relation to state of the art approaches
+ is demonstrated in Section 4 on robustness and recognition experiments.
+\end_layout
+
+\begin_layout Section
+Dictionary Based Audio Fingerprints
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\boldsymbol{y}\in\mathbb{E}^{N}$
+\end_inset
+
+ be a 
+\begin_inset Formula $N$
+\end_inset
+
+ - dimensional discrete signal (
+\begin_inset Formula $\boldsymbol{E}=\mathbb{R}$
+\end_inset
+
+ or 
+\begin_inset Formula $\mathbb{C}$
+\end_inset
+
+) and 
+\begin_inset Formula $\boldsymbol{\Phi}=\{\phi_{i}\}_{i=1..M}$
+\end_inset
+
+ a dictionary of 
+\begin_inset Formula $M$
+\end_inset
+
+ 
+\emph on
+atoms 
+\emph default
+
+\begin_inset Formula $\boldsymbol{\phi}_{i}$
+\end_inset
+
+ of same dimension than 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+, one speaks of a 
+\emph on
+representation
+\emph default
+ 
+\begin_inset Formula $\hat{y}$
+\end_inset
+
+ of 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ in 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ as a linear combinations of the atoms, 
+\emph on
+i.e.
+
+\emph default
+ 
+\begin_inset Formula $\hat{y}=\sum_{i=1}^{M}\alpha_{i}\phi_{i}$
+\end_inset
+
+ where the weights coefficients stacked in an 
+\begin_inset Formula $M-$
+\end_inset
+
+dimensional vector 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ now carry the information.
+ The nature and quantity of information conveyed by each (or a combination
+ of) 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ depends on how the dictionary is designed and what
+\emph on
+ a priori 
+\emph default
+knowledge on the signal is available.
+ 
+\end_layout
+
+\begin_layout Standard
+In an audio fingerprint context, it is interesting to further decompose
+ 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ as the element-wise product 
+\begin_inset Formula $\boldsymbol{\alpha}=\boldsymbol{x}\odot\boldsymbol{s}$
+\end_inset
+
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is real or complex valued and 
+\begin_inset Formula $\boldsymbol{s}$
+\end_inset
+
+ is called the support and restricted to binary values: 
+\begin_inset Formula $s_{i}=$
+\end_inset
+
+1 if the atom is selected as a keypoint and zero otherwise.
+\end_layout
+
+\begin_layout Subsection
+Formalizing fingerprint properties as constraints
+\end_layout
+
+\begin_layout Standard
+In this formalism, limiting the number of keypoints can be straightforwardly
+ transcribed as a sparsity constraint on 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ The robustness property is harder to characterize since different types
+ of distortions may occur.
+ For the sake of clarity, let us consider only the case of additive white
+ Gaussian noise.
+ The best way to resist such distortion is to select atoms minimizing a
+ reconstruction error.
+ More generally, most types of robustness can be enforced by constraints
+ of 
+\emph on
+descriptiveness
+\emph default
+ of the keypoints.
+ 
+\end_layout
+
+\begin_layout Standard
+Expressing the discriminative power, however, is more challenging.
+ This can be done by using information theoretic metrics in general and
+ entropy in particular.
+ Audio signals often carry more energy in their low than high-frequencies.
+ Corresponding keypoints thus have a higher probability of being selected.
+ Intuitively, they provide a less discriminant information on a signal that
+ the least probables ones.
+ If one is able to fully evaluate the probability distribution of the support
+ then one would want to constrain its 
+\emph on
+entropy
+\emph default
+ to be the highest possible.
+\end_layout
+
+\begin_layout Standard
+The problem of finding 
+\begin_inset Formula $k$
+\end_inset
+
+ keypoints that have maximum descriptive and discriminative potentials can
+ thus be stated as:
+\begin_inset Formula 
+\begin{equation}
+\mathcal{P}_{\lambda,k}=\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ is the entropy of the vector 
+\begin_inset Formula $s$
+\end_inset
+
+ given the dictionary.
+\end_layout
+
+\begin_layout Subsection
+Probabilistic modeling of the sparse support
+\end_layout
+
+\begin_layout Standard
+By definition, 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ only exists when the probabilistic distribution of 
+\begin_inset Formula $s$
+\end_inset
+
+ is available.
+ Experimentally, one is able to characterize quite efficiently this distribution.
+ Let 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ be a time-frequency dictionary, and let us observe the solutions to 
+\begin_inset Formula $\mathcal{P}_{0,k}$
+\end_inset
+
+, that is the sparse reconstruction problem without entropic constraint.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Biais"
+
+\end_inset
+
+ displays the empirical distribution of the first 100 keypoints selected
+ with a algorithm from the Matching Pursuit (MP 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Mallat_TSP1993"
+
+\end_inset
+
+) family as in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010,Moussallam2012c"
+
+\end_inset
+
+.
+ The dictionary is a union of 7 MDCT scales replicated such as to form a
+ highly over-complete shift-invariant dictionary of roughly 65 millions
+ atoms.
+ Atoms are uniformly selected in time while a strong bias on their frequency
+ localization can be observed.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/All100Atoms_GTZAN_16files_7xMDCT.png
+	lyxscale 20
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical Time-Frequency positions of the first 100 selected atoms (blue
+ dots) and their marginal distributions observed on 600 audio segments of
+ 5 seconds each, taken from the GTZAN
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tzanetakis2002"
+
+\end_inset
+
+ dataset.
+ Signals are down-sampled to 8KHz.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Biais"
+
+\end_inset
+
+ The marginal on frequency is presented in log scale.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/WF_WT_200files_1xMDCT_100k.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical Co-occurrence of Time Frequency atoms observed on the same 600
+ segments.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Covariance"
+
+\end_inset
+
+.
+ The empirical bias has been subtracted.
+ Darker regions indicate higher co-occurrences.
+ The strong diagonal components indicates neighborhood relationships both
+ in time and frequency.
+ Harmonic correlations can be observed in the frequency matrix.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At en even deeper level, one can empirically observe the covariance matrix
+ of the support.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Covariance"
+
+\end_inset
+
+ shows experimental co-occurrences of keypoints relative to their frequency
+ and time index respectively.
+ Both matrices have strong coefficients near the diagonals, it reveals the
+ neighborhood correlations between keypoints close to each other in the
+ time-frequency plane.
+ The frequency matrix also exhibit strong subdiagonals that reflect the
+ harmonic correlations.
+\end_layout
+
+\begin_layout Standard
+This basically tells us that landmarks built on neighboring and harmonically
+ related keypoints are less informative (
+\emph on
+i.e.
+
+\emph default
+ discriminative) than others.
+\end_layout
+
+\begin_layout Subsection
+Relation to existing work
+\end_layout
+
+\begin_layout Standard
+Problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
+
+\end_inset
+
+ is, in general, NP-hard to solve.
+ Many works in the literature can be understood as suboptimal methods to
+ tackle this problem.
+ For instance, the method at the basis of Shazam 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang_com"
+
+\end_inset
+
+ and its avatars 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+, never explicitly expresses the entropic constraint.
+ However, their strategy is to enforce the selection of keypoints that are
+ spread all over the time-frequency plane.
+ Basically, this amounts to forbidding the construction of landmarks from
+ neighboring keypoints which are the less discriminative.
+ Overall, this local peak-picking strategy can be understood as an entropy-orien
+ted one.
+\end_layout
+
+\begin_layout Standard
+On the other hand, systems such as the one proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ put all the emphasis on the robustness to distortions.
+ Their landmarks are tailored for retrieval of highly distorted objects,
+ but it might be at the expense of their discriminative power.
+\end_layout
+
+\begin_layout Standard
+Finally, let us draw a parallel with some fingerprinting techniques such
+ as the Distortion Discriminant Analysis exposed by Burges 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Burges2003"
+
+\end_inset
+
+, to our knowledge, would also fit in this framework but with a dictionary
+ learning paradigm.
+\end_layout
+
+\begin_layout Section
+Proposed Framework
+\end_layout
+
+\begin_layout Subsection
+Structured Sparsity model
+\end_layout
+
+\begin_layout Standard
+Empirical evidence suggest the sparsity pattern of the support vector in
+ time-frequency dictionaries is highly structured.
+ We propose to use Boltzmann machines as a model for the distribution of
+ 
+\begin_inset Formula $s$
+\end_inset
+
+: 
+\begin_inset Formula 
+\begin{equation}
+p(s)\propto\exp(b^{T}s+s^{T}Ws)
+\end{equation}
+
+\end_inset
+
+This distribution has first been proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hinton1986"
+
+\end_inset
+
+.
+ It models the interaction in a graph of connected nodes (keypoints in our
+ case) using two parameters: a biais 
+\begin_inset Formula $b$
+\end_inset
+
+ and a connectivity matrix 
+\begin_inset Formula $W$
+\end_inset
+
+.
+ This model has recently appeared in dictionary based processing setups.
+ Dremeau 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dremeau2012"
+
+\end_inset
+
+ show that it generalizes many structured sparsity models.
+ Under this model, we can evaluate the probability of a state using the
+ difference of energy at node 
+\begin_inset Formula $i$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{equation}
+\Delta E_{i}=\sum_{j}w_{ij}+b_{i}
+\end{equation}
+
+\end_inset
+
+and the notion of temperature 
+\begin_inset Formula $T$
+\end_inset
+
+ that can be dropped out (
+\emph on
+e.g.
+
+\emph default
+ 
+\begin_inset Formula $T=1$
+\end_inset
+
+).
+ Fixing the states of all other variables, the probability of node 
+\begin_inset Formula $i$
+\end_inset
+
+ being turned on (
+\emph on
+i.e.
+
+\emph default
+ keypoint 
+\begin_inset Formula $i$
+\end_inset
+
+ being selected) writes: 
+\begin_inset Formula 
+\begin{equation}
+p(s_{i}=1|\{s_{j\neq i}\})=\frac{1}{1+\exp\left(-\Delta E_{i}\right)}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Reducing model complexity
+\end_layout
+
+\begin_layout Standard
+The expressiveness of the Boltzmann machine is essentially captured by the
+ 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix which is of size 
+\begin_inset Formula $M\times M$
+\end_inset
+
+ where 
+\begin_inset Formula $M$
+\end_inset
+
+ is the number of atoms in the dictionary.
+ Clearly, for real scale data, the resulting model complexity will become
+ prohibitive.
+ Fortunately, the considered dictionaries are further structured.
+ Let assume each atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ can be indexed by a unique triplet 
+\begin_inset Formula $(f_{i},t_{i},l_{i})\in\mathcal{F}\times\mathcal{T}\times\mathcal{L}$
+\end_inset
+
+ of its frequency and time centroids and length.
+ A way to drastically reduce the complexity is to assume separability of
+ the time and frequency centroids variables.
+ Such hypothesis seem reasonable, keypoints frequency localization will
+ essentially be linked to other keypoints frequencies and lengths, independently
+ of their time position.
+ Symmetrically, time localizations may be considered apart from the frequency
+ localization.
+\end_layout
+
+\begin_layout Standard
+In practice, this implies cutting many vertices in the Boltzmann machine,
+ or equivalently putting many elements of 
+\begin_inset Formula $W$
+\end_inset
+
+ to zero.
+ The bias can be rewritten as :
+\begin_inset Formula 
+\begin{equation}
+b_{i}=b(f_{i},t_{i},l_{i})=b(f_{i},l_{i})
+\end{equation}
+
+\end_inset
+
+since we have seen empirically that keypoints are uniformly located in time.
+ Similarly, each element 
+\begin_inset Formula $w_{ij}$
+\end_inset
+
+ of the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix can be expressed as a product:
+\begin_inset Formula 
+\begin{eqnarray*}
+w_{ij} & = & w\left[\left(f_{i},t_{i},l_{i}\right)\left(f_{j},t_{j},l_{j}\right)\right]\\
+ & = & w^{F}\left[\left(f_{i},l_{i}\right)\left(f_{j},l_{j}\right)\right]w^{T}\left[\left(t_{i},l_{i}\right)\left(t_{j},l_{j}\right)\right]\\
+ & = & w_{ij}^{F}w_{ij}^{T}
+\end{eqnarray*}
+
+\end_inset
+
+where 
+\begin_inset Formula $w_{ij}^{F}\mbox{ and }w_{ij}^{T}$
+\end_inset
+
+ are taken in two factoring matrices 
+\begin_inset Formula $W_{F}$
+\end_inset
+
+ and 
+\begin_inset Formula $W_{T}$
+\end_inset
+
+.
+ We have seen empirical estimators of such bias and 
+\begin_inset Formula $W$
+\end_inset
+
+ matrices in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Biais"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Covariance"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Algorithm
+\end_layout
+
+\begin_layout Standard
+Addressing problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
+
+\end_inset
+
+ is a complicated issue.
+ Indeed, even with 
+\begin_inset Formula $\lambda=0$
+\end_inset
+
+, it requires either a relaxation of the sparsity constraint or the use
+ of suboptimal greedy algorithms such as MP.
+ Given that the hard sparsity constraint is strict in this case, we have
+ chosen to modify an MP algorithm by simply changing the atom selection
+ rule.
+ 
+\end_layout
+
+\begin_layout Standard
+Such algorithm makes a series of local decisions (
+\emph on
+i.e.
+
+\emph default
+ keypoint selection), based only on the knowledge of the previous choices
+ (
+\emph on
+i.e.
+
+\emph default
+ which keypoints have already been selected).
+ The residual signal 
+\begin_inset Formula $r^{n}$
+\end_inset
+
+ at iteration 
+\begin_inset Formula $n$
+\end_inset
+
+ is usually updated by subtracting from the original signal its projection
+ on the subspace spanned by the selected atoms.
+ At iteration 
+\begin_inset Formula $n$
+\end_inset
+
+ the decision boils down to solving:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\arg\max_{\phi_{i}\in\Phi}|\langle r^{n},\phi_{i}\rangle|(1+\lambda_{H}H(\phi_{i}|s_{n-1}))
+\end{equation}
+
+\end_inset
+
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $H(\phi_{i}|s_{n-1})$
+\end_inset
+
+ is the
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ entropy of choosing atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ knowing the support 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+ and writes: 
+\begin_inset Formula 
+\begin{eqnarray}
+H(\phi_{i}|s_{n-1}) & = & -p(\phi_{i}|s_{n-1})\log\left[p(\phi_{i}|s_{n-1})\right]\nonumber \\
+ & = & \frac{\log\left[1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}\right]}{1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}}
+\end{eqnarray}
+
+\end_inset
+
+with 
+\begin_inset Formula $\Gamma_{n-1}$
+\end_inset
+
+ being the indices of the non zero elements of 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+, 
+\emph on
+i.e.
+
+\emph default
+ the keypoints selected so far.
+ An advantage of this algorithm is that it can be quickly implemented using
+ existing MP libraries such as PyMP
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/mmoussallam/PyMP
+\end_layout
+
+\end_inset
+
+.
+ Additionally, existing algorithms can be seen as particular cases.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/KeyPoints_and_pairs_voicefemale_30k.pdf
+	width 16cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Time-frequency 
+\emph on
+landmarks
+\emph default
+ built by the algorithm with varying parameters on a 5s audio excerpt of
+ female speech.
+ Each case has built 100 landmarks.
+ (a): C10 (
+\begin_inset Formula $\lambda_{H}=0$
+\end_inset
+
+) (b): 
+\begin_inset Formula $\lambda_{H}=1\,(0,W)$
+\end_inset
+
+ (c): 
+\begin_inset Formula $\lambda_{H}=10\,(b,W)$
+\end_inset
+
+(d): W03
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:TF-landmarks"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Experiments
+\end_layout
+
+\begin_layout Standard
+In the framework described above, many parameters need to be chosen.
+ The dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
+
+, the sparsity 
+\begin_inset Formula $k$
+\end_inset
+
+ of the representation (
+\emph on
+i.e.
+
+\emph default
+ the number of keypoints), 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+, the bias 
+\begin_inset Formula $b$
+\end_inset
+
+ and the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix.
+ We will adopt the notation W03 and C10 by reference to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ respectively.
+ Note however that all results presented here are obtained with our own
+ implementation of these methods.
+ W03 corresponds to a local peak picking strategy with a monoscale Gabor
+ dictionary.
+ C10 is equivalent to our algorithm with 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+ being set to 
+\begin_inset Formula $0$
+\end_inset
+
+.
+ We investigate hybrid strategies with a simple synthetic frequency bias
+ 
+\begin_inset Formula $b$
+\end_inset
+
+ and a neighbor penalizing matrix 
+\begin_inset Formula $W$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Experiments are run in a framework that is similar in nature to the one
+ presented in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,ismir,Cotton2010"
+
+\end_inset
+
+.
+ Landmarks are binarized and stored as index keys in a Hashtable implemented
+ using the open source Berkeley DataBase C Library
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://www.oracle.com/us/products/database/berkeley-db/overview/index.html
+\end_layout
+
+\end_inset
+
+.
+ Each key is a combination 
+\begin_inset Formula $(f_{1},f_{2},\Delta t)$
+\end_inset
+
+ where 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ are the frequency centroids of the two keypoints and 
+\begin_inset Formula $\Delta_{t}$
+\end_inset
+
+ the difference between their time centroids.
+ At each key corresponds a value that is a combination of the file index
+ and the time of occurrence of the landmark in the file.
+ In this work we are interested in comparing the keypoints and landmarks
+ selection procedures.
+ For fair comparison, the hashing and key formatting parameters are not
+ optimized to any of the methods but fixed to common values.
+ 
+\end_layout
+
+\begin_layout Standard
+In the following, a set of parameters will be identified by the triplet
+ 
+\begin_inset Formula $(\lambda_{H},b,W)$
+\end_inset
+
+.
+ Whenever the bias (respectively 
+\begin_inset Formula $W$
+\end_inset
+
+) is set to zero we will write 
+\begin_inset Formula $\lambda_{H}\,(0,W)$
+\end_inset
+
+ (respectively 
+\begin_inset Formula $\lambda_{H}\,(b,0)$
+\end_inset
+
+).
+ In this work we use a synthetic bias that is a simple decreasing exponential
+ of the keypoints frequencies.
+ 
+\begin_inset Formula $W$
+\end_inset
+
+ is decomposed in 
+\begin_inset Formula $W_{T}$
+\end_inset
+
+ and 
+\begin_inset Formula $W_{F}$
+\end_inset
+
+ that are zeros everywhere except near the diagonals.
+ This particular setting corresponds to penalizing the selection of keypoints
+ in the neighborhood of previously selected ones.
+ For now we do not penalize harmonic relationships.
+ Non zero coefficients in 
+\begin_inset Formula $W_{T}$
+\end_inset
+
+ and 
+\begin_inset Formula $W_{F}$
+\end_inset
+
+ are adapted to the desired sparsity level and corresponds to the same Time-Freq
+uency widths as the ones used in W03 for local peak picking.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="5">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Parameter
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+W03
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+C10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mixed-I
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Mixed-II
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Phi$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+monoscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+multiscale
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\in\mathbb{R}^{+}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\in\mathbb{R}^{+}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fixed
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+learned
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $W$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+implicit 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+fixed
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+learned
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fingerprint parameters
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Fingerprint-parameters"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Keypoints and Landmarks entropy
+\end_layout
+
+\begin_layout Standard
+We expect keypoints selected with the entropic penalization to have a distributi
+on somehow more 
+\begin_inset Quotes sld
+\end_inset
+
+uniform
+\begin_inset Quotes srd
+\end_inset
+
+ that those selected on purely energetic considerations.
+ Indeed Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Entropy"
+
+\end_inset
+
+ shows empirical distributions measured on the decomposition of 600 random
+ 5 second length segments taken from the GTZAN
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tzanetakis2002"
+
+\end_inset
+
+ dataset.
+ Keypoints and Landmarks selected with the W03 method are almost uniformly
+ distributed, while the ones built by C10 exhibit a strong bias towards
+ low frequencies.
+ The hybrid approach allows to reach a new compromise.
+ 
+\end_layout
+
+\begin_layout Standard
+An illustration of this behavior is provided in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:TF-landmarks"
+
+\end_inset
+
+.
+ For 4 different settings, 100 landmarks are built and figured with black
+ segments.
+ Recall that C10 is similar to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+.
+ The algorithm selected atoms on a purely energetic basis in a union of
+ 6 scales Gabor shift-invariant dictionary.
+ A first hybrid approach (labeled 
+\begin_inset Formula $\lambda_{H}=5\,(0,W)$
+\end_inset
+
+) uses the same dictionary with 
+\begin_inset Formula $\lambda_{H}=1$
+\end_inset
+
+ the bias is set to zero and 
+\begin_inset Formula $W$
+\end_inset
+
+ as described above.
+ The penalization led to the selection of a slightly different set of keypoints.
+ A second hybrid approach (labeled 
+\begin_inset Formula $\lambda_{H}=10\,(b,W)$
+\end_inset
+
+) uses both 
+\begin_inset Formula $W$
+\end_inset
+
+ and the bias 
+\begin_inset Formula $b$
+\end_inset
+
+ to penalize the selection.
+ This time the algorithm has selected a very different set of keypoints.
+ Finally, the last case (W03) use a monoscale Gabor dictionary with 25%
+ overlap and a selection procedure equivalent to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+.
+ This is similar to what could be obtained with no bias, the same 
+\begin_inset Formula $W$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{H}=+\infty$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manu/workspace/audio-sketch/src/manu_sandbox/figures/EmpiricalKPLMdistribs_GTZAN_600_60k_6xLOMDCT_50bins.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Empirical distribution of landmarks.
+ Flatter distribution has higher entropy and corresponds to cases where
+ each landmark is more discriminant.
+ Landmarks are indexed by increasing frequencies of the first keypoint.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Empirical-Entropy"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Robustness and Recognition performances
+\end_layout
+
+\begin_layout Standard
+The primary objective of a fingerprint system is its recognition performance.
+ The main parameter affecting the quality of the results is the sparsity,
+ or equivalently the number of landmarks per seconds on which to base the
+ decision.
+ For each query, the system returns a best candidate file in the database
+ and an estimated time of occurrence.
+ The score is simply the ratio of the number of correctly retrieved segments
+ over the number of queries.
+ To assess for the robustness of the fingerprints, we measure the Proportion
+ of Identical Landmarks (PIL) that remain unaffected by an additive white
+ Gaussian noise.
+\end_layout
+
+\begin_layout Standard
+Using different parameters a learning an a testing phase are run.
+ During the learning phase, a database of fingerprints is built out of the
+ 1000 files of the GTZAN dataset
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tzanetakis2002"
+
+\end_inset
+
+.
+ Each file is sliced in 5 seconds-long segments with a 50% overlap.
+ On each segment the number of allowed keypoints is fixed to the sparsity
+ level 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ During the test phase, 2500 randomly chosen 5 seconds-long segments are
+ used for queries.
+ The testing segments thus have a very low probability of being aligned
+ with the learning ones.
+\end_layout
+
+\begin_layout Standard
+The compromise between the two concurrent objectives is illustrated on Figure
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Recognition-Robustness"
+
+\end_inset
+
+.
+ C10 is the more robust method but performs poorly on the recognition task
+ at low levels of sparsities.
+ On the opposite, W03 reaches very good recognition scores at low sparsities,
+ but is also the more affected by the additive noise.
+ Between them, the hybrid approaches allows to reach different compromises.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manumouss/workspace/git/audio-sketch/src/manu_sandbox/figures/schema.png
+	lyxscale 25
+	width 4cm
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fingerprinting scheme common to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,ismir,Moussallam2012c,Cotton2010"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/robustness_7snrs_20segs_2tests_30sparsity.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/reco_complete_GTZAN_100.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Top: Robustness results with synthetic 
+\begin_inset Formula $W$
+\end_inset
+
+ and varying 
+\begin_inset Formula $\lambda_{H}$
+\end_inset
+
+ averaged over 5 trials of random Gaussian noise on each of 600 random segments
+ of 5 seconds taken in the GTZAN dataset.
+ Bottom: Recognition performances for isolated 5sec audio excerpts from
+ the complete dataset with various settings, function of the number of keypoints
+ 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Recognition-Robustness"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Discussion
+\end_layout
+
+\begin_layout Standard
+The proposed framework is flexible and there are many parameters one can
+ modify.
+ The role played by each of this parameters need to be further investigated.
+ Let us stress that the expressive power of the model is quite high and
+ one could use it to introduce more prior knowledge on the data.
+ Taking harmonic correlations into account would be a natural next step.
+ More generally, specific relationships could be learn on a variety of sound
+ class, such as speech, instrumental or environmental.
+\end_layout
+
+\begin_layout Standard
+In this work, we avoided the issue of inferring the Boltzmann machine parameters
+ by using empirical estimators.
+ It is arguably not satisfying, but allowed us to conduct these proof of
+ concept experiments.
+ Moreover, the suboptimal strategy proposed here to address Problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
+
+\end_inset
+
+ has also been chosen for its simplicity and serve as comparison basis.
+ Future work will investigate smarter optimization scheme, such as Bayesian
+ versions of MP (
+\emph on
+e.g.
+
+\emph default
+ as in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dremeau2012"
+
+\end_inset
+
+ with Boltzmann machines) or convex relaxations methods.
+\end_layout
+
+\begin_layout Section*
+Acknowledgment
+\end_layout
+
+\begin_layout Standard
+The authors would like to thank Dr.
+ Antoine Liutkus for its comments and useful discussions.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "ICASSP14"
+options "ieeetr"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

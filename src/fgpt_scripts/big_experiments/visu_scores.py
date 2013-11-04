@@ -8,7 +8,7 @@ import os.path as op
 import time
 from scipy.io import loadmat
 import sys
-sys.path.append('../../..')
+sys.path.append(os.environ['SKETCH_ROOT'])
 
 from src.classes.sketches.base import *
 from src.classes.sketches.bench import *
@@ -34,11 +34,11 @@ figure_path = '/home/manu/workspace/audio-sketch/src/reporting/figures'
 seg_dur = 5
 step = 3.0
 
-sparsities = [200,150,100,50,30,10,7,5,3]
-#sparsities = [200,150]
+#sparsities = [200,150,100,50,30,10,7,5,3]
+sparsities = [5,10,30,50,100]
 setups = [
-#          (XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
-#                                                  'nature':'LOMDCT'}),8000,sparsities,'k-s',.25),
+#          (XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':150,
+#                                                  'nature':'LOMDCT'}),8000,sparsities,'rd',.25),
            (STFTPeaksSketch(**{'scale':2048, 'step':512}),8000, sparsities, 'b+', .25),
            (CochleoPeaksSketch(**{'fs':8000,'step':512}),8000, sparsities, 'ks', 0.25),
            (CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}),8000, sparsities, 'ro', 0.25)    
@@ -62,6 +62,7 @@ for setup in setups:
     nkeys= []
     cons_scores = []
     times = []
+    sim_sized = []
     for sparsity in sparsities:
         
         # we just need a short adaptation
@@ -94,12 +95,15 @@ for setup in setups:
         fgpthandle = FgptHandle(op.join(db_path, db_name), load=True, persistent=True, rd_only=True)
         nkeys.append(float(fgpthandle.dbObj.stat()['ndata']))
         sizes.append(float(os.stat(op.join(db_path, db_name)).st_size))
+        sim_sized.append((fgpthandle.dbObj.stat()['ndata'] + fgpthandle.dbObj.stat()['nkeys'])*32)
 #        fgpthandle.dbObj.close()
     #plt.subplot(211)
 #    plt.plot(nkeys, 100*np.array(scores), mark)
     plt.subplot(121)
-    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark+'-', linewidth=2.0)
-    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(scores),mark+'--', linewidth=1.0)
+#    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(cons_scores),mark+'-', linewidth=2.0)
+#    plt.semilogx(np.array(sizes)/(1024.0*1024.0), 100*np.array(scores),mark+'--', linewidth=1.0)
+    plt.semilogx(np.array(sim_sized)/(1024.0*1024.0), 100*np.array(cons_scores),mark+'-', linewidth=2.0)
+    plt.semilogx(np.array(sim_sized)/(1024.0*1024.0), 100*np.array(scores),mark+'--', linewidth=1.0)
 #    plt.semilogx(np.array(nkeys), 100*np.array(cons_scores),mark)    
     plt.xlabel('DB size (Mbytes)')
     plt.ylabel('Recognition rate (\%)')

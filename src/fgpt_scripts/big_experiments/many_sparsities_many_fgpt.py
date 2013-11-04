@@ -48,7 +48,7 @@ bases = {'RWCLearn':(op.join(SND_DB_PATH,'rwc/Learn/'),'.wav'),
 
 # The RWC subset path
 #audio_path = '/sons/rwc/Learn'
-set_id = 'voxforge' # Choose a unique identifier for the dataset considered
+set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
 audio_path,ext = bases[set_id]
 
 
@@ -57,8 +57,8 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)
 nb_files = len(file_names)
 # define experimental conditions
 
-sparsities = [200,150,100,50,30,20,15,10,7,5,3]
-seg_dur = -1 #5
+sparsities = [5,10,30,50]
+seg_dur = 5
 fs = 8000
 step = 3.0
 learn = True
@@ -66,16 +66,19 @@ test = True
 
 ## Initialize the sketchifier
 setups = [
+#          ((SparseFramePairsBDB,{'wall':False,'nb_neighbors_max':3,'delta_t_max':3.0}),1,
+#      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
+#                                 'nature':'LOMDCT'})),
 #          ((XMDCTBDB,{'wall':False}),
 #           1,
 #           XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':1,
 #                                                  'nature':'LOMDCT'})),     
 #                     (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
 #                     SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                ((STFTPeaksBDB,{'wall':False,'delta_t_max':60.0}),1,
-                 STFTPeaksSketch(**{'scale':1024, 'step':512,'downsample':fs})), 
-                     ((CochleoPeaksBDB,{'wall':False}),1,
-                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+#                ((STFTPeaksBDB,{'wall':False,'delta_t_max':60.0}),1,
+#                 STFTPeaksSketch(**{'scale':1024, 'step':512,'downsample':fs})), 
+#                     ((CochleoPeaksBDB,{'wall':False}),1,
+#                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
  ((CQTPeaksBDB,{'wall':False}),1,
      CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs})) 
                  ]

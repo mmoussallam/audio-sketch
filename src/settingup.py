@@ -5,7 +5,7 @@ manu_sandbox.settingup  -  Created on Oct 4, 2013
 import os
 import os.path as op
 import time
-from scipy.io import savemat
+from scipy.io import savemat, loadmat
 import sys
 sys.path.append('../..')
 from joblib import Memory
@@ -22,7 +22,7 @@ from src.classes.fingerprints.cochleo import *
 from src.classes.fingerprints.CQT import *
 from tools.fgpt_tools import db_creation, db_test
 from tools.fgpt_tools import get_filepaths
-
+from tools.stft import stft, istft
 from PyMP.signals import Signal, LongSignal
 
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
@@ -40,3 +40,7 @@ env.open(None, env_flags)
 bases = {'RWCLearn':(op.join(SND_DB_PATH,'rwc/Learn/'),'.wav'),
          'voxforge':(op.join(SND_DB_PATH,'voxforge/main/Learn/'),'wav'),
          'GTZAN':(op.join(SND_DB_PATH,'genres/'),'.au')}
+
+
+#from sklearn.neighbors import NearestNeighbors
+from cProfile import runctx

@@ -58,6 +58,7 @@ def load_learned_database(n_frames, nb_speakers, wintime, n_feats):
         # Keep only the part we need, clean the rest
         learn_feats_all.append(np.array(learn_feats[:n_frames,:n_feats]))
         learn_magspecs_all.append(np.array(learn_magspecs[:n_frames,:]))
+        
         del lstruct
     
     # now concatenate results
@@ -107,13 +108,14 @@ def do_feat_invert_test1(n_speakers, n_frames, n_feats, wintime,
     # load the dev datas
     l_specs, l_feats = load_learned_database(n_frames, n_speakers, wintime, n_feats)
     
+    print l_specs.shape, l_feats.shape
     # Fit the nearest neighbor model    
     knn = NearestNeighbors(n_neighbors=n_neighbs_max)    
     knn.fit(l_feats)
     
     # Load the test file
     t_specs, t_feats, t_data = load_test_datas(test_filepath, wintime, n_feats)
-    
+    print t_specs.shape, t_feats.data
     # Find the nearest neighbors
     distance, neighbs = knn.kneighbors(t_feats,
                                        n_neighbors=n_neighbs_max,

@@ -97,7 +97,7 @@ class FgptTest(unittest.TestCase):
 #                print "sketchify the segment %d" % segIdx 
                 # run the decomposition                        
                 skhandle.recompute(pySigLocal)
-                skhandle.sparsify(300)
+                skhandle.sparsify(150)
                 fgpt = skhandle.fgpt()
 #                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 fgpthandle.populate(fgpt, skhandle.params, fileIndex, offset=segIdx*segDuration)
@@ -107,21 +107,22 @@ class FgptTest(unittest.TestCase):
     def add_get_test(self, skhandle, fgpthandle, display=False):
         # Initialize the sketch handle
         skhandle.recompute(single_test_file1)
-        skhandle.sparsify(300)
+        skhandle.sparsify(20)
         print "Calling sketch handle fgpt method"
         fgpt = skhandle.fgpt(sparse=True)
         params = skhandle.params
         if display:
             print fgpt
         print "Checking that the fgpt handle is able to process the result - populate..",                    
-        fgpthandle.populate(fgpt, skhandle.params, 0)
+        fgpthandle.populate(fgpt, skhandle.params, 0,display=True)
+#        plt.show()
         print " retrieve"
         anchor = np.sum(fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=1))
         print "fgpt handle has built and retrieved %d keys "%anchor        
         
         print " Do the same with the second file"
         skhandle.recompute(single_test_file2)
-        skhandle.sparsify(300)    
+        skhandle.sparsify(150)    
         fgpthandle.populate(skhandle.fgpt(sparse=True), skhandle.params, 1)
         print " check that the handler can recover the first one "
         # does it build a coherent histogram matrix
@@ -187,7 +188,7 @@ class FgptTest(unittest.TestCase):
             true_sig = true_l_sig.get_sub_signal(1, 1, mono=True, normalize=True)
             true_sig.crop(0, 5.0*true_sig.fs)
             skhandle.recompute(true_sig)
-            skhandle.sparsify(300)    
+            skhandle.sparsify(150)    
             test_fgpt = skhandle.fgpt(sparse=False)
         
             hist =  fgpthandle.retrieve(test_fgpt, skhandle.params, nbCandidates=8)

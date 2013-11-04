@@ -48,7 +48,7 @@ def db_test(fgpthandle,
             resample = -1,
             step=2.5,
             tolerance = 5.0,
-            shuffle=True,
+            shuffle=0,
             debug=False,
             n_jobs=3):
     ''' Lets try to identify random segments from the files 
@@ -120,9 +120,11 @@ def db_test(fgpthandle,
                 
             segment_indexes = range(int(l_sig.n_seg))
             if shuffle:
+                if isinstance(shuffle , int):
+                    np.random.seed(shuffle)
                 np.random.shuffle(segment_indexes)
             max_seg = int(test_seg_prop * l_sig.n_seg)
-            
+            print "Testing %d segments in %s"%(max_seg,file_names[fileIndex])
             
             # Loop on random segments*
             if n_jobs>1:              

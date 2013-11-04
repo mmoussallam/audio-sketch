@@ -480,7 +480,9 @@ class XMDCTSparseSketch(AudioSketch):
         self.params = {'scales': [128, 1024, 8192],
                        'nature': 'MDCT',
                          'n_atoms': 1000,
-                         'SRR': 30}
+                         'SRR': 30,
+                         'pad':True,
+                         'debug':0}
 
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -500,7 +502,7 @@ class XMDCTSparseSketch(AudioSketch):
     def _get_dico(self):
         from PyMP.mdct import Dico, LODico
         from PyMP.mdct.dico import SpreadDico
-        from PyMP.wavelet import dico as wavelet_dico
+        #from PyMP.wavelet import dico as wavelet_dico
 
         if self.params['nature'] == 'LOMDCT':
             mdct_dico = LODico(self.params['scales'])
@@ -544,7 +546,9 @@ class XMDCTSparseSketch(AudioSketch):
                          mdct_dico,
                          self.params['SRR'],
                          self.params['n_atoms'],
-                         debug=0)[0]
+                         silent_fail=True,
+                         pad=self.params['pad'],
+                         debug=self.params['debug'])[0]
 
     def represent(self, fig=None, sparse=False):
         if fig is None:
@@ -610,6 +614,13 @@ class XMDCTSparseSketch(AudioSketch):
     def fgpt(self, sparse=False):
         """ In this case it is quite simple : just return the approx objects """
         return self.sp_rep if sparse else self.rep
+
+
+class XMDCTSparsePairsSketch(XMDCTSparseSketch):
+    """ same as above but will be used for pairs of atoms as keys """
+    def __init__(self, original_sig=None, **kwargs):
+        """ just call the superclass constructor nothing needs to be changed """
+        super(XMDCTSparsePairsSketch, self).__init__(original_sig=None, **kwargs)
 
 class WaveletSparseSketch(XMDCTSparseSketch):
     """ Same as Above but using a wavelet dictionary """
