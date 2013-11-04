@@ -11,21 +11,19 @@ from os import chdir
 #sys.path.append('/home/manu/workspace/PyMP')
 #sys.path.append('/home/manu/workspace/meeg_denoise')
 chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
-
-
 import src.classes.sketches.base as base
 import src.classes.sketches.bench as bench
 import src.classes.sketches.misc as misc
 import src.classes.sketches.cochleo as cochleo
 import src.classes.sketches.cortico as cortico
-
+from src.tools import cochleo_tools 
 import matplotlib.pyplot as plt
+
 #plt.switch_backend('Agg')
 SND_DB_PATH = os.environ['SND_DB_PATH']
-audio_test_file = os.path.join(SND_DB_PATH,'jingles/panzani.wav')
+audio_test_file = os.path.join(SND_DB_PATH,'sqam/glocs.wav')
 #audio_test_file  = '/Users/loa-guest/Documents/Laure/libs/PyMP/data/ClocheB.wav'
 #signal = Signal(son, normalize=True, mono=True)
-
 class SketchTest(unittest.TestCase):
 
     def runTest(self):
@@ -51,10 +49,11 @@ class SketchTest(unittest.TestCase):
 #                                                'n_neighbs':1}),
 #                            misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
-#                            cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':16,'shift':-1,'max_iter':1,'n_inv_iter':5}),
-#                            cochleo.CochleoPeaksSketch(**{'fs':8000}),
-#                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),   
-#                            cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
+                             #cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':5,'n_inv_iter':2}),
+                             #cochleo.CochleoPeaksSketch(**{'fs':8000}),
+#                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
+                             #cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
+                             #cortico.CorticoPeaksSketch(**{'n_octave':6,'freq_min':101.0, 'bins':24.0, 'downsample':8000, 'max_iter':5, 'rep_class': cochleo_tools.Quorticogram}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(0,6),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -69,7 +68,8 @@ class SketchTest(unittest.TestCase):
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
                             #bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
                             #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
-                            bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0})            
+                             bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
+                             bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5})
                             ]
         
         # for all sketches, we performe the same testing
@@ -88,23 +88,23 @@ class SketchTest(unittest.TestCase):
 #            
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)
-##            plt.title(sk.__class__)
-#            
-#            # Remove the original signal
-##            sk.orig_signal = None 
-#            
-#            print "%s : Synthesize the sketch"%sk.__class__
-#            synth_sig = sk.synthesize(sparse=True)
-#            
-#            plt.figure()
-##            plt.subplot(211)
-##            plt.plot(sk.orig_signal.data)
-##            plt.subplot(212)
-#            plt.plot(synth_sig.data)
-#            
-#            
-##            synth_sig.play()
-#            synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
+            plt.title(sk.__class__)
+            
+            # Remove the original signal
+#            sk.orig_signal = None 
+            
+            print "%s : Synthesize the sketch"%sk.__class__
+            #synth_sig = sk.synthesize(sparse=True)
+            
+            #plt.figure()
+#            plt.subplot(211)
+#            plt.plot(sk.orig_signal.data)
+#            plt.subplot(212)
+            #plt.plot(synth_sig.data)
+            
+            
+#            synth_sig.play()
+            #synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
 
 if __name__ == "__main__":
     

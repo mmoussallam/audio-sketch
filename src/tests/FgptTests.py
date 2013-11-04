@@ -8,12 +8,14 @@ are correctly implemented
 '''
 import unittest
 import os
+from os import chdir
 import sys
 import numpy as np
 import os.path as op
 import matplotlib.pyplot as plt
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
 
-sys.path.append('../..')
+#sys.path.append('../..')
 
 from src.classes.sketches.base import *
 from src.classes.sketches.bench import *
@@ -46,15 +48,20 @@ fgpt_sketches = [
 #     SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
 #    (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
 #     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-#   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-#    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
 #     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
 #      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
 #                                 'nature':'LOMDCT'})),
-    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
-     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
+                     (CochleoPeaksBDB(None, **{'wall':False}),
+                     CochleoPeaksSketch(**{'fs':8000.0,'step':128,'downsample':8000.0,'frmlen':6})),
+#    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000})),  
+# (CQTPeaksTripletsBDB(None, **{'wall':False}),
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                        
 #        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
+#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
+                                            
                     ]
 
 

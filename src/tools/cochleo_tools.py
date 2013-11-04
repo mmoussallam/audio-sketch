@@ -2,6 +2,7 @@
 tools.cochleo_tools  -  Created on Feb 1, 2013
 @author: M. Moussallam
 '''
+
 import numpy as np
 from numpy import floor
 import matplotlib.pyplot as plt
@@ -16,6 +17,11 @@ from dear.spectrogram import plot_spectrogram
 from scipy.io import loadmat
 from scipy.signal import lfilter
 from numpy.fft import fft, ifft
+import math
+
+from os import chdir
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
+from src.tools import cqt
 
 import os
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
@@ -547,12 +553,13 @@ class Cochleogram(object):
         plt.yticks(np.flipud(y), ["%d"%int(f) for f in f_vec])
         print ["%d"%int(f) for f in f_vec]
         ax.set_ylabel('Frequency (Hz)')
-
+    
+    
 
 class Corticogram(object):
     """ Cortical representation a.k.a 2D wavelet transform of a cochleogram"""
     
-    def __init__(self, obj, **kwargs):
+    def __init__(self, data, **kwargs):
      
         self.cor = None
         self.params={'rv': [1, 2, 4, 8, 16, 32],
@@ -562,10 +569,11 @@ class Corticogram(object):
             self.params[key] = kwargs[key]          
                              
         # First test if it's instantiated with a Cochleogram
-        if not isinstance(obj, Cochleogram):
-            self.coch = Cochleogram(obj, **self.params)
-        else:
-            self.coch = obj
+        #if not isinstance(obj, Cochleogram):
+        self.coch = Cochleogram(data, **self.params)
+        self.coch.build_aud()
+        #else:
+        #    self.coch = obj
     
     def build_cor(self, coch=None):
         """ need some improvements but should be working """        
@@ -578,6 +586,11 @@ class Corticogram(object):
         # Don't really get this one....
         self.params['BP'] = 1
         self.cor = _build_cor(coch, **self.params)
+
+    def invert_signal(self, v5=None):
+        # initialize invert        
+        init_vec = self.coch.init_inverse(v5)
+        return self.coch.invert(v5, init_vec, nb_iter=self.params['n_inv_iter'])
 
     def invert(self, cor=None, order=2):
         """ resynthesize the auditory spectrum from self or from given corticogram """
@@ -637,6 +650,139 @@ class Corticogram(object):
 #        plt.subplot(122)
 #        plt.pcolor(X,Y,rs_view[:,K1/2:],
 #                   cmap=cm.bone_r)
+         
+            
+            
+class Quorticogram(Corticogram):
+    """ Cortical representation a.k.a 2D wavelet transform of a cqt"""
+    
+    def __init__(self, data, noyau=None,**kwargs):
+        
+        self.params = {'fen_type': 1, # 1.hamming 2.blackman
+              'avance': 0.005,
+              'freq_min' : 101.84,
+              'freq_max': None,
+              'n_octave': None,
+              'bins': 24.0,
+              'overl': None,
+              'K': None,
+              'rv': [1, 2, 4, 8, 16, 32],
+              'sv' : [0.5, 1, 2, 4, 8]}
+     
+        self.cqt = None
+     
+        for key in kwargs:
+            self.params[key] = kwargs[key]          
+                             
+        # First test if it's instantiated with a Cochleogram
+        #if not isinstance(obj, Cochleogram):
+        if self.params['downsample']:
+            self.params['fs'] = self.params['downsample']  
+        
+        if self.params['freq_max'] is None:
+            self.params['freq_max'] = self.params['freq_min']*2**self.params['n_octave'] 
+        
+        if self.params['overl'] is None:
+            self.params['overl'] = 2**math.ceil(np.log2(self.params['fs'] * self.params['avance']))
+               
+        self.noyau = noyau
+        if self.noyau is None:
+            [self.noyau,self.params['K']] = cqt.noyau(self.params['fs'], self.params['freq_min'],
+                                   self.params['freq_max'],
+                                   self.params['fen_type'],
+                                   self.params['bins'])
+                          
+        cqt_temp = cqt.cqt_d(data,self.noyau,
+                            self.params['K'], self.params['freq_min'], 
+                            self.params['bins'],self.params['overl'])
+        self.cqt = abs(cqt_temp).T
+        #else:
+        #    self.coch = obj
+    
+    def build_cor(self, cqt=None):
+        """ need some improvements but should be working """        
+        if cqt is None:
+            cqt = self.cqt
+        
+        # Don't really get this one....
+        self.params['BP'] = 1
+        self.cor = _build_cor(cqt, **self.params)
+
+    def invert_signal(self):
+        ''' recompute the waveform from the cqt spectrum
+        stored in self.cqt
+        '''
+        
+        return cqt.inverseS(self.cqt,self.params['fs'],self.params['freq_min'],
+                     self.params['freq_max'],self.params['bins'],
+                     self.params['overl'])
+        
+
+    def invert(self, cor=None, order=2):
+        """ resynthesize the auditory spectrum from self or from given corticogram """
+    
+        if cor is None:
+            cor = np.copy(self.cor)        
+#        print cor.shape
+        # BUGFIX!!!!!!!! HACK : the last parameter should now be zero?
+#        self.params['BP'] = 0
+        self.rec = _cor2aud(cor, **self.params) ** order
+        return self.rec
+
+    def plot_cort(self,fig=None, cor=None, scale=True, Rate=True, binary=False):
+        """ gives a summarized view of a Scale-Rate evolution in time/frequency"""
+        
+        if cor is None:
+            if self.cor is None:
+                self.build_cor()
+            cor = self.cor
+        
+        if fig is None:
+            fig = plt.figure()
+        
+#        rs_view = np.abs(np.squeeze(np.mean(np.mean(cor,axis=3),axis=2)))
+#        (K2,K1) = rs_view.shape
+#        X, Y = np.meshgrid(self.params['sv'], self.params['rv'])
+        
+        y = self.params['sv']
+#        x = []
+#        
+#        for ind,r in enumerate(self.params['rv']):
+#            x.append(r)
+#            x.insert(0,-r)
+            
+        for i in range(cor.shape[0]):
+            for j in range(cor.shape[1]/2):                
+                plt.subplot( cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + j+1)
+#                if j < cor.shape[1]/2:                    
+#                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
+#                else:
+                if not binary: 
+                    plt.imshow(np.abs(cor[i,j + cor.shape[1]/2,:,:]).T, origin='lower',cmap=cm.bone_r)
+                else:
+                    plt.spy(cor[i,j + cor.shape[1]/2,:,:].T)
+                plt.xticks([])
+                plt.yticks([])
+                plt.subplot(cor.shape[0], cor.shape[1]/2, j+1)
+                plt.title(str(self.params['rv'][j]))
+            plt.subplot(cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + 1)
+            plt.ylabel(str(self.params['sv'][i]))
+#        plt.show()
+        
+#        plt.figure()
+#        plt.subplot(121)
+#        plt.pcolor(np.fliplr(-X), Y, rs_view[:,:K1/2],                   
+#                   cmap=cm.bone_r)
+#        plt.subplot(122)
+#        plt.pcolor(X,Y,rs_view[:,K1/2:],
+#                   cmap=cm.bone_r)
+         
+            
+            
+            
+            
+            
+    
 
 def coch_filt(data, coeffs, chan_idx):
     p = int(coeffs[0, chan_idx].real)    # order of ARMA filter

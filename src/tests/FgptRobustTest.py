@@ -9,7 +9,10 @@ Purpose is to evaluate the robustness to following perturbation:
 @author: M. Moussallam
 '''
 
-sys.path.append('../..')
+#sys.path.append('../..')
+import os
+from os import chdir
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
 
 from src.classes.sketches.base import *
 from src.classes.sketches.bench import *
@@ -102,7 +105,60 @@ def NoiseTest(sigmas, sparsity, ntest=1):
     plt.savefig(op.join(figuredir,'NoiseRobustness_k%d.pdf'%sparsity))
     plt.savefig(op.join(figuredir,'NoiseRobustness_k%d.png'%sparsity))
 
+def SparsityTest(sigma, sparsities, ntest=1):
+    falseOffset = 10    
+    legends = []
+    plt.figure()
+    for i, (fgpthand, sk) in enumerate(fgpt_sketches):    
+        print fgpthand, sk
+        
+        # First Test: white additive noise
+    #    sk.recompute(single_test_file1)
+    #    sk.sparsify(sparsity)
+    #    # convert it to a fingeprint compatible with associated handler
+    ##    print sk.params
+    #    fgpt = sk.fgpt(sparse=True)    
+    #    fgpthand.populate(fgpt, sk.params, 0,falseOffset)
+    #    anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1))
+        # Now measure the score achieved with various levels of noise
+        sk_n = sk
+        orig_sig = Signal(single_test_file1, normalize=True, mono=True)
+        orig_sig.downsample(fs)
+        orig_sig.write(op.join(tempdir, 'orig.wav'))
+        sk.recompute(op.join(tempdir, 'orig.wav'))
 
+        
+        orig_data = np.copy(orig_sig.data)
+        noisy = Signal(orig_data + sigma*np.random.randn(len(orig_data)), orig_sig.fs, normalize=False)
+        noise = SNR(noisy.data,orig_data)
+        noisy_name = op.join(tempdir, 'noisy%d.wav'%int(noise)) 
+        noisy.write(noisy_name)
+        sk_n.recompute(noisy_name)
+        sparsityscores = np.zeros((len(sparsities),ntest))
+        for isg, sparsity in enumerate(sparsities):
+            for itest in range(ntest):
+                sk.sparsify(sparsity)   #original signal
+                fgpt = sk.fgpt(sparse=True)    
+                fgpthand.populate(fgpt, sk.params, 0, falseOffset, max_pairs=sparsity)
+                anchor = np.sum(fgpthand.retrieve(fgpt, sk.params, nbCandidates=1)) 
+                sk_n.sparsify(sparsity)   #noise signal
+                sparsity_fgpt = sk_n.fgpt(sparse=True)    
+                hist = fgpthand.retrieve(sparsity_fgpt, sk.params, nbCandidates=1)
+                sparsityscores[isg,itest] = float(np.sum(hist))/float(anchor)
+            print np.mean(sparsityscores,axis=1), fgpthand.dbObj.stat()['nkeys']
+        
+        plt.plot( sparsities,np.mean(sparsityscores,axis=1), linewidth=i+1)
+        legends.append(sk.__class__.__name__[:-6])
+        # second test : amplitude
+        
+    plt.legend(legends, loc='lower right')    
+    plt.grid()
+    plt.title('Sparsity robustness with noise %dDB:'%noise)
+    plt.xlabel('Sparsity (K)')
+    plt.ylabel('Keys Overlap Ratio')
+    plt.savefig(op.join(figuredir,'SparsityRobustness_k%d.pdf'%noise))
+    plt.savefig(op.join(figuredir,'SparsityRobustness_k%d.png'%noise))
+ 
 
 def TimeShiftTest(shifts, sparsity):    
     falseOffset = 0
@@ -167,26 +223,35 @@ def TimeShiftTest(shifts, sparsity):
 ##########
 #if __name__ == "__main__":
 #     parameters
-fs = 11025
-sparsity = 100
+fs = 8000.0 #11025
+sparsity = 100 
 # systems to test    
 fgpt_sketches = [
-                     (XMDCTBDB(None, load=False,**{'wall':False}),
-                      XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
-                                                  'nature':'LOMDCT'})),     
-              #       (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
-               #      SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
-                (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
-                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
-                     (CochleoPeaksBDB(None, **{'wall':False}),
-                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
+#                     (XMDCTBDB(None, load=False,**{'wall':False}),
+#                      XMDCTSparseSketch(**{'scales':[2048, 4096, 8192],'n_atoms':150,
+#                                                  'nature':'LOMDCT'})),     
+#              #       (SWSBDB(None, **{'wall':False,'n_deltas':2}),                  
+#               #      SWSSketch(**{'n_formants_max':7,'time_step':0.01})), 
+#                (STFTPeaksBDB(None, **{'wall':True,'delta_t_max':60.0}),
+#                 STFTPeaksSketch(**{'scale':1024, 'step':512})), 
+#                     (CochleoPeaksBDB(None, **{'wall':False}),
+#                     CochleoPeaksSketch(**{'fs':fs,'step':128,'downsample':fs,'frmlen':8})),
  (CQTPeaksBDB(None, **{'wall':False}),
-     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs}))  
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0,'downsample':fs})),
+ (CQTPeaksBDB(None, **{'wall':False}),
+    cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5}))
+# (CQTPeaksTripletsBDB(None, **{'wall':False}),
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':fs}))
                  ]
 
 # tests
 for sparsity in [200]:
     NoiseTest(np.logspace(-5, 0, 20), sparsity, ntest=5)
+
+#sigma = np.spacing(1) #equivalent to no noise
+sigma = 0.8 # equivalent to -3DB noise
+SparsityTest(sigma, [200,100,50,30,20,10,5],ntest=5)
+
 #    TimeShiftTest(np.linspace(0,3*fs, 50), sparsity)
     
 # plotting

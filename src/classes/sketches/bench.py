@@ -6,6 +6,7 @@ classes.sketches.benchsketch  -  Created on Jul 25, 2013
 from src.classes.sketches.base import *
 from src.tools import stft, cqt
 from numpy import unravel_index
+import math
 
 class CQTPeaksSketch(AudioSketch):
     ''' Sketch based on a single STFT with peak-picking as a
@@ -17,12 +18,11 @@ class CQTPeaksSketch(AudioSketch):
         # baseline parameters: default rectangle is 10 frames by 10 bins large        
         self.params = {'fen_type': 1, # 1.hamming 2.blackman
               'avance': 0.005,
-              'bandwidth': 0.95,
               'freq_min' : 101.84,
               'freq_max': None,
               'n_octave': None,
               'bins': 24.0,
-              'inc': None,
+              'overl': None,
               'K': None}
               
         # add all the parameters that you want              
@@ -56,15 +56,17 @@ class CQTPeaksSketch(AudioSketch):
                 signal = Signal(signal, normalize=True, mono=True)
             self.orig_signal = signal
 
+        if self.orig_signal is None:
+            raise ValueError("No original Sound has been given")
+
         if self.params.has_key('downsample'):
             self.orig_signal.downsample(self.params['downsample']) 
 
-        if self.orig_signal is None:
-            raise ValueError("No original Sound has been given")
+
         self.params['fs'] = self.orig_signal.fs
         
-        if self.params['inc'] is None:
-            self.params['inc'] = self.params['fs'] * 0.0078125
+        if self.params['overl'] is None:
+            self.params['overl'] = 2**math.ceil(np.log2(self.params['fs'] * self.params['avance']))
         
        
         
@@ -74,11 +76,11 @@ class CQTPeaksSketch(AudioSketch):
                                    self.params['fen_type'],
                                    self.params['bins'])
                                    
-        [rep_temp, self.f, self.t] = cqt.cqtS(self.orig_signal, self.noyau, self.params['inc'], 
-                            self.params['K'], self.params['bandwidth'], 
-                            self.params['freq_min'], self.params['bins'])
+        [rep_temp, self.f, self.t] = cqt.cqtS(self.orig_signal, self.noyau,
+                            self.params['K'], self.params['freq_min'], 
+                            self.params['bins'],self.params['overl'])
 
-        self.rep = np.zeros((1,rep_temp.shape[0],rep_temp.shape[1]))
+        self.rep = np.zeros((1,rep_temp.shape[0],rep_temp.shape[1]), dtype=complex)
         self.rep[0,:,:] = rep_temp
         self.params['f'] = self.f
 
@@ -195,6 +197,85 @@ class CQTPeaksSketch(AudioSketch):
             print "WARNING : default peak-picking of 100"
             self.sparsify(100)        
         return self.sp_rep
+        
+class cqtIHTSketch(CQTPeaksSketch):
+    """ Iterative Hard Thresholding on an auditory spectrum 
+    
+    Inherit from CochleoSketch and only implements a different sparsification
+    method
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(cqtIHTSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+        
+        self.params['max_iter'] = 5     # number of IHT iterations
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+    
+    def get_sig(self):
+        strret = '%diter' %(self.params['max_iter'])
+        return strret
+    
+    def sparsify(self, sparsity, **kwargs):
+        """ sparsification is performed using the 
+        Iterative Hard Thresholding Algorithm """
+        L = sparsity
+        if  self.rep is None:
+            raise ValueError("No representation has been computed yet")
+        
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
+        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+        
+        cand_rep = np.array(self.rep[0,:,:])
+            
+        A = np.zeros(cand_rep.shape, dtype=complex)
+        original = cqt.inverseS(cand_rep,self.params['fs'],self.params['freq_min'],
+                 self.params['freq_max'],self.params['bins'],self.params['overl'])
+        original /= np.max(original)
+        original *= 0.9
+        residual = np.copy(original)
+        
+        
+        res_cqt = cqt.cqt_d(residual, self.noyau,
+                            self.params['K'], self.params['freq_min'], 
+                             self.params['bins'],self.params['overl'])
+        n_iter = 0
+        while n_iter < self.params['max_iter']:
+            #print "IHT Iteration %d"%n_iter
+            if n_iter>0:
+                cqt_rec = cqt.cqt_d(res_cqt,self.noyau,
+                            self.params['K'], self.params['freq_min'], 
+                            self.params['bins'],self.params['overl'])
+                projection = np.array(cqt_rec)
+            else:
+                projection = cand_rep
+            # sort the elements            
+            A_buff = A + projection
+            A_flat = A_buff.flatten()
+            idx_order = np.abs(A_flat).argsort()
+            A = np.zeros(A_flat.shape,dtype=complex)
+            A[idx_order[-L:]] = A_flat[idx_order[-L:]]
+            A = A.reshape(A_buff.shape)
+                
+            rec_a = cqt.inverseS(A,self.params['fs'],self.params['freq_min'],
+                             self.params['freq_max'],self.params['bins'],self.params['overl'])
+
+            rec_a /= np.max(rec_a)
+            rec_a *= 0.9
+            residual = original - rec_a
+            res_cqt = residual
+            
+            n_iter += 1
+            #print 'n_iter %d'%n_iter
+                
+        self.sp_rep = np.zeros((1,projection.shape[0],projection.shape[1]))
+        self.sp_rep[0,:,:] = A
+        self.rec_a = rec_a
+    
 
 
 class STFTPeaksSketch(AudioSketch):

@@ -3,6 +3,9 @@ classes.sketches.cochleosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
+import os
+from os import chdir
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
 from src.classes.sketches.base import *
 from src.tools import  cochleo_tools
 
@@ -157,7 +160,7 @@ class CochleoPeaksSketch(CochleoSketch):
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= np.sum(self.rep.shape)
+            sparsity *= np.prod(self.rep.shape)
 #        else:
             # otherwise the sparsity argument take over and we divide in
             # the desired number of regions (preserving the bin/frame ratio)
@@ -187,7 +190,7 @@ class CochleoPeaksSketch(CochleoSketch):
 class CochleoIHTSketch(CochleoSketch):
     """ Iterative Hard Thresholding on an auditory spectrum 
     
-    Inherit from CochleoSketch and only implements a different sparisication
+    Inherit from CochleoSketch and only implements a different sparsification
     method
     """
     def __init__(self, original_sig=None, **kwargs):
@@ -234,7 +237,7 @@ class CochleoIHTSketch(CochleoSketch):
                 projection = np.array(res_coch.y5)
             else:
                 projection = cand_rep
-            # sort the elements            
+            # sort the elements    
             A_buff = A + projection
             A_flat = A_buff.flatten()
             idx_order = np.abs(A_flat).argsort()
