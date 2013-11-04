@@ -3,9 +3,9 @@ classes.sketches.cochleosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
-import os
-from os import chdir
-chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
+import os, sys
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+sys.path.append(SKETCH_ROOT)
 from src.classes.sketches.base import *
 from src.tools import  cochleo_tools
 

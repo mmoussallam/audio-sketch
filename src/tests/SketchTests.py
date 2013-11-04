@@ -6,11 +6,13 @@ Created on Jan 31, 2013
 import unittest
 import sys
 import os
-from os import chdir
 #sys.path.append('/home/manu/workspace/audio-sketch')
 #sys.path.append('/home/manu/workspace/PyMP')
 #sys.path.append('/home/manu/workspace/meeg_denoise')
-chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
+
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+sys.path.append(SKETCH_ROOT)
+
 import src.classes.sketches.base as base
 import src.classes.sketches.bench as bench
 import src.classes.sketches.misc as misc

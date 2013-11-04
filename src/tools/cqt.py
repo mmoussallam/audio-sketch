@@ -19,8 +19,8 @@ import profile
 
 
 #sys.path.append('/Users/loa-guest/Documents/Laure/audio-sketch-master/src/')
-son = '/Users/loa-guest/Documents/MATLAB/test_small_mono.wav'
-signal = Signal(son, normalize=True, mono=True)
+#son = '/Users/loa-guest/Documents/MATLAB/test_small_mono.wav'
+#signal = Signal(son, normalize=True, mono=True)
      
      
 

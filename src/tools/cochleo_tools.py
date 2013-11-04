@@ -19,8 +19,9 @@ from scipy.signal import lfilter
 from numpy.fft import fft, ifft
 import math
 
-from os import chdir
-chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
+import os, sys
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+sys.path.append(SKETCH_ROOT)
 from src.tools import cqt
 
 import os
