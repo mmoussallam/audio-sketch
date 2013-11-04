@@ -70,7 +70,7 @@ class SketchTest(unittest.TestCase):
 #                           sketch.WaveletSparseSketch(**{'wavelets':[('db8',6),], 'n_atoms':100}),
                             #bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
                             #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
-                             bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
+#                             bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
                              bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5})
                             ]
         

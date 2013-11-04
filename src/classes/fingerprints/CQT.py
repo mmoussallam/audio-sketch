@@ -197,6 +197,6 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
 
         
     def format_key(self, key):
-            """ Format the Key as [f1 , f2, delta_t] """
-            (f1, delta_f1, delta_f2, ratio_delta_t) = key
-            return floor((f1 / self.alpha) * 2 ** (self.params['f1_n_bits'] + self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((delta_f1 / self.beta) * 2 ** (self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((delta_f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + floor((ratio_delta_t) / self.gamma)
+        """ Format the Key as [f1 , f2, delta_t] """
+        (f1, delta_f1, delta_f2, ratio_delta_t) = key
+        return floor((f1 / self.alpha) * 2 ** (self.params['f1_n_bits'] + self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((delta_f1 / self.beta) * 2 ** (self.params['f2_n_bits'] + self.params['dt_n_bits'])) + floor((delta_f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + floor((ratio_delta_t) / self.gamma)

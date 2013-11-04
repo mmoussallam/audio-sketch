@@ -7,7 +7,7 @@ import os.path as op
 import time
 from scipy.io import savemat, loadmat
 import sys
-sys.path.append('../..')
+
 from joblib import Memory
 from src.classes.sketches.base import AudioSketch
 from src.classes.sketches.bench import *
@@ -27,6 +27,8 @@ from PyMP.signals import Signal, LongSignal
 
 SKETCH_ROOT = os.environ['SKETCH_ROOT']
 SND_DB_PATH = os.environ['SND_DB_PATH']
+
+sys.path.append(SKETCH_ROOT)
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm 
