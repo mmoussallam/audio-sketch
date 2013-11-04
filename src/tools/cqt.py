@@ -204,10 +204,6 @@ def resize(signal):
    signal.x = np.concatenate((np.zeros(floor(1.2*signal.fs),),signal.data[0:floor(2*signal.fs)], np.zeros(floor(1.2*signal.fs),)), axis = 0)
    del nb
    return signal
-
-#def verticalize(signal):
-#    signal.data = np.array(signal.data).flatten(1)
-#    return signal
     
 def tukeywin(window_length, alpha=0.5):
     '''The Tukey window, also known as the tapered cosine window, can be regarded as a cosine lobe of width \alpha * N / 2
