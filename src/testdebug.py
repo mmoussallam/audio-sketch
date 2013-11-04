@@ -8,11 +8,8 @@ Created on Mon Oct 21 11:05:18 2013
 import unittest
 import sys
 import os
-from os import chdir
-#sys.path.append('/home/manu/workspace/audio-sketch')
-#sys.path.append('/home/manu/workspace/PyMP')
-#sys.path.append('/home/manu/workspace/meeg_denoise')
-chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
+import sys, os
+sys.path.append(os.environ['SKETCH_ROOT'])
 import src.classes.sketches.base as base
 import src.classes.sketches.bench as bench
 import src.classes.sketches.misc as misc
@@ -73,10 +70,15 @@ audio_test_file = os.path.join(SND_DB_PATH,'sqam/glocs.wav')
                             #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
 #sk2 = bench.CQTPeaksSketch(**{'n_octave':7,'freq_min':101.0, 'bins':36.0, 'downsample':8000})    
 #sk2 = bench.cqtIHTSketch(**{'n_octave':7,'freq_min':101.0, 'bins':36.0, 'downsample':8000, 'max_iter':5})
-sk = bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000, 'max_iter':5})
+sk = bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0,
+                           'downsample':8000, 'max_iter':5,'fen_type':1})
 sk.recompute(audio_test_file)
+import time
+t = time.time()
 sk.sparsify(200)
+print "Without profiling:",time.time()-t
 sk.represent(sparse = True)
+plt.show()
 #sk2 = bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0,'downsample':8000})
 #sk2.recompute(audio_test_file)
                             #]

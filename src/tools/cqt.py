@@ -69,7 +69,8 @@ def noyau(fs,freq_min,freq_max,fen_type,bins): #x = resize(signal)
     
     
 def cqtS(signal, noyauatrous, K, freq_min, bins,overl):
-    signal.data = np.array(signal.data).flatten(1)
+#    signal.data = np.array(signal.data).flatten(1)
+    signal.data = signal.data.flatten(1)
     wdw_size = noyauatrous.shape[0]    
     cqt_l = int((signal.length-wdw_size)/overl)+1
     t_cal = np.zeros(cqt_l)
@@ -101,61 +102,62 @@ def inverseS(cqt,fs,freq_min,freq_max,bins,overl):
     nblocks = cqt.shape[1]
     [noyau_inv,K] = noyau(fs,freq_min,freq_max,3,bins)
     Nfft = noyau_inv.shape[0]
-    yf=overl*np.dot(noyau_inv,cqt[0:K,:])
+    print noyau_inv.shape, cqt.shape
+    yf = overl * np.dot(noyau_inv, cqt)
     y_oct = 2*np.real(np.fft.ifft(yf.T))
     lensig = (nblocks-1)*overl + Nfft
     x_oct = np.zeros(lensig)
     for n in range(int(nblocks)):
-        x_oct[int(n*overl):int(n*overl+Nfft)] = y_oct[n,:] + x_oct[int(n*overl):int(n*overl+Nfft)] 
+        x_oct[int(n*overl):int(n*overl+Nfft)] += y_oct[n,:]
     return x_oct
     
     
-def cqtP(noyau,fs_new,avance,Nfft,K,signal,freq_max,bandwidth, freq_min,bins,overl):
-    
-    nbo = np.log2(freq_max/freq_min)
-    b= importB()
-    nk = math.ceil(np.log2(bandwidth*signal.fs)-np.log2(freq_max)) -1
-    # prétraitement à faire si nk!=O
-    for k in np.arange(nk):
-        x = scps.filtfilt(b, np.array([1]),signal.x)
-        x = scps.decimate(x,2)
-
-    x_oct = [0]*1
-    x_oct[0] = x 
-    for k in range(K-1):
-        x_oct.append(downsample(scps.filtfilt(b, np.array([1]),x_oct[k]),2))
-    x_oct.reverse()
-    
-
-    val=[2**(nbo-1)]*1
-    [val.extend([val[a]/2]) for a in range(nbo-1)]
-    A = range(nbo)
-    x_oct2 = [bufferND(x_oct[a],Nfft,Nfft-overl/c) for (a,c) in zip(A,val)]
-    
-    cqt_non_sync = np.array(np.zeros((nbo*bins,x_oct2[nbo-1].shape[1])),dtype=complex)
-    for nb_sub in range(nbo):
-        for n_buf in range(x_oct2[nb_sub].shape[1]):
-            index = np.arange(int(nb_sub*bins),int((nb_sub+1)*bins))
-            cqt_non_sync[index,n_buf] = constQ(x_oct2[nb_sub][:,n_buf],noyau)
-        
-#Resynchronise les coefficients cqt aux instants de calcul par rapport au signal
-# fonction resync
-    nl = cqt_non_sync.shape[0]
-    nc = cqt_non_sync.shape[1]
-    decmin = Nfft/(2*overl)
-    nc_ns=nc+Nfft*(2**(nbo-2)/overl)     
-            
-    cqt_sync=np.zeros((nl,nc_ns),dtype = complex)
-    for k in range(nbo-4):
-        ind = int(k*bins)
-        dec = int(Nfft*(2**(nbo-2-k)/overl))
-        if int(k)==1 and decmin == 0.5:
-            dec = 0
-        cqt_sync[ind:int(ind+bins),:][:,dec:int(dec+nc)] = cqt_non_sync[np.arange(ind,int(ind+bins)),:]
-    t_cal = Nfft/2-decmin+overl*np.arange(nc_ns-1)/fs_new
-    f_cal = [freq_min*2**a/bins for a in range(int(K))]
-    return cqt_sync, f_cal, t_cal
-    
+#def cqtP(noyau,fs_new,avance,Nfft,K,signal,freq_max,bandwidth, freq_min,bins,overl):
+#    
+#    nbo = np.log2(freq_max/freq_min)
+#    b= importB()
+#    nk = math.ceil(np.log2(bandwidth*signal.fs)-np.log2(freq_max)) -1
+#    # prétraitement à faire si nk!=O
+#    for k in np.arange(nk):
+#        x = scps.filtfilt(b, np.array([1]),signal.x)
+#        x = scps.decimate(x,2)
+#
+#    x_oct = [0]*1
+#    x_oct[0] = x 
+#    for k in range(K-1):
+#        x_oct.append(downsample(scps.filtfilt(b, np.array([1]),x_oct[k]),2))
+#    x_oct.reverse()
+#    
+#
+#    val=[2**(nbo-1)]*1
+#    [val.extend([val[a]/2]) for a in range(nbo-1)]
+#    A = range(nbo)
+#    x_oct2 = [bufferND(x_oct[a],Nfft,Nfft-overl/c) for (a,c) in zip(A,val)]
+#    
+#    cqt_non_sync = np.array(np.zeros((nbo*bins,x_oct2[nbo-1].shape[1])),dtype=complex)
+#    for nb_sub in range(nbo):
+#        for n_buf in range(x_oct2[nb_sub].shape[1]):
+#            index = np.arange(int(nb_sub*bins),int((nb_sub+1)*bins))
+#            cqt_non_sync[index,n_buf] = constQ(x_oct2[nb_sub][:,n_buf],noyau)
+#        
+##Resynchronise les coefficients cqt aux instants de calcul par rapport au signal
+## fonction resync
+#    nl = cqt_non_sync.shape[0]
+#    nc = cqt_non_sync.shape[1]
+#    decmin = Nfft/(2*overl)
+#    nc_ns=nc+Nfft*(2**(nbo-2)/overl)     
+#            
+#    cqt_sync=np.zeros((nl,nc_ns),dtype = complex)
+#    for k in range(nbo-4):
+#        ind = int(k*bins)
+#        dec = int(Nfft*(2**(nbo-2-k)/overl))
+#        if int(k)==1 and decmin == 0.5:
+#            dec = 0
+#        cqt_sync[ind:int(ind+bins),:][:,dec:int(dec+nc)] = cqt_non_sync[np.arange(ind,int(ind+bins)),:]
+#    t_cal = Nfft/2-decmin+overl*np.arange(nc_ns-1)/fs_new
+#    f_cal = [freq_min*2**a/bins for a in range(int(K))]
+#    return cqt_sync, f_cal, t_cal
+#    
 
     
 def nextpow2(i):

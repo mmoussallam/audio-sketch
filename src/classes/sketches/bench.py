@@ -230,13 +230,15 @@ class cqtIHTSketch(CQTPeaksSketch):
         self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
         self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
         
-        cand_rep = np.array(self.rep[0,:,:])
+#        cand_rep = np.array(self.rep[0,:,:])
+        cand_rep = self.rep[0,:,:]
             
         A = np.zeros(cand_rep.shape, dtype=complex)
         original = cqt.inverseS(cand_rep,self.params['fs'],self.params['freq_min'],
                  self.params['freq_max'],self.params['bins'],self.params['overl'])
-        original /= np.max(original)/0.9
-        #original *= 0.9
+        
+        original /= np.max(original)
+        original *= 0.9
 #        residual = np.copy(original)
         
         
