@@ -273,7 +273,7 @@ class cqtIHTSketch(CQTPeaksSketch):
             n_iter += 1
             #print 'n_iter %d'%n_iter
                 
-        self.sp_rep = np.zeros((1,projection.shape[0],projection.shape[1]))
+        self.sp_rep = np.zeros((1,projection.shape[0],projection.shape[1]), dtype=complex)
         self.sp_rep[0,:,:] = A
         self.rec_a = rec_a
     

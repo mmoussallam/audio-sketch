@@ -102,7 +102,7 @@ def inverseS(cqt,fs,freq_min,freq_max,bins,overl):
     nblocks = cqt.shape[1]
     [noyau_inv,K] = noyau(fs,freq_min,freq_max,3,bins)
     Nfft = noyau_inv.shape[0]
-    print noyau_inv.shape, cqt.shape
+#    print noyau_inv.shape, cqt.shape
     yf = overl * np.dot(noyau_inv, cqt)
     y_oct = 2*np.real(np.fft.ifft(yf.T))
     lensig = (nblocks-1)*overl + Nfft

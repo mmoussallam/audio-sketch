@@ -21,7 +21,7 @@ import profile
 
 #plt.switch_backend('Agg')
 SND_DB_PATH = os.environ['SND_DB_PATH']
-audio_test_file = os.path.join(SND_DB_PATH,'sqam/glocs.wav')
+audio_test_file = os.path.join(SND_DB_PATH,'jingles/panzani.wav')
 #audio_test_file  = '/Users/loa-guest/Documents/Laure/libs/PyMP/data/ClocheB.wav'
 #signal = Signal(son, normalize=True, mono=True)
 #class SketchTest(unittest.TestCase):
