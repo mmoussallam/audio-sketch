@@ -69,7 +69,7 @@ def noyau(fs,freq_min,freq_max,fen_type,bins): #x = resize(signal)
     
     
 def cqtS(signal, noyauatrous, K, freq_min, bins,overl):
-    signal = verticalize(signal)
+    signal.data = np.array(signal.data).flatten(1)
     wdw_size = noyauatrous.shape[0]    
     cqt_l = int((signal.length-wdw_size)/overl)+1
     t_cal = np.zeros(cqt_l)
@@ -85,7 +85,7 @@ def cqtS(signal, noyauatrous, K, freq_min, bins,overl):
     return cqt,f_cal,t_cal
     
 def cqt_d(signal_data,noyauatrous,K,freq_min,bins,overl):
-    signal_data = verticalize(signal_data)
+    signal_data = signal_data.flatten(1)
     wdw_size = noyauatrous.shape[0]    
     cqt_l = int((signal_data.shape[0]-wdw_size)/overl)+1
     cqt = np.zeros((K,cqt_l),dtype=complex)
@@ -205,9 +205,9 @@ def resize(signal):
    del nb
    return signal
 
-def verticalize(signal):
-    signal.data = np.array(signal.data).flatten(1)
-    return signal
+#def verticalize(signal):
+#    signal.data = np.array(signal.data).flatten(1)
+#    return signal
     
 def tukeywin(window_length, alpha=0.5):
     '''The Tukey window, also known as the tapered cosine window, can be regarded as a cosine lobe of width \alpha * N / 2
