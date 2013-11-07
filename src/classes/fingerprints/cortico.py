@@ -93,7 +93,7 @@ class CorticoIndepSubPeaksBDB(FgptHandle):
 #                                                      params, fileIndex,
 #                                                      offset=offset, debug=debug)
 
-    def populate(self, fgpt, params, fileIndex, offset=0,debug=False,max_pairs=None):
+    def populate(self, fgpt, params, fileIndex, offset=0,debug=False,max_pairs=None,display=True):
         """ populate each sub db independantly """        
         
         assert fgpt.shape[:2] == (self.params['n_sv'],2*self.params['n_rv'])

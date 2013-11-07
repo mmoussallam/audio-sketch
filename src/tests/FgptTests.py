@@ -7,29 +7,9 @@ are correctly implemented
 @author: M. Moussallam
 '''
 import unittest
-import os
-from os import chdir
-import sys
-import numpy as np
-import os.path as op
-import matplotlib.pyplot as plt
-chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
-
-#sys.path.append('../..')
-
-from src.classes.sketches.base import *
-from src.classes.sketches.bench import *
-from src.classes.sketches.cortico import *
-from src.classes.sketches.cochleo import *
-
-
-from src.classes.fingerprints import *
-from src.classes.fingerprints.bench import *
-from src.classes.fingerprints.cortico import *
-from src.classes.fingerprints.cochleo import *
-from src.classes.fingerprints.CQT import *
-
-from PyMP.signals import LongSignal, Signal
+import sys, os
+sys.path.append(os.environ['SKETCH_ROOT'])
+from src.settingup import *
 
 #from joblib import Memory
 #mem = Memory(cachedir='/tmp/fgpt')
@@ -48,19 +28,19 @@ fgpt_sketches = [
 #     SWSSketch(**{'n_formants_max':7,'time_step':0.02})), 
 #    (STFTPeaksBDB('STFTPeaks.db', **{'wall':False}),
 #     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
-   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
-    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-#      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
-#                                 'nature':'LOMDCT'})),
-                     (CochleoPeaksBDB(None, **{'wall':False}),
-                     CochleoPeaksSketch(**{'fs':8000.0,'step':128,'downsample':8000.0,'frmlen':6})),
+#   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+#    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
+##     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+##      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+##                                 'nature':'LOMDCT'})),
+#                     (CochleoPeaksBDB(None, **{'wall':False}),
+#                     CochleoPeaksSketch(**{'fs':8000.0,'step':128,'downsample':8000.0,'frmlen':6})),
 #    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
 #     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000})),  
 # (CQTPeaksTripletsBDB(None, **{'wall':False}),
 #     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                        
-#        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
+        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
+         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
                                             
                     ]
 
@@ -134,7 +114,7 @@ class FgptTest(unittest.TestCase):
         hist = fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=2)
         
         assert hist is not None
-        print hist.shape
+#        print hist.shape
         print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
                                                               np.max(hist[:,1]))
         
@@ -162,7 +142,7 @@ class FgptTest(unittest.TestCase):
         self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
         # for all sketches, we performe the same testing
-        Full = True
+        Full = False
         display=False
         import time
         
