@@ -21,11 +21,11 @@ test_path  = op.join(SND_DB_PATH,'voxforge/main/Learn/cmu_us_ksp_arctic')
 test_filenames = get_filepaths(test_path, 0,  ext='wav')
 
 fgpt_sketches = [
-     (CQTPeaksTripletsBDB(None, **{'wall':False}),
+     (CQTPeaksTripletsBDB(None, **{'wall':False,'f1_n_bits':5,'dt_n_bits':5}),
      CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                                          
                     ]
 
-sp_per_secs = 30
+sp_per_secs = 15
 fs = 8000
 
 
@@ -39,6 +39,7 @@ def _populate(skhandle, fgpthandle, filenames, nbFiles):
         print " Populating %s "%filenames[fileIndex]       
         sig = Signal(RandomAudioFilePath, mono=True, normalize=True)
         sig.resample(fs)
+        print sig.get_duration()
         # run the decomposition                        
         skhandle.recompute(sig)
         skhandle.sparsify(int(sp_per_secs* sig.get_duration()))
@@ -61,7 +62,7 @@ def _test_retrieve(skhandle, fgpthandle,filenames, fileIndex, nbFiles):
     histograms = fgpthandle.retrieve(fgpt,  skhandle.params, nbCandidates= nbFiles)
     scores = np.sum(histograms, axis=0)
     print scores, np.max(scores), len(keys)
-    return fgpthandle.get_candidate(fgpt, skhandle.params, nbCandidates=nbFiles, smooth=1)[0]
+    return fgpthandle.get_candidate(fgpt, skhandle.params, nbCandidates=nbFiles, smooth=3)[0]
 
 
 
@@ -115,7 +116,7 @@ if __name__ == "__main__":
     
     suite = unittest.TestSuite()
 
-    suite.addTest(SelfRecoTest( nbFiles=5))
+#    suite.addTest(SelfRecoTest( nbFiles=100))
     suite.addTest(DiffRecoTest( nbFiles=5))
 
     unittest.TextTestRunner(verbosity=2).run(suite)

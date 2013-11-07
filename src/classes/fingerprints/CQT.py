@@ -120,7 +120,8 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
                        'fmax': 8000.0,
                        'key_total_nbits':32,
                         'f1_n_bits': 8,
-                        'f2_n_bits': 8,
+                        'df1_n_bits': 8,
+                        'df2_n_bits': 8,
                         'dt_n_bits': 8,
                         'value_total_bits':32,
                         'file_index_n_bits':20,
@@ -128,6 +129,8 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
                         'time_max':60.0* 20.0,
                         'min_bin_dist':4,
                         'min_fr_dist':4,
+                        'f_targ_width':12,
+                        't_targ_width':10,
                         'wall':True}
         
         for key in kwargs:
@@ -135,10 +138,10 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         
         # Formatting the key - FORMAT 1 : Absolute
         self.alpha = ceil((self.params['fmax'])/(2**self.params['f1_n_bits']-1))
-        self.beta = ceil((self.params['fmax'])/(2**self.params['f2_n_bits']-1)) # octet quantification of delta_f
-        
+        self.beta = ceil((self.params['fmax'])/(2**self.params['df1_n_bits']-1)) # quantification of delta_f
+        self.gamma = ceil((self.params['fmax'])/(2**self.params['df2_n_bits']-1)) # quantification of delta_f2
         # BUGFIX remove the ceiling function cause it causes all values to be zeroes
-        self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1) # octet quantification of delta_t ratio
+        self.delta = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1) # octet quantification of delta_t ratio
     
     def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
         ''' internal routine to build key/value pairs from sparse STFT
@@ -148,8 +151,8 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         
         peak_indexes = np.nonzero(sparse_stft[0,:,:])
         
-        f_target_width = 3*params['f_width']
-        t_target_width = 3*params['t_width']            
+        f_target_width = self.params['f_targ_width']
+        t_target_width = self.params['t_targ_width']            
         
         #time_step = float(round(params['frmlen'] * 2 ** (4 + params['shift'])))/float(params['fs'])
         time_step = params['overl']/self.params['fmax']#0.0078#params['inc']      
@@ -212,20 +215,20 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
                 ax = fig.add_subplot(111)
         f_vec = self.f_vec   # UGLY: TO REMOVE
         for key, value in keys_values:
-            print key
+#            print key
             ax.arrow(value[0], key[0], value[1], f_vec[key[1]], head_width=0.05, head_length=0.1, fc=color, ec=color)
             ax.arrow(value[0], key[0], value[1]/key[3], f_vec[key[2]], head_width=0.05, head_length=0.1, fc=color, ec=color)
     
     def format_key(self, key):
         """ Format the Key as [f1 , f2, delta_t] """
         (f1, delta_f1, delta_f2, ratio_delta_t) = key
-        return floor((f1 / self.alpha) * 2 ** (self.params['f1_n_bits'] + 
-                                               self.params['f2_n_bits'] + 
+        return floor((f1 / self.alpha) * 2 ** (self.params['df1_n_bits'] + 
+                                               self.params['df2_n_bits'] + 
                                                self.params['dt_n_bits'])) + \
-                floor((delta_f1 / self.beta) * 2 ** (self.params['f2_n_bits'] + 
+                floor((delta_f1 / self.beta) * 2 ** (self.params['df2_n_bits'] + 
                                                      self.params['dt_n_bits'])) + \
-                floor((delta_f2 / self.beta) * 2 ** (self.params['dt_n_bits'])) + \
-                floor((ratio_delta_t) / self.gamma)
+                floor((delta_f2 / self.gamma) * 2 ** (self.params['dt_n_bits'])) + \
+                floor((ratio_delta_t) / self.delta)
     
     def format_value(self, fileIndex, value):
         """ Format the value according to the parameters """
