@@ -39,9 +39,11 @@ fgpt_sketches = [
 #     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000})),  
 # (CQTPeaksTripletsBDB(None, **{'wall':False}),
 #     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                        
-        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
-                                            
+#        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
+#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
+    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CorticoSubPeaksSketch(**{'fs':8000,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+                       'sv':[0.5, 1],}))                                            
                     ]
 
 
@@ -77,7 +79,7 @@ class FgptTest(unittest.TestCase):
 #                print "sketchify the segment %d" % segIdx 
                 # run the decomposition                        
                 skhandle.recompute(pySigLocal)
-                skhandle.sparsify(150)
+                skhandle.sparsify(50)
                 fgpt = skhandle.fgpt()
 #                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 fgpthandle.populate(fgpt, skhandle.params, fileIndex, offset=segIdx*segDuration)
@@ -87,7 +89,7 @@ class FgptTest(unittest.TestCase):
     def add_get_test(self, skhandle, fgpthandle, display=False):
         # Initialize the sketch handle
         skhandle.recompute(single_test_file1)
-        skhandle.sparsify(20)
+        skhandle.sparsify(100)
         print "Calling sketch handle fgpt method"
         fgpt = skhandle.fgpt(sparse=True)
         params = skhandle.params
@@ -142,7 +144,7 @@ class FgptTest(unittest.TestCase):
         self.assertRaises(NotImplementedError,abstractFGPT.get, None)
 
         # for all sketches, we performe the same testing
-        Full = False
+        Full = True
         display=False
         import time
         
@@ -169,7 +171,7 @@ class FgptTest(unittest.TestCase):
             true_sig.crop(0, 5.0*true_sig.fs)
             skhandle.recompute(true_sig)
             skhandle.sparsify(150)    
-            test_fgpt = skhandle.fgpt(sparse=False)
+            test_fgpt = skhandle.fgpt()
         
             hist =  fgpthandle.retrieve(test_fgpt, skhandle.params, nbCandidates=8)
             
