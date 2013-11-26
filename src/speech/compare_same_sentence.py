@@ -30,15 +30,15 @@ fgpt_sketches = [
 #    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),  
 #    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
 #    CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000})),  
-    (SparseFramePairsBDB(None, **{'wall':False,'nb_neighbors_max':10,
-                                             'delta_t_max':0.2, 'f1_n_bits':8,'dt_n_bits':5}),
-     XMDCTSparsePairsSketch(**{'scales':[64,512, 4096],'n_atoms':1,
-                                 'nature':'LOMDCT','pad':False}))   
-#     (CQTPeaksTripletsBDB(None, **{'wall':False,'f1_n_bits':5,
-#                                   'dt_n_bits':8,'t_targ_width':100,'f_targ_width':24}),
-#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                                  
+#    (SparseFramePairsBDB(None, **{'wall':False,'nb_neighbors_max':10,
+#                                             'delta_t_max':0.2, 'f1_n_bits':8,'dt_n_bits':5}),
+#     XMDCTSparsePairsSketch(**{'scales':[64,512, 4096],'n_atoms':1,
+#                                 'nature':'LOMDCT','pad':False}))   
+     (CQTPeaksTripletsBDB(None, **{'wall':False,'f1_n_bits':5,
+                                   'dt_n_bits':8,'t_targ_width':100,'f_targ_width':24}),
+     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                                  
                     ]
-sp_per_secs = 50
+sp_per_secs = 20
 fs = 8000
 for (fgpthandle, skhandle) in fgpt_sketches:
     print "************************************"
@@ -103,8 +103,8 @@ for (fgpthandle, skhandle) in fgpt_sketches:
             keysspk2Q.append((f1,rf,rt))
     elif fgpthandle.__class__.__name__ == 'CQTPeaksTripletsBDB':
         Qf1 = 500
-        Qdf = 5 
-        Qt = 0.1
+        Qdf = 1 
+        Qt = 0.05
         keysspk1Q = []
         for key in keysspk1:
             (f1,df1,df2,rt) = key

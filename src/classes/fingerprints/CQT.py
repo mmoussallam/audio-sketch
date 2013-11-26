@@ -119,6 +119,8 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         self.params = {'delta_t_max':1.0,   ####
                        'fmax': 8000.0,
                        'key_total_nbits':32,
+                       'TZ_delta_f':1,
+                        'TZ_delta_t':1,
                         'f1_n_bits': 8,
                         'df1_n_bits': 8,
                         'df2_n_bits': 8,
@@ -143,7 +145,7 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         # BUGFIX remove the ceiling function cause it causes all values to be zeroes
         self.delta = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1) # octet quantification of delta_t ratio
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
+    def _build_pairs(self, sparse_stft, params, offset=0.0, display=False, ax =None):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -155,7 +157,7 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         t_target_width = self.params['t_targ_width']            
         
         #time_step = float(round(params['frmlen'] * 2 ** (4 + params['shift'])))/float(params['fs'])
-        time_step = params['overl']/self.params['fmax']#0.0078#params['inc']      
+        time_step = 2*params['overl']/self.params['fmax']#0.0078#params['inc']      
         self.f_vec = params['f']
         f_vec = params['f']
         
@@ -170,33 +172,46 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
         
 #        print "Params : ",f_target_width,t_target_width,time_step
         # then for each of them look in the target zone for other
-        for pIdx in range(len(peak_indexes[0])-10):
-            peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])                    
-            target_points_j, target_points_i = np.nonzero(sparse_stft[0,
-                                                        peak_ind[0]+1: peak_ind[0]+f_target_width,
-                                                        peak_ind[1]+1: peak_ind[1]+t_target_width].T)
-            
+        for pIdx, (pf,pt) in enumerate(zip(peak_indexes[0],peak_indexes[1])):
+                                
+            target_Imin = max(0,pf+self.params['TZ_delta_f'])
+            target_Imax = min(sparse_stft.shape[1],
+                              pf+self.params['TZ_delta_f']+f_target_width)
+            target_Jmin = max(0,pt+self.params['TZ_delta_t'])
+            target_Jmax = min(sparse_stft.shape[2],
+                              pt+self.params['TZ_delta_t']+t_target_width)
+#            print peak_ind,target_Imin,target_Imax,target_Jmin,target_Jmax
+            target_points_i, target_points_j = np.nonzero(sparse_stft[0,
+                                                        target_Imin: target_Imax,
+                                                        target_Jmin: target_Jmax])
+            print pf,pt
+            print zip(target_points_i,target_points_j)
             # in j are the ordered times, and in i are the corresponding frequencies
             # now we can build a pair of peaks , and thus a key
             if isinstance(target_points_i,int):
                 continue
+            # get all combinations of two other peaks
             for b in itertools.combinations(range(target_points_j.shape[0]),2):
 #                print f_vec[peak_ind[0]],f_vec.shape , peak_ind[0], target_points_i[i]
-                f1 = f_vec[peak_ind[0]+target_points_i[b[0]]]
+                f1 = f_vec[pf]
 #                delta_f1 = f_vec[peak_ind[0]+target_points_i[b[0]]] - f_vec[peak_ind[0]] 
 #                delta_f2 = f_vec[peak_ind[0]+target_points_i[b[1]]] - f_vec[peak_ind[0]] 
                 # nouvel essai en bin cqt
                 delta_f1 = target_points_i[b[0]] 
                 delta_f2 = target_points_i[b[1]] 
                 
-                t1 = float(peak_ind[1]) *time_step
+#                t1 = float(pt) #*time_step
+                t1 = pt
                 ratio_delta_t = float(target_points_j[b[0]])/float(target_points_j[b[1]]+0.0001)
-                delta_t1 = np.round(float(target_points_j[b[0]]) *time_step, decimals=1)
-                delta_t2 = np.round(float(target_points_j[b[1]]) *time_step, decimals=1)
+#                delta_t1 = np.round(float(target_points_j[b[0]]) *time_step, decimals=1)
+#                delta_t2 = np.round(float(target_points_j[b[1]]) *time_step, decimals=1)
+                
+                delta_t1 = target_points_j[b[0]]
+                delta_t2 = target_points_j[b[1]]
                 # discard points that are too closely located
-                f_min = min(target_points_i[b[0]],target_points_i[b[1]])
-                if (np.abs(f_min-peak_ind[0])<self.params['min_bin_dist']) and target_points_j[min(b)] < self.params['min_fr_dist']:
-                    continue
+#                f_min = min(target_points_i[b[0]],target_points_i[b[1]])
+#                if (np.abs(f_min-pf)<self.params['min_bin_dist']) and target_points_j[min(b)] < self.params['min_fr_dist']:
+#                    continue
                 
 #                if display:                    
 #                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
@@ -215,13 +230,21 @@ class CQTPeaksTripletsBDB(STFTPeaksBDB):
                 ax = fig.add_subplot(111)
         f_vec = self.f_vec   # UGLY: TO REMOVE
         for key, value in keys_values:
-#            print key
-            ax.arrow(value[0], key[0], value[1], f_vec[key[1]], head_width=0.05, head_length=0.1, fc=color, ec=color)
-            ax.arrow(value[0], key[0], value[1]/key[3], f_vec[key[2]], head_width=0.05, head_length=0.1, fc=color, ec=color)
+#            print value[0], key[0]
+            flist = f_vec.astype(int).tolist()
+            x = value[0]
+            try:
+                y = flist.index(int(key[0]))
+            except:
+                print key[0], flist
+                continue
+            ax.arrow(x, y, value[1]+1, key[1]+1, head_width=0.05, head_length=0.1, fc=color, ec=color)
+            ax.arrow(x, y, (value[1]/key[3])+1, key[2]+1, head_width=0.05, head_length=0.1, fc=color, ec=color)
     
     def format_key(self, key):
         """ Format the Key as [f1 , f2, delta_t] """
         (f1, delta_f1, delta_f2, ratio_delta_t) = key
+        
         return floor((f1 / self.alpha) * 2 ** (self.params['df1_n_bits'] + 
                                                self.params['df2_n_bits'] + 
                                                self.params['dt_n_bits'])) + \

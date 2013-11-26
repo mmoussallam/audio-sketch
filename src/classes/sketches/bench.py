@@ -106,7 +106,7 @@ class CQTPeaksSketch(AudioSketch):
                    aspect='auto',
                    interpolation='nearest',
                    origin='lower',
-                   cmap=cm.coolwarm)
+                   cmap=cm.coolwarm,**kwargs)
         plt.xlabel('Time (s)')
         plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
         plt.ylabel('Frequency')

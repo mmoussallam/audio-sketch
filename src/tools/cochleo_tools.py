@@ -588,10 +588,11 @@ class Corticogram(object):
         self.params['BP'] = 1
         self.cor = _build_cor(coch, **self.params)
 
-    def invert_signal(self, v5=None):
-        # initialize invert        
-        init_vec = self.coch.init_inverse(v5)
-        return self.coch.invert(v5, init_vec, nb_iter=self.params['n_inv_iter'])
+    def invert_signal(self, cor=None, order=2):
+        # initialize invert     
+        v5 = _cor2aud(cor, **self.params) ** order
+        init_vec = self.coch.init_inverse(np.abs(v5).T)
+        return self.coch.invert(np.abs(v5).T, init_vec, nb_iter=self.params['n_inv_iter'])
 
     def invert(self, cor=None, order=2):
         """ resynthesize the auditory spectrum from self or from given corticogram """

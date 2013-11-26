@@ -49,7 +49,7 @@ class SketchTest(unittest.TestCase):
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
-#                            misc.SWSSketch(),
+                            misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
                              #cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':5,'n_inv_iter':2}),
                              #cochleo.CochleoPeaksSketch(**{'fs':8000}),
@@ -57,7 +57,7 @@ class SketchTest(unittest.TestCase):
                              #cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
                              #cortico.CorticoPeaksSketch(**{'n_octave':6,'freq_min':101.0, 'bins':24.0, 'downsample':8000, 'max_iter':5, 'rep_class': cochleo_tools.Quorticogram}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-#                                                             'sub_slice':(0,6),'n_inv_iter':10}),
+#                                                             'sub_slice':(4,11),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(0,11),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -71,7 +71,7 @@ class SketchTest(unittest.TestCase):
                             #bench.STFTPeaksSketch(**{'scale':2048, 'step':256}),
                             #bench.STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
 #                             bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
-                             bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5})
+#                             bench.cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5})
                             ]
         
         # for all sketches, we performe the same testing
@@ -96,7 +96,7 @@ class SketchTest(unittest.TestCase):
 #            sk.orig_signal = None 
             
             print "%s : Synthesize the sketch"%sk.__class__
-            #synth_sig = sk.synthesize(sparse=True)
+            synth_sig = sk.synthesize(sparse=True)
             
             #plt.figure()
 #            plt.subplot(211)
@@ -104,9 +104,9 @@ class SketchTest(unittest.TestCase):
 #            plt.subplot(212)
             #plt.plot(synth_sig.data)
             
-            
-#            synth_sig.play()
-            #synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
+            synth_sig.normalize()
+            synth_sig.play()
+            synth_sig.write('Test_%s_%s.wav'%(sk.__class__.__name__,sk.get_sig()))
 
 if __name__ == "__main__":
     
