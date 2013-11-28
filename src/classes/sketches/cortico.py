@@ -4,7 +4,7 @@ classes.sketches.corticosketch  -  Created on Jul 25, 2013
 '''
 import os.path as op
 from src.classes.sketches.base import *
-from src.tools import  cochleo_tools
+from src.tools import  cochleo_tools, cqt
 
 class CorticoSketch(AudioSketch):
     """ meta class for all corticogram-based sketches     
@@ -407,7 +407,7 @@ class CorticoIHTSketch(CorticoSketch):
 
 
 class QuorticoSketch(AudioSketch):
-    """ meta class for all corticogram-based sketches     
+    """ meta class for all quorticogram-based sketches     
     
     Subclass should implement their own sparsification method
     """
@@ -428,48 +428,11 @@ class QuorticoSketch(AudioSketch):
         if obj is not None:
             self.orig_signal = obj
             self.recompute()
-#        if isinstance(obj, cochleo_tools.Cochleogram):
-#            self.coch = obj
-#            self.orig_signal = self.coch.
-#        elif isinstance(obj, Signal):        
-#            self.orig_signal = obj
-#            self.coch = cochleo_tools.Cochleogram(self.orig_signal.data)
-#            self.recompute()
-#        else:
-#            raise TypeError("Object %s is neither a cochleogram nor a signal"%str(obj))
 
     def get_sig(self):
         strret = '%drates_%scales' % (len(self.params['rv']),
                                       len(self.params['sv']))
         return strret
-
-#    def synthesize(self, sparse=False):
-#        ''' synthesize the sparse rep or the original rep?'''
-#        if sparse:
-##            cor = self.cort
-#            # sparse auditory spectrum should already have been computed
-##            if self.rec_aud is None:
-#            self.rec_aud = cochleo_tools._cor2aud(self.sp_rep, **self.params)
-#            v5 = np.abs(self.rec_aud).T
-#        else:
-#            
-#            # inverting the corticogram
-#            v5 = np.abs(self.rep.invert()).T                    
-#
-#
-#        # then do 20 iteration (TODO pass as a parameter)
-#        if self.orig_signal is not None:
-#            return Signal(
-#                          self.coch.invert(v5, self.orig_signal.data, 
-#                             nb_iter=self.params['n_inv_iter'], 
-#                             display=False),
-#                          self.orig_signal.fs)
-#        else:
-#            # initialize invert        
-#            init_vec = self.coch.init_inverse(v5)
-#            return Signal(
-#            self.coch.invert(v5, init_vec, nb_iter=self.params['n_inv_iter'], display=False),
-#            8000)
 
     def represent(self, fig=None, sparse=False):
         if fig is None:
@@ -510,6 +473,8 @@ class QuorticoSketch(AudioSketch):
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
         
+        
+        
         if self.params.has_key('downsample'):
             self.orig_signal.downsample(self.params['downsample'])
                 
@@ -521,6 +486,184 @@ class QuorticoSketch(AudioSketch):
         self.quort = cochleo_tools.Corticogram(self.cqt, **self.params)
         
         self.rep = np.array(self.quort.cor)
+        
+        
+        
+class QuorticoSubPeaksSketch(QuorticoSketch):
+    """ Peack Picking on the 4-D corticogram as the sparsification process    
+        But limited to only one of the Scale/Rate combination
+        
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(QuorticoSubPeaksSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+                
+        self.params['n_inv_iter'] = 2   # number of reconstructive steps
+        self.params['sub_slice'] = (0,len(self.params['rv']))
+        
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+
+    def get_sig(self):
+        strret = '%d_over_%d_rates_%d_over_%d_scales_' % (self.params['sub_slice'][0],
+                                                len(self.params['rv']),
+                                                self.params['sub_slice'][1],
+                                                len(self.params['sv']))
+        return strret
+    
+    def sparsify(self, sparsity, **kwargs):
+        """ Sparfifying using plain peak picking """
+        
+        if self.rep is None:
+            self.rep = self.cort.cor
+        
+        if self.rep is None:
+            raise ValueError("Not computed yet!")
+
+        for key in kwargs:
+            self.params[key] = kwargs[key]
+
+        if sparsity <= 0:
+            raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
+        elif sparsity < 1:
+            # interprete as a ratio
+            sparsity *= np.sum(self.rep.shape)
+#        else:
+            # otherwise the sparsity argument take over and we divide in
+            # the desired number of regions (preserving the bin/frame ratio)
+#            print self.rep.shape[1:]
+#            print self.params['f_width'], self.params['t_width']
+
+        self.sp_rep = np.zeros_like(self.rep)
+        
+        # target sub graph
+        (scaleIdx, rateIdx) = self.params['sub_slice']
+        sub_rep = self.rep[scaleIdx,rateIdx,:,:].T
+#        print sub_rep.shape
+        # naive implementation: cut in non-overlapping zone and get the max
+        (n_bins, n_frames) = sub_rep.shape
+        
+        self.params['f_width'] = int(n_bins / np.sqrt(sparsity))
+        self.params['t_width'] = int(n_frames / np.sqrt(sparsity))
+        
+        (f, t) = (self.params['f_width'], self.params['t_width'])
+        
+#        print range(0, (n_frames / t) * t, t)
+#        print range(0, (n_bins / f) * f, f)
+        
+        for x_ind in range(0, (n_frames / t) * t, t):
+            for y_ind in range(0, (n_bins / f) * f, f):
+                rect_data = sub_rep[y_ind:y_ind + f, x_ind:x_ind + t]
+                
+                
+#                if len(rect_data) > 0 and (np.sum(rect_data ** 2) > 0):
+                f_index, t_index = divmod(np.abs(rect_data).argmax(), t)
+                # add the peak to the sparse rep
+                self.sp_rep[scaleIdx,rateIdx,x_ind + t_index,
+                            y_ind + f_index] = rect_data[f_index, t_index]
+        # no only keep the k biggest values
+
+    def fgpt(self, sparse=True):
+        """ return the 2-D sparsified representation (only the sub-scale/rate plot)"""
+        (scaleIdx, rateIdx) = self.params['sub_slice']
+        if sparse:
+            return np.abs(self.sp_rep[scaleIdx,rateIdx,:,:]).T
+        
+        else:
+            raise ValueError('Not intended for non sparse fpgt')
+
+        
+class QuorticoIHTSketch(QuorticoSketch):
+    """ Iterative Hard Thresholding on an auditory spectrum 
+    Inherit from QuorticoSketch and only implements a different sparsification
+    method
+    """
+    def __init__(self, original_sig=None, **kwargs):
+        # add all the parameters that you want
+        super(QuorticoSketch, self).__init__(
+            original_sig=original_sig, **kwargs)
+        
+        self.params['max_iter'] = 5     # number of IHT iterations
+        for k in kwargs:
+            self.params[k] = kwargs[k]
+            
+    '''under construction copy of the sparsify function from cqtIHTSketch'''
+#    def get_sig(self):
+#        strret = '%diter' %(self.params['max_iter'])
+#        return strret
+#    
+#    def sparsify(self, sparsity, **kwargs):
+#        """ sparsification is performed using the 
+#        Iterative Hard Thresholding Algorithm """
+#        L = sparsity
+#        if  self.rep is None:
+#            raise ValueError("No representation has been computed yet")
+#        
+#        for key in kwargs:
+#            self.params[key] = kwargs[key]
+#
+#        self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
+#        self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
+#        
+##        cand_rep = np.array(self.rep[0,:,:])
+#        cand_rep = self.rep[0,:,:]
+#            
+#        A = np.zeros(cand_rep.shape, dtype=complex)
+#        A_suiv = np.zeros(cand_rep.shape) # initialisation of the end of loop variable.
+#        
+#        if self.noyau_inv is None:
+#            [self.noyau_inv,K] = cqt.noyau(self.params['fs'], self.params['freq_min'],
+#                                   self.params['freq_max'],
+#                                   3,self.params['bins']) 
+#        original = cqt.inverseS(cand_rep,self.noyau_inv,self.params['fs'],self.params['freq_min'],
+#                 self.params['freq_max'],self.params['bins'],self.params['overl'])
+#        
+#        original /= np.max(original)
+#        original *= 0.9
+##        residual = np.copy(original)
+#        
+#        
+##        res_cqt = cqt.cqt_d(residual, self.noyau,
+##                            self.params['K'], self.params['freq_min'], 
+##                             self.params['bins'],self.params['overl'])
+#        n_iter = 0
+#        while n_iter < self.params['max_iter']:
+#            #print "IHT Iteration %d"%n_iter
+#            if n_iter>0:
+#                projection = cqt.cqt_d(res_cqt,self.noyau,
+#                            self.params['K'], self.params['freq_min'], 
+#                            self.params['bins'],self.params['overl'])
+#            else:
+#                projection = cand_rep
+#            # sort the elements 
+#            A_prec = A_suiv    
+#            A_buff = A + projection
+#            A_flat = A_buff.flatten()
+#            idx_order = np.abs(A_flat).argsort()
+#            A = np.zeros(A_flat.shape,dtype=complex)
+#            A[idx_order[-L:]] = A_flat[idx_order[-L:]]
+#            A = A.reshape(A_buff.shape)
+#                
+#            rec_a = cqt.inverseS(A,self.noyau_inv,self.params['fs'],self.params['freq_min'],
+#                             self.params['freq_max'],self.params['bins'],self.params['overl'])
+#
+#            rec_a /= np.max(rec_a)/0.9
+#            #rec_a *= 0.9
+#            residual = original - rec_a
+#            res_cqt = residual
+#            
+#            A_suiv = np.zeros(cand_rep.shape)
+#            A_suiv[abs(A)>0]=1
+#            n_iter += 1
+#            # stop condition: the points found are stable enough (5%)
+#            if sum(sum(abs(A_suiv-A_prec))) < sparsity/20.0:
+#                break
+#                
+#        self.sp_rep = np.zeros((1,projection.shape[0],projection.shape[1]), dtype=complex)
+#        self.sp_rep[0,:,:] = A
+#        self.rec_a = rec_a
+#    
 
 
 class CorticoPeaksSketch(CorticoSketch):

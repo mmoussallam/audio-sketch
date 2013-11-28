@@ -13,7 +13,7 @@ class CQTPeaksSketch(AudioSketch):
     sparsifying method '''
 
     # TODO this is same as superclass
-    def __init__(self, original_sig=None, noyau=None,**kwargs):
+    def __init__(self, original_sig=None, noyau=None, noyau_inv = None,**kwargs):
         
         # baseline parameters: default rectangle is 10 frames by 10 bins large        
         self.params = {'fen_type': 1, # 1.hamming 2.blackman
@@ -40,6 +40,7 @@ class CQTPeaksSketch(AudioSketch):
             self.recompute()
             
         self.noyau = noyau
+        self.noyau_inv = noyau_inv
         
     def get_sig(self):
         strret = '_frequences: minimum-%d_maximum-%d__nb of bins per octave-%d' % (self.params['freq_min'],
@@ -212,6 +213,7 @@ class cqtIHTSketch(CQTPeaksSketch):
         self.params['max_iter'] = 5     # number of IHT iterations
         for k in kwargs:
             self.params[k] = kwargs[k]
+            
     
     def get_sig(self):
         strret = '%diter' %(self.params['max_iter'])
@@ -234,7 +236,13 @@ class cqtIHTSketch(CQTPeaksSketch):
         cand_rep = self.rep[0,:,:]
             
         A = np.zeros(cand_rep.shape, dtype=complex)
-        original = cqt.inverseS(cand_rep,self.params['fs'],self.params['freq_min'],
+        A_suiv = np.zeros(cand_rep.shape)
+        
+        if self.noyau_inv is None:
+            [self.noyau_inv,K] = cqt.noyau(self.params['fs'], self.params['freq_min'],
+                                   self.params['freq_max'],
+                                   3,self.params['bins']) 
+        original = cqt.inverseS(cand_rep,self.noyau_inv,self.params['fs'],self.params['freq_min'],
                  self.params['freq_max'],self.params['bins'],self.params['overl'])
         
         original /= np.max(original)
@@ -254,7 +262,8 @@ class cqtIHTSketch(CQTPeaksSketch):
                             self.params['bins'],self.params['overl'])
             else:
                 projection = cand_rep
-            # sort the elements            
+            # sort the elements 
+            A_prec = A_suiv    
             A_buff = A + projection
             A_flat = A_buff.flatten()
             idx_order = np.abs(A_flat).argsort()
@@ -262,7 +271,7 @@ class cqtIHTSketch(CQTPeaksSketch):
             A[idx_order[-L:]] = A_flat[idx_order[-L:]]
             A = A.reshape(A_buff.shape)
                 
-            rec_a = cqt.inverseS(A,self.params['fs'],self.params['freq_min'],
+            rec_a = cqt.inverseS(A,self.noyau_inv,self.params['fs'],self.params['freq_min'],
                              self.params['freq_max'],self.params['bins'],self.params['overl'])
 
             rec_a /= np.max(rec_a)/0.9
@@ -270,8 +279,12 @@ class cqtIHTSketch(CQTPeaksSketch):
             residual = original - rec_a
             res_cqt = residual
             
+            A_suiv = np.zeros(cand_rep.shape)
+            A_suiv[abs(A)>0]=1
             n_iter += 1
-            #print 'n_iter %d'%n_iter
+            # stop condition: the points found are stable enough (5%)
+            if sum(sum(abs(A_suiv-A_prec))) < sparsity/20.0:
+                break
                 
         self.sp_rep = np.zeros((1,projection.shape[0],projection.shape[1]), dtype=complex)
         self.sp_rep[0,:,:] = A
