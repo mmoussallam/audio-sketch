@@ -562,7 +562,7 @@ class SparseFramePairsBDB(STFTPeaksBDB):
         self.params['delta_f_bits'] = 6 # in hertz
         self.params['delta_t_max'] = 0.5
         self.params['delta_t_min'] = 0.05
-        self.params['time_res'] = 1
+        self.params['time_res'] = 1.0
         self.params['freq_res'] = 22
         self.params['nb_neighbors_max'] = 5
         

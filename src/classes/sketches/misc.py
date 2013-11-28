@@ -10,8 +10,8 @@ class SWSSketch(AudioSketch):
 
     def __init__(self, orig_sig=None, **kwargs):
 
-        self.params = {'n_formants_max': 7,
-                       'n_formants': 3,
+        self.params = {'n_formants_max': 8,
+                       'n_formants': 4,
                        'time_step': 0.01,
                        'windowSize': 0.025,
                        'preEmphasis': 50,
@@ -61,7 +61,7 @@ class SWSSketch(AudioSketch):
         else: 
             return self.rep
 
-    def _extract_sws(self, signal, reconstruct=False, **kwargs):
+    def _extract_sws(self, signal, reconstruct=True, **kwargs):
         """ internal routine to extract the sws"""
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -111,7 +111,7 @@ class SWSSketch(AudioSketch):
 #            os.remove(os.path.join(tempdir,'temp.wav'))
         return signal
 
-    def recompute(self, signal=None, reconstruct=False, **kwargs):
+    def recompute(self, signal=None, reconstruct=True, **kwargs):
         signal = self._extract_sws(signal, reconstruct = reconstruct, **kwargs)
 
         # save as the original signal if it's not already set

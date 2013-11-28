@@ -8,40 +8,26 @@ fgpt_scripts.many_sparsities  -  Created on Jul 30, 2013
 
 Now let us see how performances evolve with the sparsity
 '''
-import os
-import os.path as op
-import time
-from scipy.io import savemat
-# from classes.sketches.bench import *
-# from classes.sketches.cochleo import *
-from classes.sketches.cortico import *
-from classes import pydb
+import sys, os
+from classes.sketches.cochleo import SKETCH_ROOT
+sys.path.append(os.environ['SKETCH_ROOT'])
+from src.settingup import *
+SND_DB_PATH = os.environ['SND_DB_PATH']
 from tools.fgpt_tools import get_filepaths
 from tools.fgpt_tools import db_creation, db_test, db_test_cortico
 
 db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
-import bsddb.db as db
-# env = db.DBEnv()
-# env.set_cachesize(10,512*1024*1024,0)
-# #env.remove(db_path)
-# env.open(db_path, db.DB_INIT_MPOOL|db.DB_CREATE )
-# #env.set_cachesize(10,512*1024*1024,0)
 
-# print env.get_cachesize()
-# define a pair FgptHandle/Sketch 
-
-bases = {'RWCLearn':'/sons/rwc/Learn/',
-         'voxforge':'/sons/voxforge/main/Learn/',
-         'GTZAN':'/home/manu/workspace/databases/genres/'}
 
 # The RWC subset path
 set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
-audio_path = bases[set_id]
+audio_path, ext = bases[set_id]
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
 
-file_names = get_filepaths(audio_path, 0,  ext='.au')
-nb_files = len(file_names)
+file_names = get_filepaths(audio_path, 0,  ext=ext)
+nb_files = 10
+file_names = file_names[:nb_files]
 # define experimental conditions
 
 sparsities =  [100,]
@@ -64,7 +50,7 @@ for sparsity in sparsities:
                                             int(seg_dur), int(fs))
         
     # initialize the fingerprint Handler object
-    fgpthandle = pydb.CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
+    fgpthandle = CorticoIndepSubPeaksBDB(op.join(db_path, db_name),
                                               load=True, persistent=True, dbenv=None,
                                               rd_only=not learn,
                                                **{'wall':False,'max_pairs':500})
@@ -81,11 +67,11 @@ for sparsity in sparsities:
                 file_names, 
                 force_recompute = True,
                 seg_duration = seg_dur, resample = fs,
-                files_path = audio_path, debug=False, n_jobs=3)
+                files_path = audio_path, debug=False, n_jobs=1)
     
     
     # run a fingerprinting experiment
-    test_proportion = 0.25 # proportion of segments in each file that will be tested
+    test_proportion = 1.0 # proportion of segments in each file that will be tested
     step = 3.0
     if test:
         tstart = time.time()
@@ -94,7 +80,7 @@ for sparsity in sparsities:
                          files_path = audio_path,
                          test_seg_prop = test_proportion,
                          seg_duration = seg_dur, resample =fs,
-                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=4)
+                         step = step, tolerance = 7.5, shuffle=True, debug=False,n_jobs=1)
         ttest = time.time() - tstart
         ################### End of the complete run #####################################
         # saving the results
