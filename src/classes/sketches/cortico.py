@@ -149,7 +149,7 @@ class CorticoPeaksSketch(CorticoSketch):
         alldims = range(len(self.rep.shape))
         for id in alldims:
             # compute the diff in the first axis after swaping
-            d = np.diff(np.swapaxes(self.rep, 0, id), axis=0)
+            d = np.diff(np.swapaxes(np.abs(self.rep), 0, id), axis=0)
             
             self.sp_rep = np.swapaxes(self.sp_rep, 0, id)
             self.sp_rep[:-1,...] &= d < 0
@@ -157,14 +157,14 @@ class CorticoPeaksSketch(CorticoSketch):
             
             self.sp_rep = np.swapaxes(self.sp_rep, 0, id)
 
-        self.sp_rep = self.sp_rep.astype(int)
-        r_indexes = np.flatnonzero(self.sp_rep)        
-        r_values = self.rep.flatten()[r_indexes]
-        inds = np.abs(r_values).argsort()
-        
-        self.sp_rep = np.zeros_like(self.rep.flatten(), complex)
-        self.sp_rep[r_indexes[inds[-sparsity:]]] = r_values[inds[-sparsity:]]
-        self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
+#        self.sp_rep = self.sp_rep.astype(int)
+#        r_indexes = np.flatnonzero(self.sp_rep)        
+#        r_values = self.rep.flatten()[r_indexes]
+#        inds = np.abs(r_values).argsort()
+#        
+#        self.sp_rep = np.zeros_like(self.rep.flatten(), complex)
+##        self.sp_rep[r_indexes[inds[-sparsity:]]] = r_values[inds[-sparsity:]]
+#        self.sp_rep = np.reshape(self.sp_rep, self.rep.shape)
         # no only keep the k biggest values
         
 
@@ -333,7 +333,7 @@ class CorticoIHTSketch(CorticoSketch):
         super(CorticoIHTSketch, self).__init__(
             original_sig=original_sig, **kwargs)
         
-        self.params['max_iter'] = 5     # number of IHT iterations
+        self.params['max_iter'] = 3     # number of IHT iterations
         self.params['n_inv_iter'] = 2   # number of reconstructive steps
         for k in kwargs:
             self.params[k] = kwargs[k]
@@ -350,14 +350,14 @@ class CorticoIHTSketch(CorticoSketch):
         if  self.cort is None:
             raise ValueError("No representation has been computed yet")
         
-        if self.coch.y5 is None:
-            self.coch.build_aud()
+        if self.cort.coch.y5 is None:
+            self.cort.coch.build_aud()
         
         for key in kwargs:
             self.params[key] = kwargs[key]
 
         # We go back and forth from the auditory spectrum to the 4-D corticogram                
-        X = np.array(self.coch.y5).T
+        X = np.array(self.cort.coch.y5).T
         # dimensions
         K1    = len(self.params['rv']);     # of rate channel
         K2    = len(self.params['sv']);     # of scale channel
@@ -368,12 +368,12 @@ class CorticoIHTSketch(CorticoSketch):
         residual = X
         
         n_iter = 0
-        
+        oldlist = []
         while n_iter < self.params['max_iter']:
             print "IHT Iteration %d"%n_iter       
             A_old = np.copy(A)     
             # build corticogram                  
-            projection = cochleo_tools._build_cor(residual, **self.params)
+            projection = cochleo_tools._build_cor(np.abs(residual), **self.params)
 
             # sort the elements and hard threshold        
             A_buff = A + projection
@@ -383,11 +383,20 @@ class CorticoIHTSketch(CorticoSketch):
             A[idx_order[-L:]] = A_flat[idx_order[-L:]]
             A = A.reshape(A_buff.shape)
             
+
             # Reconstruct auditory spectrum
             rec_aud = cochleo_tools._cor2aud(A, **self.params)
             
+            
+#            newlist = A.flatten().nonzero()[0]
+#            if len(oldlist)>0:              
+#                print "%1.2f of indices in common"%(float(len(np.intersect1d(oldlist, newlist)))/float(len(oldlist)))
+#            oldlist = newlist
+            
             # update residual
+#            print np.max(X), np.max(np.abs(rec_aud))
             residual = X - rec_aud
+            
             
             n_iter += 1
                 

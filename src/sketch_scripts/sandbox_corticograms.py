@@ -14,15 +14,33 @@ from src.settingup import *
 from tools.cochleo_tools import _cor2aud, _build_cor
 
 audio_test_file = '/sons/sqam/voicemale.wav'
+#
+#skaud = CochleoSketch(**{'downsample':8000})
+#sk = CorticoPeaksSketch(**{'downsample':8000})
+#
+#sk.recompute(audio_test_file)
+#skaud.recompute(audio_test_file)
+#cort = sk.cort
+#rec = sk.cort.invert(sk.cort.cor, 1)
+#
 
-skaud = CochleoSketch(**{'downsample':8000})
-sk = CorticoPeaksSketch(**{'downsample':8000})
+skpeaks = CorticoPeaksSketch(**{'downsample':8000})
+skiht = CorticoIHTSketch(**{'downsample':8000})
 
-sk.recompute(audio_test_file)
-skaud.recompute(audio_test_file)
-cort = sk.cort
-rec = sk.cort.invert(sk.cort.cor, 1)
+skpeaks.recompute(audio_test_file)
+skpeaks.sparsify(10000)
 
+skiht.recompute(audio_test_file)
+skiht.sparsify(10000)
+
+mix = np.zeros_like(skiht.sp_rep)
+mix[skpeaks.sp_rep>0] = skiht.sp_rep[skpeaks.sp_rep>0]
+
+skiht.cort.plot_cort(cor=mix)
+rec = skiht.cort.invert(mix, 1)
+plt.figure()
+plt.imshow(np.abs(rec).T, origin='lower')
+plt.show()
 #plt.figure()
 #plt.subplot(121)
 #skaud.represent(fig=plt.gcf())
@@ -32,111 +50,117 @@ rec = sk.cort.invert(sk.cort.cor, 1)
 #plt.show()
 
 ##### Stability of the Corticogram inversion ####
-# can we invert a single point in the corticogram ?
-sp_cort = np.zeros_like(sk.cort.cor)
-
-
-cor = sk.cort.cor
-plt.figure()
-for i in range(cor.shape[0]):
-    for j in range(cor.shape[1]):                
-        plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
-        plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r)        
-        plt.xticks([])
-        plt.yticks([])        
-plt.show()        
-
-
-plt.figure()
-for i in range(cor.shape[0]):
-    for j in range(cor.shape[1]):                
-        plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
-        vals, bins = np.histogram(np.abs(cor[i,j,:,:].flatten()), 1000)
-        plt.plot(np.log(vals))
-plt.show()
-
-
-# inversion
-sparsified1 = np.zeros_like(cor)
-sparsified2 = np.zeros_like(cor)
-
-sidx = 2
-ridx = 1
-sparsified1[sidx,ridx,:,:] = cor[sidx,ridx,:,:]
-sparsified2[sidx,ridx,:,:] = cor[sidx,ridx,:,:]
-sparsified2[sidx,ridx+6,:,:] = cor[sidx,ridx+6,:,:]
-aud1 = _cor2aud(sparsified1,**sk.params)
-aud2 = _cor2aud(sparsified2,**sk.params)
-
-plt.figure()
-plt.subplot(121)
-plt.imshow(np.abs(aud1))
-plt.subplot(122)
-plt.imshow(np.abs(aud2))
+## can we invert a single point in the corticogram ?
+#sp_cort = np.zeros_like(sk.cort.cor)
+#
+#
+#cor = sk.cort.cor
+#plt.figure()
+#for i in range(cor.shape[0]):
+#    for j in range(cor.shape[1]):                
+#        plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
+#        plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r)        
+#        plt.xticks([])
+#        plt.yticks([])        
+#plt.show()        
+#
+#
+#plt.figure()
+#for i in range(cor.shape[0]):
+#    for j in range(cor.shape[1]):                
+#        plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
+#        vals, bins = np.histogram(np.abs(cor[i,j,:,:].flatten()), 1000)
+#        plt.plot(np.log(vals))
 #plt.show()
 
-sk.sp_rep = sparsified1
-rec1 = sk.synthesize(sparse=True)
-rec1.normalize()
-sk.sp_rep = sparsified2
-rec2 = sk.synthesize(sparse=True)
-rec2.normalize()
 
-plt.show()
+## inversion
+#sparsified1 = np.zeros_like(cor)
+#sparsified2 = np.zeros_like(cor)
+#
+#sidx = 2
+#ridx = 1
+#sparsified1[sidx,ridx,:,:] = cor[sidx,ridx,:,:]
+#sparsified2[sidx,ridx,:,:] = cor[sidx,ridx,:,:]
+#sparsified2[sidx,ridx+6,:,:] = cor[sidx,ridx+6,:,:]
+#aud1 = _cor2aud(sparsified1,**sk.params)
+#aud2 = _cor2aud(sparsified2,**sk.params)
+#
+#plt.figure()
+#plt.subplot(121)
+#plt.imshow(np.abs(aud1))
+#plt.subplot(122)
+#plt.imshow(np.abs(aud2))
+##plt.show()
+#
+#sk.sp_rep = sparsified1
+#rec1 = sk.synthesize(sparse=True)
+#rec1.normalize()
+#sk.sp_rep = sparsified2
+#rec2 = sk.synthesize(sparse=True)
+#rec2.normalize()
+#
+#plt.show()
 
 
 ################ what does a scale/fix point mean 
 
 # let us put a 1 steadily across scales at one TF position and see how it translates
-tidx = art_cor.shape[2]/4
-fidx = art_cor.shape[3]/4
-
-
-plt.figure()
-for i in range(cor.shape[0]):
-    for j in range(cor.shape[1]/2):  
-        art_cor1 = np.zeros_like(cor)
-        art_cor1[:i+1,:j+1,tidx,fidx] = 1            
-        plt.subplot( cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + j+1)
-        audart1 = _cor2aud(art_cor1,**sk.params)   
-        plt.imshow(np.abs(audart1).T)
-plt.show()
-
-        
-audart2 = _cor2aud(art_cor2,**sk.params)   
-plt.figure()     
-plt.subplot(311)
-plt.imshow(np.real(audart1).T)
-plt.subplot(312)
-plt.imshow(np.real(audart2).T)
-plt.subplot(313)
-plt.imshow(np.real(audart2+audart1).T)
-plt.show()
+#tidx = art_cor.shape[2]/4
+#fidx = art_cor.shape[3]/4
+#
+#
+#plt.figure()
+#for i in range(cor.shape[0]):
+#    for j in range(cor.shape[1]/2):  
+#        art_cor1 = np.zeros_like(cor)
+#        art_cor1[:i+1,:j+1,tidx,fidx] = 1            
+#        plt.subplot( cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + j+1)
+#        audart1 = _cor2aud(art_cor1,**sk.params)   
+#        plt.imshow(np.abs(audart1).T)
+#plt.show()
+#
+#        
+#audart2 = _cor2aud(art_cor2,**sk.params)   
+#plt.figure()     
+#plt.subplot(311)
+#plt.imshow(np.real(audart1).T)
+#plt.subplot(312)
+#plt.imshow(np.real(audart2).T)
+#plt.subplot(313)
+#plt.imshow(np.real(audart2+audart1).T)
+#plt.show()
 
 ########################
-plt.figure()
-plt.imshow(np.abs(sk.cort.cor[:,:,tidx, fidx]))
-plt.show()
+#for audio_test_file in ['/sons/sqam/voicemale.wav','/sons/sqam/voicefemale.wav']:
+#    sk.recompute(audio_test_file)
+#    (K,L,M,N) = sk.cort.cor.shape
+#    cop = sk.cort.cor.copy()
+#    cop = cop.swapaxes(0,2)
+#    cop = cop.swapaxes(1,3)
+#    plt.figure()
+#    plt.imshow(np.log(np.abs(cop.reshape((K*M,L*N))).T))
+#plt.show()
 
 #for i in range(cor.shape[0]):
 #    for j in range(cor.shape[1]/2): 
 #        art_cor[i,j,tidx, fidx] = 1
 #        
-art_cor1 = np.zeros_like(cor)
-art_cor2 = np.zeros_like(cor)
-art_cor1[0,6,tidx,fidx] = 1
-art_cor2[0,0,tidx,fidx] = 2
-
-audart1 = _cor2aud(art_cor1,**sk.params)   
-audart2 = _cor2aud(art_cor2,**sk.params)   
-plt.figure()     
-plt.subplot(311)
-plt.imshow(np.real(audart1).T)
-plt.subplot(312)
-plt.imshow(np.real(audart2).T)
-plt.subplot(313)
-plt.imshow(np.real(audart2+audart1).T)
-plt.show()
+#art_cor1 = np.zeros_like(cor)
+#art_cor2 = np.zeros_like(cor)
+#art_cor1[0,6,tidx,fidx] = 1
+#art_cor2[0,0,tidx,fidx] = 2
+#
+#audart1 = _cor2aud(art_cor1,**sk.params)   
+#audart2 = _cor2aud(art_cor2,**sk.params)   
+#plt.figure()     
+#plt.subplot(311)
+#plt.imshow(np.real(audart1).T)
+#plt.subplot(312)
+#plt.imshow(np.real(audart2).T)
+#plt.subplot(313)
+#plt.imshow(np.real(audart2+audart1).T)
+#plt.show()
 
 
 
