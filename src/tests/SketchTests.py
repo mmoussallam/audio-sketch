@@ -20,6 +20,8 @@ import src.classes.sketches.cochleo as cochleo
 import src.classes.sketches.cortico as cortico
 from src.tools import cochleo_tools 
 import matplotlib.pyplot as plt
+import time
+import os.path as op
 
 #plt.switch_backend('Agg')
 SND_DB_PATH = os.environ['SND_DB_PATH']
@@ -45,21 +47,28 @@ class SketchTest(unittest.TestCase):
         #learned_base_dir = '/home/manu/workspace/audio-sketch/matlab/'
         
         sketches_to_test = [
+        
 #                            misc.KNNSketch(**{'location':learned_base_dir,
 #                                                'shuffle':87,
 #                                                'n_frames':100000,
 #                                                'n_neighbs':1}),
 #                            misc.SWSSketch(),
-#                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
+                            #cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
                              #cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':5,'n_inv_iter':2}),
 #                             cochleo.CochleoPeaksSketch(**{'fs':8000}),
 #                             cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8}),
 #                             cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8})
 #                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
                              #cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
+
                              #cortico.CorticoPeaksSketch(**{'n_octave':6,'freq_min':101.0, 'bins':24.0, 'downsample':8000, 'max_iter':5, 'rep_class': cochleo_tools.Quorticogram}),
                             cortico.CorticoSubPeaksSketch(**{'downsample':8000,
                                                              'sub_slice':(4,11),'n_inv_iter':10}),
+
+                             cortico.CorticoPeaksSketch(**{'n_octave':6,'freq_min':101.0, 'bins':24.0, 'downsample':8000, 'max_iter':5, 'rep_class': cochleo_tools.Quorticogram}),
+#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+#                                                             'sub_slice':(4,11),'n_inv_iter':10}),
+
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(0,11),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -78,7 +87,9 @@ class SketchTest(unittest.TestCase):
         
         # for all sketches, we performe the same testing
         for sk in sketches_to_test:
+            
             print sk
+            t = time.time()
             self.assertRaises(ValueError, sk.recompute)
             
             print "%s : compute full representation"%sk.__class__
@@ -90,9 +101,11 @@ class SketchTest(unittest.TestCase):
             print "%s : Now sparsify with 1000 elements"%sk.__class__
             sk.sparsify(1000)                    
 #            
-            print "%s : plot the sparsified representation"%sk.__class__
-            sk.represent(sparse=True)
-            plt.title(sk.__class__)
+#            # Remove the original signal
+##            sk.orig_signal = None 
+#            
+#            print "%s : Synthesize the sketch"%sk.__class__
+#            print "temps:",time.time()-t
             
             # Remove the original signal
 #            sk.orig_signal = None 
@@ -117,5 +130,7 @@ if __name__ == "__main__":
     suite.addTest(SketchTest())
 
     unittest.TextTestRunner(verbosity=2).run(suite)
+    plt.savefig(op.join(SKETCH_ROOT,'Quortico/test.pdf'))
     plt.show()
+    plt.savefig(op.join(SKETCH_ROOT,'Quortico/test2.pdf'))
     

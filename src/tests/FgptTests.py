@@ -43,7 +43,13 @@ fgpt_sketches = [
 #         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
 #    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
 #     CorticoSubPeaksSketch(**{'fs':8000,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
-#                       'sv':[0.5, 1],}))                                            
+#                       'sv':[0.5, 1],})) 
+     (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CorticoSubPeaksSketch(**{'fs': 8000, 'max_iter':5,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+                       'sv':[0.5, 1],'rep_class': cochleo_tools.Quorticogram,'n_octave':6,'freq_min':101.0, 'bins':12.0, 'downsample':8000})),
+    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CorticoSubPeaksSketch(**{'fs': 8000, 'max_iter':5,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+                       'sv':[0.5, 1],'rep_class': cochleo_tools.Quorticogram,'n_octave':6,'freq_min':101.0, 'bins':12.0, 'downsample':8000}))                                            
                     ]
 
 
