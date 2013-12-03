@@ -52,14 +52,14 @@ class SketchTest(unittest.TestCase):
 #                            misc.SWSSketch(),
 #                            cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1,'max_iter':1,'n_inv_iter':5}),
                              #cochleo.CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':5,'n_inv_iter':2}),
-                             cochleo.CochleoPeaksSketch(**{'fs':8000}),
-#                             cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8}),
+#                             cochleo.CochleoPeaksSketch(**{'fs':8000}),
+#                             cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8}),
 #                             cortico.CorticoIHTSketch(**{'downsample':8000,'frmlen':8})
 #                            cortico.CorticoIndepSubPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
                              #cortico.CorticoPeaksSketch(**{'downsample':8000,'frmlen':8,'shift':0,'fac':-2,'BP':1}),
                              #cortico.CorticoPeaksSketch(**{'n_octave':6,'freq_min':101.0, 'bins':24.0, 'downsample':8000, 'max_iter':5, 'rep_class': cochleo_tools.Quorticogram}),
-#                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
-#                                                             'sub_slice':(4,11),'n_inv_iter':10}),
+                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
+                                                             'sub_slice':(4,11),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
 #                                                             'sub_slice':(0,11),'n_inv_iter':10}),
 #                            cortico.CorticoSubPeaksSketch(**{'downsample':8000,
@@ -88,7 +88,7 @@ class SketchTest(unittest.TestCase):
             sk.represent()
             
             print "%s : Now sparsify with 1000 elements"%sk.__class__
-            sk.sparsify(10000)                    
+            sk.sparsify(1000)                    
 #            
             print "%s : plot the sparsified representation"%sk.__class__
             sk.represent(sparse=True)

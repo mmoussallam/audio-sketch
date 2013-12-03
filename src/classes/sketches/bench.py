@@ -317,6 +317,10 @@ class STFTPeaksSketch(AudioSketch):
 
         if self.orig_signal is None:
             raise ValueError("No original Sound has been given")
+        
+        if self.params.has_key('downsample'):
+            self.orig_signal.downsample(self.params['downsample'])
+        
         self.params['fs'] = self.orig_signal.fs
 #         import stft
         self.rep = stft.stft(self.orig_signal.data,

@@ -124,7 +124,7 @@ class STFTPeaksBDB(FgptHandle):
 
         return estTime, fileIdx
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False,ax=None):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False,ax=None,color='k'):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -168,7 +168,7 @@ class STFTPeaksBDB(FgptHandle):
                 if f1==f2 and delta_t==0:
                     continue
                 if display:    
-                    ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+                    ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc=color, ec=color)
 #                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
 #                
 #                print (f1, f2, delta_t) , t1
@@ -583,7 +583,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
        self.params['key_total_nbits'],self.params['time_res'], self.params['freq_res'])
             
 
-    def _build_pairs(self, sparse_rep, params, offset=0, display=False,ax=None):
+    def _build_pairs(self, sparse_rep, params, offset=0, display=False,ax=None,color='k'):
         """ build pairs given a PyMP.approx object: need to find 
             pairs.. first idea: take every pairwise combination """
         keys = []
@@ -624,7 +624,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 if display:          
 #                    print  t_anchor, f1, neighb_t - t_anchor, neighb_f - f1    
 #                    ax.arrow(120,120,50,50,head_width=0.05, head_length=0.1, fc='k', ec='k')  
-                    ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+                    ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc=color, ec=color)
 #                
 #                print (f1,  neighb_f-f1, neighb_t - t_anchor) , t_anchor
                 j += 1

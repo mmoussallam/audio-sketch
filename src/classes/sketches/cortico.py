@@ -300,7 +300,7 @@ class CorticoIndepSubPeaksSketch(CorticoSketch):
         
         # For each target sub graph
         for scaleIdx in range(self.sp_rep.shape[0]):
-            for rateIdx in range(self.sp_rep.shape[1]/2, self.sp_rep.shape[1]):        
+            for rateIdx in range(self.sp_rep.shape[1], self.sp_rep.shape[1]):        
                                 
                 
                 sub_rep = self.rep[scaleIdx,rateIdx,:,:].T        

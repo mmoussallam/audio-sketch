@@ -20,7 +20,7 @@ db_path = '/home/manu/workspace/audio-sketch/fgpt_db/'
 
 
 # The RWC subset path
-set_id = 'GTZAN' # Choose a unique identifier for the dataset considered
+set_id = 'voxforge' # Choose a unique identifier for the dataset considered
 audio_path, ext = bases[set_id]
 
 score_path = '/home/manu/workspace/audio-sketch/fgpt_scores'
@@ -31,7 +31,7 @@ file_names = file_names[:nb_files]
 # define experimental conditions
 
 sparsities =  [100,]
-seg_dur = 5.0
+seg_dur = -1
 fs = 8000
 
 ## Initialize the sketchifier
@@ -43,7 +43,7 @@ sk_id = sk.__class__.__name__[:-6]
 
 
 test = True
-learn= True
+learn= False
 for sparsity in sparsities:    
     # construct a nice name for the DB object to be saved on disk
     db_name = "%s_%s_k%d_%s_%dsec_%dfs/"%(set_id, sk_id, sparsity, sk.get_sig(),
@@ -72,7 +72,7 @@ for sparsity in sparsities:
     
     # run a fingerprinting experiment
     test_proportion = 1.0 # proportion of segments in each file that will be tested
-    step = 3.0
+    step = -1
     if test:
         tstart = time.time()
         scores = db_test_cortico(fgpthandle, sk, sparsity,
