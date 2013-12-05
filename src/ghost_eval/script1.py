@@ -10,45 +10,12 @@ This is an example script to illustrate the evaluation
 import sys, os
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
+from expe_tools import *
 
 set_id = 'voxforge' 
 nbfiles = 20
 audio_path,ext = bases[set_id]
 file_names = get_filepaths(audio_path, 0,  ext=ext)[:nbfiles]
-
-def learn(fgptsystem, filenames, sparsity, debug=0):
-    """ Given a fingerprinting system (sparsifier + landmark builder)
-    analyse all files in the list and populate the berkeley db object"""
-    (sparsifier, dbhandler) = fgptsystem
-    for fileIndex, filename in enumerate(filenames):
-        print fileIndex
-        # sparsify
-        sparsifier.recompute(filename,**{'sig_name':filename})
-        sparsifier.sparsify(sparsity)
-        # and build the landmarks        
-        dbhandler.populate(sparsifier.fgpt(), sparsifier.params,
-                           fileIndex, offset=0, debug=debug)        
-
-def test(fgptsystem, target, sparsity):
-    (sparsifier, dbhandler) = fgptsystem
-    sparsifier.recompute(target)
-    sparsifier.sparsify(sparsity)
-    return dbhandler.retrieve(sparsifier.fgpt(), sparsifier.params, 0, nbfiles)
-
-
-def comparekeys(sketchifier, fgpthandle, ref, sparsityref, target, sparsitytarget):
-    """ Show the overlapping keys """
-    fs = target.fs
-    target.spectrogram(2048,256,ax=plt.gca(),order=0.5,log=False,cbar=False,
-                         cmap=cm.bone_r, extent=[0,target.get_duration(),0, fs/2])
-    sparsifier.recompute(ref)
-    sparsifier.sparsify(sparsityref)
-    fgpthandle._build_pairs(sparsifier.fgpt(), sparsifier.params,display=True,
-                            ax=plt.gca(), color='b')
-    sparsifier.recompute(target)
-    sparsifier.sparsify(sparsitytarget)
-    fgpthandle._build_pairs(sparsifier.fgpt(), sparsifier.params,display=True,
-                            ax=plt.gca(), color='r')
 
 
 # define a sketch
@@ -58,14 +25,27 @@ sketchifier = CochleoIHTSketch(**{'downsample':8000,
                                                'n_inv_iter':2})
 
 ###################### Phase 1: define a fingerprint system and parameters
-sparsifier = STFTPeaksSketch(**{'downsample':8000,'fs':8000,
-                               'frmlen':8,'shift':-1,
-                               'max_iter':5,
-                               'n_inv_iter':2})
-fgpthandle = STFTPeaksBDB('STFTPeaks.db', **{'wall':False,'time_max':20.0})
+#sparsifier = CochleoPeaksSketch(**{'downsample':8000,'fs':8000,
+#                               'frmlen':8,'shift':-1,
+#                               'max_iter':5,
+#                               'n_inv_iter':2})
+#fgpthandle = CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False,'time_max':20.0})
 
 
-sparsity = 0.01
+sparsifier = XMDCTSparsePairsSketch(**{'scales':[64,256,1024],'n_atoms':1,'fs':8000,
+                                 'nature':'MDCT','pad':False,'downsample':8000})
+
+fgpthandle = SparseFramePairsBDB('SparseMPPairs.db',load=False,**{'wall':False,
+                                                                  'f1_n_bits':6,
+                                                                  'time_max':20.0,
+                                                              'nb_neighbors_max':5,
+                                                              'delta_f_bits':6,
+                                                              'delta_f_min':250,
+                                                              'delta_f_max':2000,
+                                                              'delta_t_min':0.5, 
+                                                              'delta_t_max':2.0})
+
+sparsity = 0.001
 
 ###################### Phase 2: Train on unaltered samples
 learn((sparsifier,fgpthandle),file_names, sparsity)
@@ -75,7 +55,7 @@ learn((sparsifier,fgpthandle),file_names, sparsity)
 ###################### Phase 3: Test on "sketchified" sampels
 rndidx = 3
 sketchifier.recompute(file_names[rndidx])
-sketchifier.sparsify(0.1)
+sketchifier.sparsify(0.05)
 print np.count_nonzero(sketchifier.sp_rep)
 resynth = sketchifier.synthesize(sparse=True)
 
@@ -84,9 +64,16 @@ resynth = sketchifier.synthesize(sparse=True)
 refhist = test((sparsifier,fgpthandle),file_names[rndidx], sparsity)
 testhist = test((sparsifier,fgpthandle),resynth, sparsity)
 
-#plt.figure()
-#comparekeys(sketchifier, fgpthandle, file_names[rndidx], sparsity, resynth, sparsity)
-#plt.show()
+############ debug mode 
+#sparsifier.recompute(file_names[rndidx])
+#sparsifier.sparsify(sparsity)
+#keysref, valuesref = fgpthandle._build_pairs(sparsifier.fgpt(),sparsifier.params)
+#sparsifier.recompute(resynth)
+#sparsifier.sparsify(sparsity)
+#keys, values = fgpthandle._build_pairs(sparsifier.fgpt(),sparsifier.params)
+plt.figure()
+comparekeys(sparsifier, fgpthandle, file_names[rndidx], sparsity, resynth, sparsity)
+plt.show()
 
 # what is the metric ? contrast-to-noise ratio?
 # let us use two metrics: the distance to noise and the distance to second
@@ -98,7 +85,7 @@ masked_scores.mask[rndidx] = True
 score = scores[rndidx]
 
 metric1 = score - np.mean(masked_scores)
-metric2 = score - np.max(masked_scores)
+metric2 = (score - np.max(masked_scores))/score
 
 plt.figure()
 #plt.plot(np.sum(refhist, axis=0))
