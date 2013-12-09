@@ -5,8 +5,10 @@
 
 form Get_arguments
   word audioFile
+  word tempdir
   real timeStep
   integer nFormants
+  integer nFormantsMax
   real windowSize
   integer preEmphasis
 endform
@@ -14,7 +16,12 @@ endform
 # get the number of characters in the file name
 flen = length(audioFile$)
 # cut off the final '.wav' (or other three-character file extension) to get the full path of the .Formant file that we will create
-path$ = left$ (audioFile$, flen-4)
+#where = rindex (audioFile$, "/")
+#name$ = right$ (audioFile$, where)
+name$ = mid$ (audioFile$, flen - 16, 13)
+path$ = tempdir$ + name$ 
+
+#path$ = left$ (audioFile$, flen-4)
 
 Read from file... 'audioFile$'
 
@@ -27,6 +34,10 @@ basef = 500
 formant_1=1
 formant_2=1
 formant_3=1
+formant_4=1
+formant_5=1
+formant_6=1
+formant_7=1
 low_pass=1
 formant_low_pass_freq=20
 amp_low_pass_freq=50
@@ -37,9 +48,9 @@ To Spectrogram... 0.003 'upperf' 0.001 40 Gaussian
 
 # initialize formant
 select 'snd'
-To Formant (burg)... 'timeStep' 'nFormants'  'upperf' 'windowSize' 'preEmphasis'
+To Formant (burg)... 'timeStep' 'nFormantsMax'  'upperf' 'windowSize' 'preEmphasis'
 Rename... untrack
-Track... 2 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
+Track... 'nFormants' 'basef' 'basef'*3 'basef'*5 'basef'*7 'basef'*9 1 0.1 1
 Rename... 'snd$'
 select Formant untrack
 Remove
@@ -57,7 +68,7 @@ sf = Get sample rate
 #NB this Sound object is the formant TRACK
 #then back into a Matrix object for sound synthesis
 
-for i from 1 to 3
+for i from 1 to 'nFormants'
 if formant_'i' 
 # make a matrix from Fi
 select Formant 'snd$'
@@ -113,8 +124,8 @@ endfor
 
 #add-up the three sine components
 #first select them
-if (formant_1 + formant_2 + formant_3) > 1 and add_them
-for i from 1 to 3
+if (formant_1 + formant_2 + formant_3+ formant_4+ formant_5 + formant_6 + formant_7) > 1 and add_them
+for i from 1 to 'nFormants'
 if formant_'i' 
 plus Sound sin'i'
 endif

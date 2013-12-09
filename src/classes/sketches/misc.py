@@ -4,13 +4,13 @@ classes.sketches.MiscSketches  -  Created on Jul 25, 2013
 '''
 
 from src.classes.sketches.base import *
-tempdir = '/home/manu/workspace/audio-sketch'
+tempdir = '/home/manu/workspace/audio-sketch/sws/'
 class SWSSketch(AudioSketch):
     """ Sine Wave Speech """
 
     def __init__(self, orig_sig=None, **kwargs):
 
-        self.params = {'n_formants_max': 8,
+        self.params = {'n_formants_max': 7,
                        'n_formants': 4,
                        'time_step': 0.01,
                        'windowSize': 0.025,
@@ -47,7 +47,7 @@ class SWSSketch(AudioSketch):
                 2 ** int(np.log2(self.params['windowSize'] * self.recsig.fs)),
                 2 ** int(np.log2(
                          self.params['time_step'] * self.recsig.fs)),
-                order=1, log=True, ax=ax)
+                order=1, log=True, ax=ax, cbar=False)
         else:
             self.sp_recsig.spectrogram(
                 2 ** int(np.log2(self.params['windowSize'] * self.sp_recsig.fs)),
@@ -73,7 +73,7 @@ class SWSSketch(AudioSketch):
             saved_sig.write(os.path.join(tempdir,'temp.wav'))
             signal = os.path.join(tempdir,'temp.wav')
             clean = True
-
+        print signal
         if not isinstance(signal,str) or not os.path.exists(signal):
             print signal
             raise ValueError("A valid path to a wave file must be provided")
@@ -93,15 +93,17 @@ class SWSSketch(AudioSketch):
                 #print "Removing %s"%(signal[:-4] + '_formant' + str(forIdx) + '.mtxt')
                 os.remove(signal[:-4] + '_formant' + str(forIdx) + '.mtxt') 
               
-        os.system('%s %s %1.3f %d %1.3f %d' % (self.call_str, signal,
+        os.system('%s %s %s %1.3f %d %d %1.3f %d' % (self.call_str, signal,tempdir,
                                                self.params['time_step'],
+                                               self.params['n_formants'],
                                                self.params['n_formants_max'],
                                                self.params['windowSize'],
                                                self.params['preEmphasis']))
     # Now retrieve the coefficients and the resulting audio
         self.formants = []
         for forIdx in range(1, self.params['n_formants']+1):
-            formant_file = signal[:-4] + '_formant' + str(forIdx) + '.mtxt'
+            signame = signal.split('/')[-1]
+            formant_file = tempdir + signame[:-4] + '_formant' + str(forIdx) + '.mtxt'
             fid = open(formant_file, 'rU')
             vals = fid.readlines()
             fid.close()  # remove first 3 lines and convert to numpy
@@ -119,18 +121,19 @@ class SWSSketch(AudioSketch):
             self.orig_signal = Signal(signal, normalize=True)
         
         # and the audio we said
-        if os.path.exists(signal[:-4] + '_sws.wav'):
-            self.recsig = Signal(signal[:-4] + '_sws.wav', normalize=True)
+        signame = signal.split('/')[-1]
+        if os.path.exists(tempdir + signame[:-4] + '_sws.wav'):
+            self.recsig = Signal(tempdir + signame[:-4] + '_sws.wav', normalize=True)
         self.rep = np.array(self.formants)
 
-    def sparsify(self, sparsity, reconstruct=False):
+    def sparsify(self, sparsity, reconstruct=True):
         """ use sparsity to determine the number of formants and window size/steps """
 
         if sparsity <= 0:
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= self.rep.length
+            sparsity *= self.orig_signal.length
 
 #        new_tstep = float(self.orig_signal.get_duration() * self.params['n_formants'])/float(sparsity)
         new_tstep = float(self.orig_signal.get_duration())/float(sparsity)
@@ -139,8 +142,9 @@ class SWSSketch(AudioSketch):
 #        print "New time step of %1.3f seconds" % new_tstep
         self._extract_sws(self.current_sig, reconstruct = reconstruct,
                           **{'time_step': new_tstep, 'windowSize': new_wsize})
-        if os.path.exists(self.current_sig[:-4] + '_sws.wav'):
-            self.sp_recsig = Signal(self.current_sig[:-4] + '_sws.wav', normalize=True)
+        signame = self.current_sig.split('/')[-1]
+        if os.path.exists(tempdir + signame[:-4] + '_sws.wav'):
+            self.sp_recsig = Signal(tempdir + signame[:-4] + '_sws.wav', normalize=True)
         self.sp_rep = np.array(self.formants)
 
 class KNNSketch(AudioSketch):

@@ -133,6 +133,7 @@ class CQTPeaksSketch(AudioSketch):
 #            self.params['t_width'] = int(self.rep.shape[2] / sparsity_t)
 #        else:
             sparsity *= np.prod(self.rep[0,:,:].shape)
+        
         self.params['t_width'] = int(self.rep.shape[2] / np.sqrt(sparsity))
         self.params['f_width'] = int(self.rep.shape[1] / np.sqrt(sparsity))
 #        elif sparsity < 1:
@@ -180,16 +181,18 @@ class CQTPeaksSketch(AudioSketch):
 
     def synthesize(self, sparse=False):
 #        import stft
-
-        if sparse:
-            return Signal(stft.istft(self.sp_rep,
-                                     self.params['step'],
-                                     self.orig_signal.length),
+        if self.noyau_inv is None:
+            [self.noyau_inv,K] = cqt.noyau(self.params['fs'], self.params['freq_min'],
+                                   self.params['freq_max'],
+                                   3,self.params['bins']) 
+        if sparse:            
+            return Signal(cqt.inverseS(self.sp_rep[0,:,:],self.noyau_inv,self.params['fs'],self.params['freq_min'],
+                 self.params['freq_max'],self.params['bins'],self.params['overl']),
                           self.orig_signal.fs, mono=True)
+
         else:
-            return Signal(stft.istft(self.rep,
-                                     self.params['step'],
-                                     self.orig_signal.length),
+            return Signal(cqt.inverseS(self.rep[0,:,:],self.noyau_inv,self.params['fs'],self.params['freq_min'],
+                 self.params['freq_max'],self.params['bins'],self.params['overl']),
                           self.orig_signal.fs, mono=True)
 
     def fgpt(self, sparse=False):

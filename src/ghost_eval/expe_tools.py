@@ -28,7 +28,7 @@ def test(fgptsystem, target, sparsity, nbfiles):
     return dbhandler.retrieve(sparsifier.fgpt(), sparsifier.params, 0, nbfiles)
 
 
-def testratio(sketchifier,fgptsystem, file_names, testratio, sparsity):
+def testratio(sketchifier,fgptsystem, file_names, testratio, sparsity, refsparsity):
     (sparsifier, fgpthandle) = fgptsystem
     rndindexes = np.random.random_integers(0,len(file_names)-1,testratio*len(file_names))
     metric = []
@@ -40,14 +40,18 @@ def testratio(sketchifier,fgptsystem, file_names, testratio, sparsity):
         resynth = sketchifier.synthesize(sparse=True)    
         # now test the KOR 
         # reference ? 
-        refhist = test((sparsifier,fgpthandle),file_names[rndidx], sparsity, len(file_names))
-        testhist = test((sparsifier,fgpthandle),resynth, sparsity, len(file_names))
+        refhist = test((sparsifier,fgpthandle),file_names[rndidx], refsparsity, len(file_names))
+        testhist = test((sparsifier,fgpthandle),resynth, refsparsity, len(file_names))
         scores = np.sum(testhist, axis=0)/np.sum(refhist[:,rndidx])
+        print scores
         # the masked array will use all elements EXCEPT the one where the mask is TRUE
         masked_scores = np.ma.array(scores, mask=False)
         masked_scores.mask[rndidx] = True        
-        score = scores[rndidx]            
-        metric.append((score - np.max(masked_scores))/score)
+        score = scores[rndidx]
+        if score>0:            
+            metric.append((score - np.max(masked_scores))/score)
+        else:
+            metric.append(-100)
         print "Score of ",metric[-1]
     return metric
 

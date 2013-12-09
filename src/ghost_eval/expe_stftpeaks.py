@@ -16,8 +16,8 @@ file_names = get_filepaths(audio_path, 0,  ext=ext)[:nbfiles]
 
 ###### SCRIPT SPECIFIC WE ARE HERE INTERESTED IN THIS TYPE OF FINGERPRINT
 # FGPT PARAMETERS
-scales = [64,256,1024]
-nature = 'MDCT'
+#scales = [64,256,1024]
+#nature = 'MDCT'
 fgptsparsity = 0.001 # ratio of sparse elements
 
 sparsifier = STFTPeaksSketch(**{'scale':2048, 'step':256,'downsample':8000})
@@ -33,24 +33,33 @@ test_ratio = 0.1
 
 # SKETCHES TO TEST
 sketches_to_test = [
-             STFTPeaksSketch(**{'scale':2048, 'step':256,'downsample':8000}),
+#             STFTPeaksSketch(**{'scale':2048, 'step':256,'downsample':8000}),
 #             STFTDumbPeaksSketch(**{'scale':2048, 'step':256}),  
-             CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':2,'n_inv_iter':2}),
-             XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,'fs':8000,'nature':nature,'pad':False,'downsample':8000}),
-#             bench.CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
+              SWSSketch(**{'n_formants': 1,'n_formants_max': 7}),
+              SWSSketch(**{'n_formants': 2,'n_formants_max': 7}),
+              SWSSketch(**{'n_formants': 3,'n_formants_max': 7}),
+              SWSSketch(**{'n_formants': 4,'n_formants_max': 7}),
+#             CochleoIHTSketch(**{'downsample':8000,'frmlen':8,'shift':-1,'max_iter':4,'n_inv_iter':5}),
+#             XMDCTSparsePairsSketch(**{'scales':scales,'n_atoms':1,'fs':8000,'nature':nature,'pad':False,'downsample':8000}),
+#             CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0}),    
 #             cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0, 'max_iter':5}),            
              ]
 
-sparsities_to_test = [0.001, 0.005,0.01]
-dist2second = np.zeros((len(sketches_to_test), len(sparsities_to_test)))
+sparsities_to_test = [500]
+dist2second = np.zeros((len(sketches_to_test), len(sparsities_to_test), test_ratio*len(file_names)))
 sklegends = []
 for skidx, sketchifier in enumerate(sketches_to_test):
     sklegends.append(sketchifier.__class__.__name__)
     print sklegends[-1]
     for spidx, sparsity in enumerate(sparsities_to_test):
         print sparsity
-        dist2second[skidx, spidx] = np.mean(testratio(sketchifier,
+        dist2second[skidx, spidx,:] = testratio(sketchifier,
                                                       (sparsifier,fgpthandle),
-                                                      file_names, test_ratio, sparsity))
+                                                      file_names, test_ratio, sparsity, fgptsparsity)
         
 
+plt.figure()
+plt.plot(sparsities_to_test,np.mean(dist2second, axis=2).T)
+plt.legend(sklegends, loc='lower right')
+plt.grid()
+plt.show()

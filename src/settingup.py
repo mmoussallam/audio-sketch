@@ -11,6 +11,7 @@ import sys
 from joblib import Memory
 from src.classes.sketches.base import AudioSketch
 from src.classes.sketches.bench import *
+from src.classes.sketches.misc import *
 from src.classes.sketches.cortico import *
 from src.classes.sketches.cochleo import *
 from src.tools import stft, cqt
