@@ -4,7 +4,10 @@ classes.sketches.MiscSketches  -  Created on Jul 25, 2013
 '''
 
 from src.classes.sketches.base import *
-tempdir = '/home/manu/workspace/audio-sketch/sws/'
+import os
+import os.path as op
+
+tempdir = op.join(os.environ['SKETCH_ROOT'], 'sws');
 class SWSSketch(AudioSketch):
     """ Sine Wave Speech """
 
@@ -15,7 +18,7 @@ class SWSSketch(AudioSketch):
                        'time_step': 0.01,
                        'windowSize': 0.025,
                        'preEmphasis': 50,
-                       'script_path': '/home/manu/workspace/audio-sketch/src/tools'}
+                       'script_path': op.join(os.environ['SKETCH_ROOT'],'src/tools')}
 
         for key in kwargs:
             self.params[key] = kwargs[key]
@@ -103,7 +106,7 @@ class SWSSketch(AudioSketch):
         self.formants = []
         for forIdx in range(1, self.params['n_formants']+1):
             signame = signal.split('/')[-1]
-            formant_file = tempdir + signame[:-4] + '_formant' + str(forIdx) + '.mtxt'
+            formant_file = tempdir + '/'+signame[:-4] + '_formant' + str(forIdx) + '.mtxt'
             fid = open(formant_file, 'rU')
             vals = fid.readlines()
             fid.close()  # remove first 3 lines and convert to numpy
@@ -122,8 +125,8 @@ class SWSSketch(AudioSketch):
         
         # and the audio we said
         signame = signal.split('/')[-1]
-        if os.path.exists(tempdir + signame[:-4] + '_sws.wav'):
-            self.recsig = Signal(tempdir + signame[:-4] + '_sws.wav', normalize=True)
+        if os.path.exists(tempdir + '/'+signame[:-4] + '_sws.wav'):
+            self.recsig = Signal(tempdir + '/'+ signame[:-4] + '_sws.wav', normalize=True)
         self.rep = np.array(self.formants)
 
     def sparsify(self, sparsity, reconstruct=True):
@@ -143,8 +146,8 @@ class SWSSketch(AudioSketch):
         self._extract_sws(self.current_sig, reconstruct = reconstruct,
                           **{'time_step': new_tstep, 'windowSize': new_wsize})
         signame = self.current_sig.split('/')[-1]
-        if os.path.exists(tempdir + signame[:-4] + '_sws.wav'):
-            self.sp_recsig = Signal(tempdir + signame[:-4] + '_sws.wav', normalize=True)
+        if os.path.exists(tempdir + '/'+signame[:-4] + '_sws.wav'):
+            self.sp_recsig = Signal(tempdir + '/'+signame[:-4] + '_sws.wav', normalize=True)
         self.sp_rep = np.array(self.formants)
 
 class KNNSketch(AudioSketch):
