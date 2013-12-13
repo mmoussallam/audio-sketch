@@ -92,12 +92,18 @@ cqtsk.represent(fig=plt.gcf())
 plt.show()
 
 
+cqtsk.recompute(reals[0])
+cqtsk.represent()
+
+cqtsk.recompute(recs[0])
+cqtsk.represent()
+
 ####################"" OK so what about the fingerprint one could build?
 #cqtsk.params['f_width']=12
 #cqtsk.params['t_width']=50
 cqtsk.recompute(recs[0])
 cqtsk.sparsify(1000)
-cqtfgpt = CQTPeaksBDB(None, **{'max_neighbs'})
+cqtfgpt = CQTPeaksBDB(None)
 plt.figure()
 plt.subplot(211)
 plt.imshow(np.abs(cqtsk.fgpt()[0,:,:])>0)
