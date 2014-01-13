@@ -78,17 +78,21 @@ figs-within-sections
 
 \begin_body
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+J'ai du enlever le logo car je n'avais pas l'image et que ça ne compilait
+ pas....
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Title
-\begin_inset Graphics
-	filename figures/logo_LOA.pdf
-	width 12cm
-
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
 Technical report on project Sketch II
 \end_layout
 
@@ -153,8 +157,240 @@ Linear Fourier : STFT
 Logarithmic: CQT
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+j'ai pas mal recopié ton ancien rapport...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The constant-Q transform is a signal Time/Frequency representation in which
+ the frequency scale is logarithmic.
+ The CQT can be considered as a bank of filters, where the resonnants frequencie
+s are logarithmic scale spaced, and the quality factor Q remains constant:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\mathrm{Q=\frac{f_{k}}{\Delta f}}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $\mathrm{f_{k}}$
+\end_inset
+
+ being the eigen frequency of the filter and 
+\begin_inset Formula $\mathrm{\Delta f_{k}}$
+\end_inset
+
+ the bandwidth of the resonant frequency.
+ Whose filters lengths 
+\begin_inset Formula $L_{k}$
+\end_inset
+
+ are dyadic and inversement proportional to the resonant frequency in order
+ to keep a constant factor Q.
+ The representation is then defined by:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+R_{CQT}(x)[k]=\frac{1}{L_{k}}\sum_{n=0}^{^{L_{k}-1}}w_{k}[n].x[n]exp\left(-2j\pi n\frac{f_{k}}{f_{s}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $w_{k}$
+\end_inset
+
+ is a hann window with a size 
+\begin_inset Formula $L_{k}$
+\end_inset
+
+ frequency-dependant, 
+\begin_inset Formula $f_{k}$
+\end_inset
+
+ are the center frequencies of the filters and 
+\begin_inset Formula $f_{s}$
+\end_inset
+
+ is the sampling rate.
+\end_layout
+
+\begin_layout Standard
+The frequency scale can be chosen in order to fit with the MIDI musical
+ scale (index semitone: interval between two adjacent notes in a 12-tone
+ scale), that property made this representation often use in musical signal
+ analysis.
+ The note A4, witch correspond to the frequency 440Hz is defined by the
+ index 69 in the MIDI scale, by using the relation above, we fit the frequency
+ scale to the MIDI musical one:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+midi(f)=69+12log_{2}\left(\frac{f}{440}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../../../ComptesRendu/Report_January2014/cqtIHT.png
+	scale 50
+	rotateOrigin center
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Constant Q Transform (magnitude of the output of constant-Q filters) of
+ the phrase 'we will have to watch our chances'.
+ darker regions are more energetic.
+ The Time/Frequency resolution depends on the frequency.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Standard
+The advantage of CQT is that it is an invertible representation.
+ The probleme is that to keep the property of invertibility, the temporal
+ step between two analysed frames have to be smaller than the frame of the
+ higher frequency (wich can be very small, about 1millisecond for a frequency
+ of 16kHz).
+ This leed to high cost in calculation.
+\end_layout
+
 \begin_layout Subsection
 Cochleograms
+\end_layout
+
+\begin_layout Standard
+The auditory system is thought to contain an array of over-lapping band-pass
+ filters known as ‘auditory filters’.
+ They occur along the basilar membrane and increase the frequency selectivity
+ of the cochlea and therefore the listener’s discrimination between different
+ sounds.
+ The basiliar membrane is a part of the cochlea, and cochleograms model
+ the transformation made by these 'auditory models'.
+ This transformation is mainly similar that the one use for the CQT, but
+ using a real auditory response filter as the filter banks.
+ The main difference between the CQT filter and those are there non-symmetricaln
+ess of each filters.
+ A auditory filter centered in the frequency 
+\begin_inset Formula $f_{c}$
+\end_inset
+
+ is writing in the time domain as:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+gt(t)=at^{(n-1)}exp\left(-2\pi bt\right)cos\left(2\pi f_{c}t+\phi\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+it is basically a cosine widowed by a non-symmetric widows that is the product
+ of a power term and a decreasing exponential.
+ The parameters of each filters mainly control the duration end therefore
+ the bandwidth.
+ In this study we used the same set of coefficients filter as in existing
+ software (i.e the NSL toolbox).
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../../../ComptesRendu/Report_January2014/cochleoPP.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+cochleogram (absolute value) of the phrase 'we will have to watch our chances'.
+ darker regions are more energetic.
+ The frequency scale is logaithmic and the Time/Frequency resolution is
+ frequency dependent.
+ low and high frequencies are lowered.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The cochleogram is the representation in Time/Frequency of the output of
+ the magnitude of auditory filters.
+ We can see in the next figure that they emphasize the magnitude over the
+ frequency spectrum according to the human sensivity of tones.
+ A nice introduction can be found in []...
 \end_layout
 
 \begin_layout Section
@@ -178,12 +414,263 @@ Laure
 Wavelet-based transform
 \end_layout
 
+\begin_layout Standard
+The principle of wavelette transform is basedon the scale notion.
+ 
+\end_layout
+
 \begin_layout Subsection
 Corticograms
 \end_layout
 
+\begin_layout Standard
+The primary auditory cortex is the part of the brain responsible of the
+ understanding and segregation of equally tuned sound with temporal structure
+ dissimilarity.
+ After the cochlea processing the sound perceived are ordered along the
+ tonotopic axis, witch means that they are projected according the cochlea
+ shape, then ranking according their wavelength in particular area of brain.
+ 
+\end_layout
+
+\begin_layout Standard
+Then the primary cortex analyzed the spectra-temporal content of the sound
+ using layers of neuron.
+ Those neurons, act as a bank of filters, centered in each frequencies of
+ the tonotopic axis.
+ Each filter is tuned at a specific rate (temporal modulation in Hertz)
+ and scale (frequency modulation in cycle/octave).
+ Those actions can be approximately seen as a bank of 2D wavelet transform.
+ 
+\end_layout
+
+\begin_layout Standard
+The characteristic function of each neuron are the STRF (spectra-temporal
+ response field), showing the exhibiting and inhibitory fields in frequencies
+ and time.
+ The spectra-temporal variations of theses field are formed by 
+\shape italic
+ripples 
+\shape default
+(sound with a spectral pattern that have a sinusoidal shape along the logarithmi
+c frequency axis).
+ The mathematical model of the STRF is shown below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+STRF=h_{IRT}(t)\star h_{IRS}(x)
+\]
+
+\end_inset
+
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $h_{IRT}(t)$
+\end_inset
+
+ and 
+\begin_inset Formula $h_{IRS}(x)$
+\end_inset
+
+ are two ripples set up by the characteristics of a specific neuron.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h_{IRS}(w,\Omega,\phi)=h_{s}(x;\Omega)cos\phi+\hat{h_{s}}(x;\Omega)sin\phi
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+h_{IRT}(t,w,\theta)=h_{t}(t;w)cos\theta+\hat{h_{t}}(t;w)sin\theta
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $w$
+\end_inset
+
+ and
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ are the rates and scales, and 
+\begin_inset Formula $\phi$
+\end_inset
+
+, 
+\begin_inset Formula $\theta$
+\end_inset
+
+ are the characteristics phases of asymmetry.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+r\pm(t,f;w,\Omega;\theta,\phi)=z(t,f)\star_{t,f}STRF\pm(t,f;w,\Omega;\theta,\phi)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+r is the response of each cochleograms convolued in time and frequency by
+ a bank of STRF.
+ We can see the Corticogram as a repeated cochleogram viewed at different
+ resolution, or as a bank of different spectral and temporal modulation
+ filters with different tuning (from narrowband to broadband).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+cette figure (comme les autres) a choisi de se mettre en haut de la page
+ et je ne sais pas dire en Lyx 'dans le texte mademoiselle!'
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ../../../ComptesRendu/Report_January2014/cortico1.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Corticograms visualization as a matrix of time-frequency representations.
+ Each of the plots can be understood as a cochleogram filtered in 2D (rates
+ and sclaes).
+ Filter frequency are controlled by the scale and the rate parameters.
+ In the top left pannel we see a represation with broadband filters in rates
+ and scales.
+ In bottom right we see a represention with sharpband filter of rate and
+ scale, somehow representing the high frequencies of the 'wavelet transform'
+ and is closed to the cochleogram.
+ The botom right and top left are representation with sharp modulation in
+ frequencies and time respectivelly.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The corticogram is a 4D representation indexed by scale/rate/time/frequency
+ matrix.
+ As such it can be figured as a set of matrix of Time/Frequency representation.
+ Interested reader can look in the paper ...
+ into detail for better understanding of the computational details of corticogra
+ms.
+ The implementation here is provided by the NSL toolbox.
+\end_layout
+
 \begin_layout Subsection
 Quorticograms
+\end_layout
+
+\begin_layout Standard
+As the CQT offer better performances in computation time and is invertible,
+ we simplified the Corticogram by replacing the input cochleogram by a CQT.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ../../../ComptesRendu/Report_January2014/cortico2.png
+	rotateOrigin center
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Quorticograms visualization as a matrix of time-frequency representations.
+ Each of the plots can be understood as a constant Q transform filtered
+ in 2D (rates and sclaes).
+ Filter frequency are controlled by the scale and the rate parameters.
+ In the top left pannel we see a represation with broadband filters in rates
+ and scales.
+ In bottom right we see a represention with sharpband filter of rate and
+ scale, somehow representing the high frequencies of the 'wavelet transform'
+ and is closed to the CQT.
+ The botom right and top left are representation with sharp modulation in
+ frequencies and time respectivelly.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
