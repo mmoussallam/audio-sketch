@@ -145,6 +145,12 @@ cqtsk.represent(fig=plt.gcf())
 plt.show()
 
 
+cqtsk.recompute(reals[0])
+cqtsk.represent()
+
+cqtsk.recompute(recs[0])
+cqtsk.represent()
+
 ####################"" OK so what about the fingerprint one could build?
 #cqtsk.params['f_width']=12
 #cqtsk.params['t_width']=50
