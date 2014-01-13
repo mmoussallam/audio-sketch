@@ -3,11 +3,13 @@ speech.sws_toy  -  Created on Dec 9, 2013
 @author: M. Moussallam
 '''
 
+######## Attention chemins matlab #######
 
 import sys, os
 #from classes.sketches.cochleo import SKETCH_ROOT
 sys.path.append(os.environ['SKETCH_ROOT'])
 from src.settingup import *
+import scipy.io
 SND_DB_PATH = os.environ['SND_DB_PATH']
 audio_outputpath = op.join(SKETCH_ROOT,'src/speech/sounds')
 
@@ -39,6 +41,51 @@ for fidx, filename in enumerate(files):
     recs.append(rec)
     
 #plt.show()
+    
+######################### second test: building a data set of 3 
+    ##################### sentences ennonciate by 7 speakers  
+# construct the database    
+locuteurs = ['awb','bdl','clb']
+label_names_loc = ['h1','h2','f']
+path_loc = os.environ['SND_DB_PATH']+'/voxforge/main/Test/cmu_us_'
+path_ph = '_arctic/wav/arctic_a000'
+files = []
+label=[]
+nb_ph = 6
+for i in np.arange(len(locuteurs)):    
+  for j in np.arange(1,int(nb_ph+1)):
+      files.append(path_loc+locuteurs[i]+path_ph+str(j)+'.wav')
+      label.append(label_names_loc[i]+'ph'+str(j))
+      
+# do the sws 
+val = []      
+mat = []
+cqt = []
+cqt_sws = []
+cqtsk = cqtsk = cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0})
+for fidx, filename in enumerate(files):
+    sig = Signal(filename, mono=True)
+    sig.normalize()
+    cqtsk.recompute(sig)
+    cqt.append(cqtsk.rep[0,:,:])
+    sk = SWSSketch(**{'n_formants': 3,'time_step':0.01,'windowSize': 0.025,})
+    sk.recompute(filename)
+    sws_sig = sk.synthesize()
+    sws_sig.normalize()
+    cqtsk.recompute(sws_sig)
+    cqt_sws.append(cqtsk.rep[0,:,:])    
+    val.append(sk.rep.shape[1])
+    mat.append(sk.rep)
+
+#### scaling time #######
+minus = min(val)
+np_mat = np.zeros((sk.params['n_formants'], minus , int(fidx+1)))
+for indx, spl in enumerate(mat):
+    tab_ind = np.ceil(linspace(0,val[indx]-1, minus)).astype(int)
+    np_mat[:,:,indx] = spl[:,tab_ind]
+    
+#### save mat for classification matlab use #########
+savemat('/Users/loa-guest/Documents/MATLAB/Classif/sws1.mat', mdict = {'np_mat':np_mat, 'label':label, 'mat':mat, 'cqt':cqt, 'cqt_sws': cqt_sws})
 
 ######################### increasing the number of formants
 #recsbyformants = []
@@ -77,17 +124,23 @@ for fidx, filename in enumerate(files):
 cqtsk = cqtIHTSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0})
 #cqtsk = CQTPeaksSketch(**{'n_octave':5,'freq_min':101.0, 'bins':12.0, 'downsample':8000.0})
 plt.figure()
-plt.subplot(221)
+plt.subplot(231)
 cqtsk.recompute(reals[0])
 cqtsk.represent(fig=plt.gcf())
-plt.subplot(222)
+plt.subplot(232)
 cqtsk.recompute(reals[1])
 cqtsk.represent(fig=plt.gcf())
-plt.subplot(223)
+plt.subplot(233)
 cqtsk.recompute(recs[0])
 cqtsk.represent(fig=plt.gcf())
-plt.subplot(224)
+plt.subplot(234)
 cqtsk.recompute(recs[1])
+cqtsk.represent(fig=plt.gcf())
+plt.subplot(235)
+cqtsk.recompute(recs[0]+real[0])
+cqtsk.represent(fig=plt.gcf())
+plt.subplot(236)
+cqtsk.recompute(recs[1]+real[1])
 cqtsk.represent(fig=plt.gcf())
 plt.show()
 
@@ -97,7 +150,7 @@ plt.show()
 #cqtsk.params['t_width']=50
 cqtsk.recompute(recs[0])
 cqtsk.sparsify(1000)
-cqtfgpt = CQTPeaksBDB(None, **{'max_neighbs'})
+cqtfgpt = CQTPeaksBDB(None)
 plt.figure()
 plt.subplot(211)
 plt.imshow(np.abs(cqtsk.fgpt()[0,:,:])>0)

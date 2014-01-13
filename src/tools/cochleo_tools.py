@@ -563,7 +563,7 @@ class Corticogram(object):
     def __init__(self, data, **kwargs):
      
         self.cor = None
-        self.params={'rv': [1, 2, 4, 8, 16, 32],
+        self.params={'rv': [1, 2, 4, 8, 16, 32],#[1, 8, 32],#'rv': [1, 2, 4, 8, 16, 32],
                      'sv' : [0.5, 1, 2, 4, 8]}
      
         for key in kwargs:
@@ -628,14 +628,14 @@ class Corticogram(object):
 #            x.insert(0,-r)
         max= np.max(np.abs(cor))            
         for i in range(cor.shape[0]):
-            for j in range(cor.shape[1]):                
-                plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
-                if j < cor.shape[1]/2:                    
-                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T,
-                               origin='lower',cmap=cm.bone_r,vmin=0, vmax=max)
-                else:
+            for j in range(cor.shape[1]/2):                
+                plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]/2) + j+1)
+#                if j < cor.shape[1]/2:                    
+#                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T,
+#                               origin='lower',cmap=cm.bone_r,vmin=0, vmax=max)
+                #else:
 #                if not binary: 
-                    plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r,vmin=0, vmax=max)
+                plt.imshow(np.abs(cor[i,(cor.shape[1])-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r,vmin=0, vmax=max)
 #                else:
 #                    plt.spy(cor[i,j + cor.shape[1]/2,:,:].T)
                 plt.xticks([])
@@ -753,24 +753,24 @@ class Quorticogram(Corticogram):
 #        for ind,r in enumerate(self.params['rv']):
 #            x.append(r)
 #            x.insert(0,-r)
-            
+        print cor.shape
         for i in range(cor.shape[0]):
-            for j in range(cor.shape[1]): 
-                print i,j               
-                plt.subplot( cor.shape[0], cor.shape[1], (i* cor.shape[1]) + j+1)
+            for j in range(cor.shape[1]/2): 
+                print i,j,cor.shape ,3*cor.shape[1]/2-j-1             
+                plt.subplot( cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + j+1)
                 if j < cor.shape[1]/2:                    
-                    plt.imshow(np.abs(cor[i,(cor.shape[1]/2)-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r)
+                    plt.imshow(np.abs(cor[i,j,:,:]).T, origin='lower',cmap=cm.bone_r) #(cor.shape[1]/2)-(j+1)
                 else:
 #                if not binary: 
-                    plt.imshow(np.abs(cor[i,j + cor.shape[1]/2,:,:]).T, origin='lower',cmap=cm.bone_r)
+                    plt.imshow(np.abs(cor[i,3*cor.shape[1]/2-(j+1),:,:]).T, origin='lower',cmap=cm.bone_r) # + cor.shape[1]/2
 #                else:
 #                    plt.spy(cor[i,j + cor.shape[1]/2,:,:].T)
                 plt.xticks([])
                 plt.yticks([])
-                plt.subplot(cor.shape[0], cor.shape[1]/2, j+1)
-                plt.title(str(self.params['rv'][j]))
-            plt.subplot(cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + 1)
-            plt.ylabel(str(self.params['sv'][i]))
+                #plt.subplot(cor.shape[0], cor.shape[1]/2, j+1)
+                #plt.title(str(self.params['rv'][j]))
+            #plt.subplot(cor.shape[0], cor.shape[1]/2, (i* cor.shape[1]/2) + 1)
+            #plt.ylabel(str(self.params['sv'][i]))
 #        plt.show()
         
 #        plt.figure()
@@ -1170,3 +1170,4 @@ def _cornorm(Z_cum, HH, N, N1, N2, M, M1, M2, NORM):
         yh[n, :] = R1[mdx1]    
     
     return yh * 2;
+    

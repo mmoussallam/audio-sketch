@@ -103,11 +103,11 @@ class CQTPeaksSketch(AudioSketch):
         else:
             ax = fig.gca()
             
-        plt.imshow(10*np.log10(np.abs(rep[0,:,:])),
+        plt.imshow(np.abs(rep[0,:,:]), #10*np.log10
                    aspect='auto',
                    interpolation='nearest',
                    origin='lower',
-                   cmap=cm.coolwarm,**kwargs)
+                   cmap=cm.bone_r,**kwargs)
         plt.xlabel('Time (s)')
         plt.xticks(x_tick_vec, ["%1.1f" % a for a in x_label_vec])
         plt.ylabel('Frequency')

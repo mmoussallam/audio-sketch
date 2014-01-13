@@ -3,10 +3,11 @@ tools.sinewave_tools  -  Created on Apr 18, 2013
 @author: M. Moussallam
 '''
 
-import sys
+import sys,os
 #sys.path.append('/home/manu/workspace/toolboxes/extractFormants/')
 #sys.path.append('/home/manu/workspace/toolboxes/extractFormants/bin/')
-here_path = '/home/manu/workspace/audio-sketch/src/tools'
+sys.path.append(os.environ['SKETCH_ROOT'])
+here_path = os.environ['SKETCH_ROOT']+'/src/tools'
 import os.path as op
 #from extractFormants import *
 
@@ -14,7 +15,7 @@ import os.path as op
 #def extract_formants(audio_file, n_formants=3):
 #    """ extract formants from the audio file """
 
-audio_file = '/sons/jingles/panzani.wav'
+audio_file = os.environ['SND_DB_PATH'] +'/jingles/panzani.wav'
 n_formants = 5
 maxFormant = 5
 time_step = 0.1

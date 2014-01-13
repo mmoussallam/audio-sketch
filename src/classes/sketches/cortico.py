@@ -17,7 +17,7 @@ class CorticoSketch(AudioSketch):
         
         self.params = {'n_bands': 64,
                        'shift':0,                       
-                       'rv':[1, 2, 4, 8, 16, 32],
+                       'rv':[1, 2, 4, 8, 16, 32],#[1, 8, 32], #'rv':[1, 2, 4, 8, 16, 32]
                        'sv':[0.5, 1, 2, 4, 8],
                        'pre_comp':None,
                        'rep_class': cochleo_tools.Corticogram}
