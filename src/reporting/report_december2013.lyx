@@ -98,9 +98,9 @@ dec.
 \end_layout
 
 \begin_layout Author
-M.
+L.
+ Cornu, M.
  Moussallam, L.
- Cornu L.
  Daudet
 \end_layout
 
@@ -125,35 +125,24 @@ Context of this study
 \end_layout
 
 \begin_layout Chapter
-Building Sketches
-\end_layout
-
-\begin_layout Section
-Overall Architecture
-\end_layout
-
-\begin_layout Subsection
-What is the sketch of a sound
-\end_layout
-
-\begin_layout Subsection
-Sketch properties
-\end_layout
-
-\begin_layout Itemize
-Size
-\end_layout
-
-\begin_layout Itemize
-Robustness
-\end_layout
-
-\begin_layout Itemize
-Recognizability
+Representations of Sounds
 \end_layout
 
 \begin_layout Section
 Time-Frequency Representations
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -172,6 +161,19 @@ Cochleograms
 Scale-Space Representations
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Laure
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Wavelet-based transform
 \end_layout
@@ -188,6 +190,19 @@ Quorticograms
 Other Representations
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 SineWave Speech
 \end_layout
@@ -198,6 +213,19 @@ Feature transforms
 
 \begin_layout Chapter
 Measuring similarities between sounds sketches using a Fingerprinting approach
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -241,11 +269,39 @@ Distances in the fingerprint domain
 \end_layout
 
 \begin_layout Chapter
-Results
+Experiments and results
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Laure
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
 Sparsity-based sketches
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Ici mettre les comparaisons entre Shazam et la même chose avec CQT/Cochleo
+ et IHT..
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -256,8 +312,52 @@ SineWave speech
 Finding invariants
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Ici mettre plein de figures : les corticogrammes sur les voix même phrase/locute
+ur diff , même locuteur/phrase diff etc..
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+What work and what don't
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Ici un récapitulatif de ce qui marche et de ce qui marche pas
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter*
-Future works
+And now..
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Laure/Manu
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section*
