@@ -8,7 +8,10 @@ import os.path as op
 import time
 from scipy.io import savemat
 import sys
-sys.path.append('../../..')
+#sys.path.append('../../..')
+import os
+from os import chdir
+chdir('/Users/loa-guest/Documents/Laure/audio-sketch')
 
 from src.classes.sketches.base import *
 from src.classes.sketches.bench import *

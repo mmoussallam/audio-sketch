@@ -1,0 +1,454 @@
+%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[french]{beamer}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+ % this default might be overridden by plain title style
+ \newcommand\makebeamertitle{\frame{\maketitle}}%
+ \AtBeginDocument{
+   \let\origtableofcontents=\tableofcontents
+   \def\tableofcontents{\@ifnextchar[{\origtableofcontents}{\gobbletableofcontents}}
+   \def\gobbletableofcontents#1{\origtableofcontents}
+ }
+ % plain title style, override default
+ \renewcommand\makebeamertitle{\frame[plain]{\maketitle}}%
+ \def\lyxframeend{} % In case there is a superfluous frame end
+ \long\def\lyxplainframe#1{\@lyxplainframe#1\@lyxframestop}%
+ \def\@lyxplainframe{\@ifnextchar<{\@@lyxplainframe}{\@@lyxplainframe<*>}}%
+ \long\def\@@lyxplainframe<#1>#2\@lyxframestop#3\lyxframeend{%
+   \frame<#1>[plain]{\frametitle{#2}#3}}
+ \long\def\lyxframe#1{\@lyxframe#1\@lyxframestop}%
+ \def\@lyxframe{\@ifnextchar<{\@@lyxframe}{\@@lyxframe<*>}}%
+ \def\@@lyxframe<#1>{\@ifnextchar[{\@@@lyxframe<#1>}{\@@@lyxframe<#1>[]}}
+ \def\@@@lyxframe<#1>[{\@ifnextchar<{\@@@@@lyxframe<#1>[}{\@@@@lyxframe<#1>[<*>][}}
+ \def\@@@@@lyxframe<#1>[#2]{\@ifnextchar[{\@@@@lyxframe<#1>[#2]}{\@@@@lyxframe<#1>[#2][]}}
+ \long\def\@@@@lyxframe<#1>[#2][#3]#4\@lyxframestop#5\lyxframeend{%
+   \frame<#1>[#2][#3]{\frametitle{#4}#5}}
+ \newenvironment{centercolumns}{\begin{columns}[c]}{\end{columns}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usetheme{Darmstadt}
+% or ...
+
+\setbeamercovered{transparent}
+% or whatever (possibly just delete it)
+
+\usecolortheme{dolphin}
+\usepackage{movie15}
+
+\makeatother
+
+\usepackage{babel}
+\addto\extrasfrench{%
+   \providecommand{\og}{\leavevmode\flqq~}%
+   \providecommand{\fg}{\ifdim\lastskip>\z@\unskip\fi~\frqq}%
+}
+
+\begin{document}
+
+
+
+
+
+\title[Esquisses et empreintes]{Esquisses Sonores }
+
+
+\subtitle{Réunion d'avancement projet Sketch 2}
+
+
+\author{M. Moussallam}
+
+
+\date[26 avril 2013]{26 avril 2013}
+
+\makebeamertitle
+
+\lyxframeend{}
+
+
+
+%\logo{\includegraphics[height=0.5cm]{institution-logo-filename}}
+
+
+
+
+%\pgfdeclareimage[height=0.5cm]{institution-logo}{institution-logo-filename}
+%\logo{\pgfuseimage{institution-logo}} 
+
+
+
+\AtBeginSection[]{
+
+  \frame<beamer>{ 
+
+    \frametitle{Plan}   
+
+    \tableofcontents[currentsection,currentsubsection,hideothersubsections] 
+% Vous pouvez, si vous le souhaitez ajouter l'option [pausesections]
+  }
+
+}
+
+
+
+%\beamerdefaultoverlayspecification{<+->}
+
+
+\lyxframeend{}\lyxplainframe{Sommaire}
+
+\tableofcontents{}
+
+
+
+
+\lyxframeend{}\section{Introduction}
+
+
+\lyxframeend{}\subsection[Problème central]{Esquisses}
+
+
+\lyxframeend{}\lyxframe{Qu'est-ce qu'une esquisse?}
+
+Simplification d'un objet qui ne perturbe pas (trop) son identification
+\begin{centercolumns}%{}
+
+
+\column{3cm}
+
+
+\begin{center}
+\includegraphics[width=3cm]{figures/orig_daudet}
+\par\end{center}
+
+
+\column{3cm}
+
+
+\begin{center}
+{\Huge $\rightarrow$}
+\par\end{center}{\Huge \par}
+
+
+\column{3cm}
+
+
+\begin{center}
+\includegraphics[width=3cm]{figures/sketch_daudet}
+\par\end{center}
+
+\end{centercolumns}%{}
+
+\lyxframeend{}\lyxframe{Identifiabilité?}
+
+
+\framesubtitle{dépend du contexte}
+\begin{centercolumns}%{}
+
+
+\column{3cm}
+
+
+\begin{center}
+\includegraphics[width=3cm]{figures/sketch_pressnitzer}
+\par\end{center}
+
+
+\column{3cm}
+
+
+\begin{center}
+{\Huge $\rightarrow$}
+\par\end{center}{\Huge \par}
+
+
+\column{3cm}
+
+
+\begin{center}
+{\Huge ?}
+\par\end{center}{\Huge \par}
+
+\end{centercolumns}%{}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Équivalent pour des sons?}
+\begin{centercolumns}%{}
+
+
+\column{3cm}
+
+
+\begin{center}
+Son original complexe
+\par\end{center}
+
+
+\column{3cm}
+
+
+\begin{center}
+{\Huge $\rightarrow$}
+\par\end{center}{\Huge \par}
+
+
+\column{3cm}
+
+
+\begin{center}
+Son simplifié : Esquisse
+\par\end{center}
+
+
+\end{centercolumns}%{}
+
+\pause{}
+
+\begin{center}
+Quels sont les \textcolor{red}{traits caractéristiques} des sons?
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Traits caractéristiques des sons}
+\begin{block}
+{Traits statiques}
+\begin{itemize}
+\item Locuteur, instrument : nature de la source sonore
+\item Réverbérations, condition d'enregistrement
+
+
+Information \textcolor{red}{contextuelle}
+
+\end{itemize}
+\end{block}
+
+\pause{}
+\begin{block}
+{Traits dynamiques}
+\begin{itemize}
+\item Phonèmes, Rythmes, Intervalles : variation temps-fréquence
+
+
+Information \textcolor{red}{intrinsèque}
+
+\end{itemize}
+\end{block}
+
+\lyxframeend{}\subsection{Représentations}
+
+
+\lyxframeend{}\lyxframe{Représentations de scènes sonores}
+
+
+\framesubtitle{Analyse temps-fréquence}
+
+\begin{center}
+\includegraphics[width=8cm]{figures/Example_3atoms_mdct}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Représentations de scènes sonores}
+
+
+\framesubtitle{Analyse temps-fréquence}
+
+\begin{center}
+\includegraphics[width=10cm]{figures/glocs_spectro}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Représentations de scènes sonores}
+
+
+\framesubtitle{\og He saw only the effects in a general, sketchy way \fg{}}
+
+\begin{center}
+\includegraphics[width=6cm]{figures/voice_0_spectro}\includegraphics[width=6cm]{figures/voice_1_spectro}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\subsection{Problématiques}
+
+
+\lyxframeend{}\lyxframe{Problématiques}
+\begin{itemize}
+\item Caractérisation de la similarités de scènes sonores à partir de l'étude
+des invariants et des structures
+\item Comment créer une esquisse d'une scène sonore, qui ne conserve que
+les traits caractéristiques ?
+\end{itemize}
+
+\lyxframeend{}\section{Esquisses sonores}
+
+
+\lyxframeend{}\subsection{Exemples}
+
+
+\lyxframeend{}\lyxframe{Exemples}
+
+
+\framesubtitle{Original}
+
+\begin{center}
+\begin{figure}[ht] 
+\includemovie[poster,mouse=true,controls=true]{5mm}{5mm}{audio/original_panzani.wav} 
+\end{figure}\includegraphics[width=10cm]{figures/original_panzani}
+\par\end{center}
+
+
+\lyxframeend{}\lyxframe{Exemples}
+
+
+\framesubtitle{Sélection des maxima d'énergie Temps-fréquence}
+\begin{overprint}
+
+
+\only<1>{Sélection globale:
+
+
+\includegraphics[width=10cm]{figures/sketchified_STFTDumbPeaksSketch}}
+
+
+\only<2>{Sélection locale:
+
+
+\includegraphics[width=10cm]{figures/sketchified_STFTPeaksSketch}}
+
+\end{overprint}
+
+\lyxframeend{}\subsection{Propriétés}
+
+
+\lyxframeend{}\lyxframe{Propriétés}
+\begin{itemize}
+\item Dimension
+\item Robustesse 
+\item Identifiabilité
+\item Complexité
+\end{itemize}
+
+\lyxframeend{}\section{Objectifs et Moyen}
+
+
+\lyxframeend{}\subsection{Comparaisons d'esquisse}
+
+
+\lyxframeend{}\lyxframe{Comparaison d'esquisse}
+\begin{itemize}
+\item Construction de Signatures (Fingerprints) :
+
+\begin{itemize}
+\item Méthode Shazam
+\item Variantes
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}\lyxframe{Choix du système de comparaison}
+\begin{itemize}
+\item Beaucoup de clés simples : recherche de correspondances exactes :
+comptage du nombre de clés en commun. Ce choix implique l'utilisation
+de bases de données type classique
+\item Hâchage global : distance dans l'espace des descripteurs : nécessite
+l'utilisation de techniques de type LSH
+\end{itemize}
+En fonction du type de sketch considéré : l'une ou l'autre peut s'avérer
+avantageuse
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Longueur des sons}
+\begin{itemize}
+\item Quelques secondes ? quelques millisecondes ?
+\item Faculté de reconnaissance des sons dépend de cette longueur, du contexte.
+Dans sketch 1: 1 à 2 secondes
+\item Longueur moyenne typique jingles
+\end{itemize}
+
+\lyxframeend{}\subsection{Mise au jour des structures}
+
+
+\lyxframeend{}\lyxframe{Outil d'analyse structurés}
+\begin{itemize}
+\item Parcimonie structurée
+\item Modélisation probabiliste
+\item Réinjection dans la boucle de comparaison
+\end{itemize}
+
+\lyxframeend{}\subsection{Objectifs raisonnables}
+
+
+\lyxframeend{}\lyxframe{Objectifs raisonnables}
+\begin{itemize}
+\item Cartographie des forces/faiblesses des différents procédés de construction
+d'esquisse
+\item Identification de structures caractéristiques
+\item Procédé d'esquisse ayant les propriétés souhaitées (en particulier
+pour le priming)
+\end{itemize}
+
+\lyxframeend{}\section{Travaux en cours}
+
+
+\lyxframeend{}\subsection{Protocole de comparaisons d'esquisse}
+
+
+\lyxframeend{}\lyxframe{Ordre de grandeurs}
+\begin{itemize}
+\item Taille des bases de données
+\item Nombre d'esquisses 
+\item Type de signature
+\item Référent : Méthode Shazam - de facto standard industriel
+\end{itemize}
+
+\lyxframeend{}\subsection{Synthèse concaténative}
+
+
+\lyxframeend{}\lyxframe{Synthèse par plus proches voisins}
+\begin{itemize}
+\item Travail en commun avec A. Liutkus
+\item Publication de conférence ACM Multimedia - et peut être ISMIR 2013
+\end{itemize}
+
+\lyxframeend{}\subsection{Modèles de parcimonie structurée}
+
+
+\lyxframeend{}\lyxframe{Modèles de parcimonie structurée}
+\begin{itemize}
+\item Analyse de motifs de co-occurrence
+\item Apprentissage par réseaux de neurones
+\end{itemize}
+
+\lyxframeend{}\lyxframe{Résumé}
+\begin{itemize}
+\item Exploration exhaustive d'une constellation de procédés de construction
+d'esquisse
+\item Identification de marqueurs, d'invariants
+\item But: meilleur choix pour une tâche de priming
+\end{itemize}
+
+\lyxframeend{}
+\end{document}

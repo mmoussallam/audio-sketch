@@ -9,7 +9,7 @@ import struct
 from src.classes.fingerprints.base import *
 import PyMP
 from PyMP.approx import Approx
-
+import itertools
 class STFTPeaksBDB(FgptHandle):
     ''' handling the fingerprints based on a pairing of STFT peaks 
     
@@ -124,7 +124,7 @@ class STFTPeaksBDB(FgptHandle):
 
         return estTime, fileIdx
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False,ax=None):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False,ax=None,color='k'):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -148,9 +148,10 @@ class STFTPeaksBDB(FgptHandle):
             peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
             
             target_Imin = max(0,peak_ind[0]+self.params['TZ_delta_f'])
-            target_Imax = min(sparse_stft.shape[1],peak_ind[0]+self.params['TZ_delta_f']+f_target_width);
-            target_Jmin = max(0,peak_ind[1]+self.params['TZ_delta_t']);
-            target_Jmax = min(sparse_stft.shape[2],peak_ind[1]+self.params['TZ_delta_t']+t_target_width);
+            target_Imax = min(sparse_stft.shape[1],
+                              peak_ind[0]+self.params['TZ_delta_f']+f_target_width)
+            target_Jmin = max(0,peak_ind[1]+self.params['TZ_delta_t'])
+            target_Jmax = min(sparse_stft.shape[2],peak_ind[1]+self.params['TZ_delta_t']+t_target_width)
 #            print peak_ind,target_Imin,target_Imax,target_Jmin,target_Jmax
             target_points_i, target_points_j = np.nonzero(sparse_stft[0,
                                                         target_Imin: target_Imax,
@@ -167,7 +168,7 @@ class STFTPeaksBDB(FgptHandle):
                 if f1==f2 and delta_t==0:
                     continue
                 if display:    
-                    ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+                    ax.arrow(t1, f1, delta_t, f2-f1, head_width=0.05, head_length=0.1, fc=color, ec=color)
 #                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
 #                
 #                print (f1, f2, delta_t) , t1
@@ -220,8 +221,121 @@ class STFTPeaksBDB(FgptHandle):
     def draw_fgpt(self, fgpt, params, ax=None):
         """ Draw the fingerprint """
         self._build_pairs(fgpt, params, 0, display=True, ax=ax)
+    
         
+    def draw_keys(self, keys_values, ax=None, color='r'):
+        if ax is None:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111) 
+        for key, value in keys_values:
+            ax.arrow(value, key[0], key[2], key[1]-key[0], head_width=0.05, head_length=0.1, fc=color, ec=color)
+  
+
+class STFTPeaksTripletsBDB(STFTPeaksBDB):
+    ''' handling the fingerprints based on a pairing of Cochleogram peaks 
+    
+    Most of the methods are the same as STFTPeaksBDB so inheritance is natural
+    Only the pairing may be different since the peak zones may not be TF squares
+            
+    '''        
+    def __init__(self, dbName, load=False, persistent=None,dbenv=None,
+                 **kwargs):
+        # Call superclass constructor        
+        super(STFTPeaksTripletsBDB, self).__init__(dbName, load=load,
+                                                   persistent=persistent,dbenv=dbenv, **kwargs)
+    
+        self.params['min_dist'] = 4
+    
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
+        ''' internal routine to build key/value pairs from sparse STFT
+        given the parameters '''
+        keys = []
+        values = []
         
+        peak_indexes = np.nonzero(sparse_stft[0,:,:])
+        
+        f_target_width = 3*params['f_width']
+        t_target_width = 3*params['t_width']            
+        freq_step = float(params['fs'])/float(params['scale'])
+        time_step = float(params['step'])/float(params['fs'])
+
+        
+        if display:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+            
+            ax.spy(sparse_stft[0,:,:], cmap=cm.bone_r, aspect='auto')
+        
+#        print "Params : ",f_target_width,t_target_width,time_step
+        # then for each of them look in the target zone for other
+        for pIdx in range(len(peak_indexes[0])):
+            peak_ind = (peak_indexes[0][pIdx], peak_indexes[1][pIdx])
+            
+            target_Imin = max(0,peak_ind[0]+self.params['TZ_delta_f'])
+            target_Imax = min(sparse_stft.shape[1],
+                              peak_ind[0]+self.params['TZ_delta_f']+f_target_width)
+            target_Jmin = max(0,peak_ind[1]+self.params['TZ_delta_t'])
+            target_Jmax = min(sparse_stft.shape[2],
+                              peak_ind[1]+self.params['TZ_delta_t']+t_target_width)
+#            print peak_ind,target_Imin,target_Imax,target_Jmin,target_Jmax
+            target_points_i, target_points_j = np.nonzero(sparse_stft[0,
+                                                        target_Imin: target_Imax,
+                                                        target_Jmin: target_Jmax])
+            # in j are the ordered times, and in i are the corresponding frequencies
+            # now we can build a pair of peaks , and thus a key
+            if isinstance(target_points_i,int):
+                continue
+            for b in itertools.combinations(range(target_points_j.shape[0]),2):
+                                # TODO parameterize for now forbid close neighbors
+                dx =  abs(target_points_j[b[0]]- target_points_j[b[1]])
+                dy =  abs(target_points_i[b[0]]- target_points_i[b[1]])
+                if dx+dy<self.params['min_dist']:
+                    continue
+#                print f_vec[peak_ind[0]],f_vec.shape , peak_ind[0], target_points_i[i]
+#                f1 = np.round(float(peak_ind[0]) *freq_step)
+#                f2 = np.round(float(target_points_i[i]+target_Imin) * freq_step)
+                f1 = int(peak_ind[0]*freq_step)
+                delta_f1 = floor((target_points_i[b[0]]) *freq_step)
+                delta_f2 = floor((target_points_i[b[1]]) *freq_step)
+                if delta_f2 == 0.0:
+                    ratio_delta_f = -1.0
+                else:
+                    ratio_delta_f = delta_f1/delta_f2
+                
+                t1 = float(peak_ind[1]) *time_step
+                if target_points_j[b[1]] == 0.0:
+                    ratio_delta_t = -1.0
+                else:
+                    ratio_delta_t = float(target_points_j[b[0]])/float(target_points_j[b[1]])
+                
+                delta_t1 = (float(target_points_j[b[0]]) *time_step)
+                delta_t2 = (float(target_points_j[b[1]]) *time_step)
+                
+#                # discard points that are too closely located
+
+
+#                print f1,delta_f1, delta_f2, delta_t1, delta_t2
+                keys.append((f1, ratio_delta_f, ratio_delta_t))
+                values.append((t1 + offset, delta_t1, delta_f1, delta_t2, delta_f2))
+        return keys, values
+
+    def draw_keys(self, keys_values, ax=None, color='r'):
+        if ax is None:
+            import matplotlib.pyplot as plt
+            import matplotlib.cm as cm
+            if ax is None:        
+                fig = plt.figure()
+                ax = fig.add_subplot(111) 
+        for key, value in keys_values:
+            ax.arrow(value[0], key[0], value[1], value[2], head_width=0.05, head_length=0.1, fc=color, ec=color)
+            ax.arrow(value[0], key[0], value[3], value[4], head_width=0.05, head_length=0.1, fc=color, ec=color)
+    
         
 class XMDCTBDB(FgptHandle):
     '''
@@ -448,7 +562,7 @@ class SparseFramePairsBDB(STFTPeaksBDB):
         self.params['delta_f_bits'] = 6 # in hertz
         self.params['delta_t_max'] = 0.5
         self.params['delta_t_min'] = 0.05
-        self.params['time_res'] = 1
+        self.params['time_res'] = 1.0
         self.params['freq_res'] = 22
         self.params['nb_neighbors_max'] = 5
         
@@ -469,7 +583,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
        self.params['key_total_nbits'],self.params['time_res'], self.params['freq_res'])
             
 
-    def _build_pairs(self, sparse_rep, params, offset=0, display=False,ax=None):
+    def _build_pairs(self, sparse_rep, params, offset=0, display=False,ax=None,color='k'):
         """ build pairs given a PyMP.approx object: need to find 
             pairs.. first idea: take every pairwise combination """
         keys = []
@@ -510,7 +624,7 @@ Resolution: Time: %1.3f (s) %2.2f Hz
                 if display:          
 #                    print  t_anchor, f1, neighb_t - t_anchor, neighb_f - f1    
 #                    ax.arrow(120,120,50,50,head_width=0.05, head_length=0.1, fc='k', ec='k')  
-                    ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc='k', ec='k')
+                    ax.arrow(t_anchor, f1, neighb_t - t_anchor, neighb_f - f1, head_width=0.05, head_length=0.1, fc=color, ec=color)
 #                
 #                print (f1,  neighb_f-f1, neighb_t - t_anchor) , t_anchor
                 j += 1

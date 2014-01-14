@@ -3,6 +3,9 @@ classes.sketches.cochleosketch  -  Created on Jul 25, 2013
 @author: M. Moussallam
 '''
 
+import os, sys
+SKETCH_ROOT = os.environ['SKETCH_ROOT']
+sys.path.append(SKETCH_ROOT)
 from src.classes.sketches.base import *
 from src.tools import  cochleo_tools
 
@@ -157,7 +160,7 @@ class CochleoPeaksSketch(CochleoSketch):
             raise ValueError("Sparsity must be between 0 and 1 if a ratio or greater for a value")
         elif sparsity < 1:
             # interprete as a ratio
-            sparsity *= np.sum(self.rep.shape)
+            sparsity *= np.prod(self.rep.shape)
 #        else:
             # otherwise the sparsity argument take over and we divide in
             # the desired number of regions (preserving the bin/frame ratio)
@@ -187,7 +190,7 @@ class CochleoPeaksSketch(CochleoSketch):
 class CochleoIHTSketch(CochleoSketch):
     """ Iterative Hard Thresholding on an auditory spectrum 
     
-    Inherit from CochleoSketch and only implements a different sparisication
+    Inherit from CochleoSketch and only implements a different sparsification
     method
     """
     def __init__(self, original_sig=None, **kwargs):
@@ -209,7 +212,7 @@ class CochleoIHTSketch(CochleoSketch):
     def sparsify(self, sparsity, **kwargs):
         """ sparsification is performed using the 
         Iterative Hard Thresholding Algorithm """
-        L = sparsity
+        
         if  self.cochleogram.y5 is None:
             self.cochleogram.build_aud()
         
@@ -217,8 +220,13 @@ class CochleoIHTSketch(CochleoSketch):
             self.params[key] = kwargs[key]
         
         cand_rep = np.array(self.cochleogram.y5)
-            
+          
         A = np.zeros(cand_rep.shape)
+        
+        if sparsity>1.0:
+            L = sparsity
+        else:
+            L = sparsity * np.prod(A.shape)
         original = self.cochleogram.invert(nb_iter=1, init_vec=self.cochleogram.data)
         original /= np.max(original)
         original *= 0.9
@@ -234,14 +242,14 @@ class CochleoIHTSketch(CochleoSketch):
                 projection = np.array(res_coch.y5)
             else:
                 projection = cand_rep
-            # sort the elements            
+            # sort the elements    
             A_buff = A + projection
             A_flat = A_buff.flatten()
             idx_order = np.abs(A_flat).argsort()
             A = np.zeros(A_flat.shape)
             A[idx_order[-L:]] = A_flat[idx_order[-L:]]
-            A = A.reshape(A_buff.shape)
-                
+            
+            A = A.reshape(A_buff.shape)             
             rec_a = res_coch.invert(v5=A, init_vec=original,
                                     nb_iter=self.params['n_inv_iter'])
 
@@ -255,10 +263,10 @@ class CochleoIHTSketch(CochleoSketch):
         self.sp_rep = A
         self.rec_a = rec_a
     
-    def synthesize(self, sparse = False):
+    def synthesize(self, sparse = False, cheat=False):
         ''' synthesize the sparse rep or the original rep?'''
         if sparse:
-            if self.rec_a is not None:
+            if self.rec_a is not None and cheat:
                 return Signal(self.rec_a, self.orig_signal.fs)
             v5 = self.sp_rep
         else:

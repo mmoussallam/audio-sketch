@@ -43,7 +43,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
         # BUGFIX remove the ceiling function cause it causes all values to be zeroes
         self.gamma = self.params['delta_t_max']/(2**self.params['dt_n_bits']-1)
     
-    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None):
+    def _build_pairs(self, sparse_stft, params, offset=0, display=False, ax =None, color='k'):
         ''' internal routine to build key/value pairs from sparse STFT
         given the parameters '''
         keys = []
@@ -91,7 +91,7 @@ class CochleoPeaksBDB(STFTPeaksBDB):
                     continue
                 
                 if display:                    
-                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc='k', ec='k')
+                    ax.arrow(peak_ind[1], peak_ind[0],target_points_j[i], target_points_i[i], head_width=0.05, head_length=0.1, fc=color, ec=color)
 #                print (f1, f2, delta_t) , t1
                 keys.append((f1, f2, delta_t))
                 values.append(t1 + offset)

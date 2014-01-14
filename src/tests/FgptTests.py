@@ -7,27 +7,9 @@ are correctly implemented
 @author: M. Moussallam
 '''
 import unittest
-import os
-import sys
-import numpy as np
-import os.path as op
-import matplotlib.pyplot as plt
-
-sys.path.append('../..')
-
-from src.classes.sketches.base import *
-from src.classes.sketches.bench import *
-from src.classes.sketches.cortico import *
-from src.classes.sketches.cochleo import *
-
-
-from src.classes.fingerprints import *
-from src.classes.fingerprints.bench import *
-from src.classes.fingerprints.cortico import *
-from src.classes.fingerprints.cochleo import *
-from src.classes.fingerprints.CQT import *
-
-from PyMP.signals import LongSignal, Signal
+import sys, os
+sys.path.append(os.environ['SKETCH_ROOT'])
+from src.settingup import *
 
 #from joblib import Memory
 #mem = Memory(cachedir='/tmp/fgpt')
@@ -48,16 +30,26 @@ fgpt_sketches = [
 #     STFTPeaksSketch(**{'scale':2048, 'step':512})), 
 #   (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
 #    CochleoPeaksSketch(**{'fs':8000,'step':128,'downsample':8000})),
-#     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
-#      XMDCTSparseSketch(**{'scales':[1024,8192],'n_atoms':1,
-#                                 'nature':'SpreadMDCT'})),
-    (SparseFramePairsBDB('xMdctPairs.db', load=False,**{'wall':False}),
-      XMDCTSparsePairsSketch(**{'scales':[64,512,4096],'n_atoms':1,
-                                 'nature':'LOMDCT'})),
+##     (XMDCTBDB('xMdct.db', load=False,**{'wall':False}),
+##      XMDCTSparseSketch(**{'scales':[ 4096],'n_atoms':150,
+##                                 'nature':'LOMDCT'})),
+#                     (CochleoPeaksBDB(None, **{'wall':False}),
+#                     CochleoPeaksSketch(**{'fs':8000.0,'step':128,'downsample':8000.0,'frmlen':6})),
 #    (CQTPeaksBDB('CQTPeaks.db', **{'wall':False}),
-#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                          
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000})),  
+# (CQTPeaksTripletsBDB(None, **{'wall':False}),
+#     CQTPeaksSketch(**{'n_octave':5,'freq_min':101, 'bins':12.0,'downsample':8000}))                        
 #        (CorticoIndepSubPeaksBDB('Cortico_subs', **{'wall':False}),
-#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000}))                                             
+#         CorticoIndepSubPeaksSketch(**{'fs':8000,'frmlen':8,'downsample':8000})) 
+#    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+#     CorticoSubPeaksSketch(**{'fs':8000,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+#                       'sv':[0.5, 1],})) 
+     (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CorticoSubPeaksSketch(**{'fs': 8000, 'max_iter':5,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+                       'sv':[0.5, 1],'rep_class': cochleo_tools.Quorticogram,'n_octave':6,'freq_min':101.0, 'bins':12.0, 'downsample':8000})),
+    (CochleoPeaksBDB('CochleoPeaks.db', **{'wall':False}),
+     CorticoSubPeaksSketch(**{'fs': 8000, 'max_iter':5,'frmlen':8,'sub_slice':(0,0),'rv':[1, 2],
+                       'sv':[0.5, 1],'rep_class': cochleo_tools.Quorticogram,'n_octave':6,'freq_min':101.0, 'bins':12.0, 'downsample':8000}))                                            
                     ]
 
 
@@ -93,7 +85,7 @@ class FgptTest(unittest.TestCase):
 #                print "sketchify the segment %d" % segIdx 
                 # run the decomposition                        
                 skhandle.recompute(pySigLocal)
-                skhandle.sparsify(150)
+                skhandle.sparsify(50)
                 fgpt = skhandle.fgpt()
 #                print "Populating database with offset " + str(segIdx * segmentLength / sig.fs)
                 fgpthandle.populate(fgpt, skhandle.params, fileIndex, offset=segIdx*segDuration)
@@ -103,7 +95,7 @@ class FgptTest(unittest.TestCase):
     def add_get_test(self, skhandle, fgpthandle, display=False):
         # Initialize the sketch handle
         skhandle.recompute(single_test_file1)
-        skhandle.sparsify(20)
+        skhandle.sparsify(100)
         print "Calling sketch handle fgpt method"
         fgpt = skhandle.fgpt(sparse=True)
         params = skhandle.params
@@ -130,7 +122,7 @@ class FgptTest(unittest.TestCase):
         hist = fgpthandle.retrieve(fgpt, skhandle.params, nbCandidates=2)
         
         assert hist is not None
-        print hist.shape
+#        print hist.shape
         print "Score for first is %d Score for second is %d"%(np.max(hist[:,0]),
                                                               np.max(hist[:,1]))
         
@@ -185,7 +177,7 @@ class FgptTest(unittest.TestCase):
             true_sig.crop(0, 5.0*true_sig.fs)
             skhandle.recompute(true_sig)
             skhandle.sparsify(150)    
-            test_fgpt = skhandle.fgpt(sparse=False)
+            test_fgpt = skhandle.fgpt()
         
             hist =  fgpthandle.retrieve(test_fgpt, skhandle.params, nbCandidates=8)
             
