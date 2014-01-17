@@ -86,6 +86,7 @@ def cqtS(signal, noyauatrous, K, freq_min, bins,overl):
     return cqt,f_cal,t_cal
     
 def cqt_d(signal_data,noyauatrous,K,freq_min,bins,overl):
+    # cqt with signal_data is a np.matrix input
     signal_data = signal_data.flatten(1)
     wdw_size = noyauatrous.shape[0]    
     cqt_l = int((signal_data.shape[0]-wdw_size)/overl)+1
