@@ -1,0 +1,3108 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass report
+\use_default_options true
+\begin_modules
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement H
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 3cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 2
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 2
+\paperpagestyle headings
+\bullet 0 1 1 -1
+\bullet 1 0 31 -1
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Technical report on project Sketch II
+\end_layout
+
+\begin_layout Date
+dec.
+ 2013
+\end_layout
+
+\begin_layout Author
+M.
+ Moussallam, L.
+ Cornu L.
+ Daudet
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Context of this study
+\end_layout
+
+\begin_layout Chapter
+Representation of sound
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Time-Frequency Representations
+\end_layout
+
+\begin_layout Subsection
+Linear Fourier : STFT
+\end_layout
+
+\begin_layout Standard
+The standard Short-Term Fourier Transform (STFT) is a lapped transform using
+ a standard Fourier transform on overlapping (often windowed) segments.
+ Let 
+\begin_inset Formula $w$
+\end_inset
+
+ be a window of size 
+\begin_inset Formula $L$
+\end_inset
+
+, the STFT of 
+\begin_inset Formula $x$
+\end_inset
+
+ is indexed in time by the frame (i.e.
+ segment) index 
+\begin_inset Formula $p$
+\end_inset
+
+ (
+\begin_inset Formula $0\leq p\leq P-1)$
+\end_inset
+
+ and in frequency by 
+\begin_inset Formula $k$
+\end_inset
+
+ (
+\begin_inset Formula $0\leq k\leq k-1)$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+R_{STFT}(x)[p,k]=\frac{1}{\gamma}\sum_{n=0}^{L-1}w[n]\cdot x[n-n_{p}]\cdot\exp\left(-2j\pi k\frac{n}{L}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ is a normalization factor and 
+\begin_inset Formula $n_{p}$
+\end_inset
+
+ is the step between two consecutively analyzed frames.
+ The STFT is a complex representation, in order to visualize and /or manipulate,
+ one usually consider the logarithm of its magnitude.
+ This is referred to as the spectrogram of 
+\begin_inset Formula $x$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+R_{Spectrogram}(x)=\log\left(|R_{STFT}(x)|\right)
+\]
+
+\end_inset
+
+properties:
+\end_layout
+
+\begin_layout Enumerate
+The STFT has a fixed and linear both in time and frequency resolution.
+\end_layout
+
+\begin_layout Enumerate
+The STFT is perfectly invertible, provided the Constant Overlap-Add condition
+ is fulfilled, meaning basically that the windows are smooth enough and
+ must sum to one.
+ In practice this is obtained by choosing a Hann window for 
+\begin_inset Formula $w$
+\end_inset
+
+ and ensuring an overlap of 50% or more (i.e.
+ 
+\begin_inset Formula $n_{p}\leq\frac{L}{2}$
+\end_inset
+
+).
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manumouss/workspace/audio-sketch/src/reporting/figures/exemple_stft.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Spectrogram (Logarithm of the magnitude of the Short Time Fourier Transform)
+ of an audio excerpt.
+ Darker regions are more energetic.
+ The Time/Frequency resolution obeys a compromise that is controlled by
+ the analysis window size.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Logarithmic: CQT
+\end_layout
+
+\begin_layout Standard
+The constant-Q transform is a signal Time/Frequency representation in which
+ the frequency scale is logarithmic.
+ The CQT can be considered as a bank of filters in witch the quality factor
+ Q remains constant:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\mathrm{Q=\frac{f_{k}}{\Delta f}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\begin_inset Formula $\mathrm{f_{k}}$
+\end_inset
+
+ being the natural frequency of the filter and 
+\begin_inset Formula $ $
+\end_inset
+
+
+\begin_inset Formula $\mathrm{\Delta f_{k}}$
+\end_inset
+
+ the bandwidth of the resonant frequency.
+ In order to keep the quality factor Q constant over the different frequencies,
+ the lengths 
+\begin_inset Formula $L_{k}$
+\end_inset
+
+ of the filters are dyadic and inversement proportional to the resonant
+ frequencies.
+ The representation is defined by:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+R_{CQT}(x)[k]=\frac{1}{L_{k}}\sum_{n=0}^{^{L_{k}-1}}w_{k}[n].x[n]exp\left(-2j\pi n\frac{f_{k}}{f_{s}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $w_{k}$
+\end_inset
+
+ is a hann window determining the length of the filter centred in 
+\begin_inset Formula $f_{k}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{s}$
+\end_inset
+
+ is the sampling rate.
+\end_layout
+
+\begin_layout Standard
+The frequency scale can be chosen in order to fit with the MIDI musical
+ scale, then intervals correspond to the semitone scale (frequencies of
+ notes in a 12-tone scale).
+ That property made this representation often use in musical signal analysis.
+ The note A4, witch correspond to the frequency 440Hz is defined by the
+ index 69 in the MIDI scale, by using the relation above, we fit the frequency
+ scale to the MIDI scale:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+midi(f)=69+12log_{2}\left(\frac{f}{440}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cqtIHT.png
+	scale 50
+	rotateOrigin center
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Constant Q Transform (magnitude of the output of constant-Q filters) of
+ the phrase 'we will have to watch our chances'.
+ darker regions are more energetic.
+ The Time/Frequency resolution depends on the frequency.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The advantage of CQT is that it is an invertible representation.
+ The problem is that to keep the property of invertibility, the temporal
+ step between two analyzed frames have to be smaller than the half-window
+ of the higher frequency (which can be very small, about 1millisecond for
+ a frequency of 16kHz).
+ This led to high cost in calculation.
+\end_layout
+
+\begin_layout Subsection
+Cochleograms
+\end_layout
+
+\begin_layout Standard
+The auditory system is thought to contain an array of over-lapping band-pass
+ filters known as ‘auditory filters’.
+ They occur along the basilar membrane and increase the frequency selectivity
+ of the cochlea and therefore the listener’s discrimination between different
+ sounds.
+ Cochleograms model the output of the auditory filters.
+ This transformation is mainly similar that the one use for the CQT, but
+ using a real auditory response filter as the filter banks.
+ The difference is the non-symmetricalness of auditory filters.
+ A auditory filter centered in the frequency 
+\begin_inset Formula $f_{c}$
+\end_inset
+
+ is writing in the time domain as:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+gt(t)=at^{(n-1)}exp\left(-2\pi bt\right)cos\left(2\pi f_{c}t+\phi\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+it is basically a cosine widowed by a non-symmetric widows that is the product
+ of a power term and a decreasing exponential.
+ The parameters of each filters mainly control the duration end therefore
+ the bandwidth.
+ In this study we used the same set of coefficients filter as in existing
+ software (i.e the NSL toolbox).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/cochleoPP.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Cochleogram (absolute value) of the phrase 'we will have to watch our chances'.
+ darker regions are more energetic.
+ The frequency scale is logaithmic and the Time/Frequency resolution is
+ frequency dependent.
+ according to the human sensitivity, low and high frequencies magnitude
+ are lowered.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Cochleogram is the representation in Time/Frequency of the output of
+ the magnitude of auditory filters.
+ We can see in the next figure that they emphasize the magnitude over the
+ frequency spectrum according to the human sensivity of tones.
+ A nice introduction can be found in []...
+\end_layout
+
+\begin_layout Section
+Scale-Space Representations
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+laure
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Wavelet-based transform
+\end_layout
+
+\begin_layout Standard
+As we seen in the previous part, the resolution of time and frequency in
+ a STFT representation obey to a firm compromise established for the need
+ of analysis.
+ In order to get a good resolution in time we need to use sharp windows
+ that will affect the resolution of frequencies.
+ The inverse is true, a good resolution in frequencies imply a long analyzed
+ window decreasing the time resolution.
+ But having a good resolution for the both of them is not possible, this
+ property is related to the Heisenberg uncertainty principle.
+ Somehow the wavelet were developed to resolve this problem.
+ 
+\end_layout
+
+\begin_layout Standard
+The wavelet analysis was introduced by J.
+ Morlet.
+ It is not based on a representation of frequencies but in transitory component
+ over time.
+ In this idea, the wavelet transform decompose the signal in different scaled
+ and translated versions of a 
+\shape italic
+mother wavelet
+\shape default
+.
+ The mother wavelet is a function 
+\begin_inset Formula $\psi$
+\end_inset
+
+ 
+\begin_inset Formula $\in L\mathbf{^{2}(\mathrm{\mathbb{R}})}$
+\end_inset
+
+, zero mean, normalized, centered in 
+\begin_inset Formula $t=0$
+\end_inset
+
+, the shape is adapted on what we want to analyze.
+ In audio signal we often use a windowed sinusoid.
+\end_layout
+
+\begin_layout Standard
+A set of Frequency/Time atoms, are obtained by a scaling 
+\begin_inset Formula $s$
+\end_inset
+
+, and a translation 
+\begin_inset Formula $u$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{u,s}(t)=\frac{1}{\sqrt{s}}\psi\left(\frac{t-u}{s}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The weight of each of these scaled and translated version of the mother
+ wavelet form the wavelet transform of the signal.
+ It is a function of two variables, time and scale and give an alternative
+ representation on 
+\begin_inset Formula $f_{t}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Wf(u,s)=\langle f,\psi_{u,s}\rangle=\int_{-\infty}^{+\infty}f(t)\frac{1}{\sqrt{s}}\psi^{*}\left(\frac{t-u}{s}\right)dt
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+because of the infinite sum this representation is very redundant.
+ To avoid this we use discrete time and scale variables.
+ Choosing 
+\begin_inset Formula $k$
+\end_inset
+
+ and 
+\begin_inset Formula $j$
+\end_inset
+
+, the discrete variables 
+\begin_inset Formula $s=2^{j}$
+\end_inset
+
+ and 
+\begin_inset Formula $u=k2^{j}$
+\end_inset
+
+, we can find a mother wavelet 
+\begin_inset Formula $\psi(t)$
+\end_inset
+
+ such that the wavelet set form a orthonormal basis of the function in 
+\begin_inset Formula $\mathcal{C^{\mathrm{2}}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+If the input is a two dimensional data the wavelet basis over the continuous
+ domain is the union of translating and dilating three mother wavelet functions
+ 
+\begin_inset Formula $\left\{ \psi^{V},\psi^{H},\psi^{D}\right\} $
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Each wavelet atom is defined as:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\psi_{k,j,n}(t)=\psi_{k,j}^{n}(t)==\frac{1}{\sqrt{2^{j}}}\psi^{n}\left(\frac{t-k2^{j}}{2^{j}}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $s=2^{j}$
+\end_inset
+
+ , and the translation is 
+\begin_inset Formula $u=2^{j}(k_{1},k_{2})$
+\end_inset
+
+, the computation do all the inner products .
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/lenaWavelet.eps
+	scale 40
+	BoundingBox -150bp 60bp 200bp 600bp
+	rotateOrigin center
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Wavelet transform of an image, each plot can be understand as output of
+ an inner product with a specific scaled, translated wavelet.
+ They are tree different mother wavelets, 
+\begin_inset Formula $\left\{ \psi^{V},\psi^{H},\psi^{D}\right\} $
+\end_inset
+
+ to form an orthogonal basis, respectively vertical, horizontal and diagonal.
+ From the bottom right to the top left, the output of inner products with
+ signal and scaled wavelet are ranked from the broadest scale to the sharpest.
+ We observed that the representation with broad scaled wavelet show blurred
+ contour of discontinuty.
+ This representation is obtained by using the Toolbox image.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Wavelet-transform"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A mother wavelet with 
+\begin_inset Formula $n$
+\end_inset
+
+ vanishing moments is prooven to be the n-derivative of a function 
+\begin_inset Formula $\theta$
+\end_inset
+
+.
+ This means that the wavelet transform can be seen as multi scale differential
+ operator.
+ As a derivative in 1D, the local regularity is characterized by decreasing
+ wavelets coefficients and local irregularity is emphasize, that what we
+ see in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Wavelet-transform"
+
+\end_inset
+
+ for the horizontal, vertical and diagonal irregularities.
+\end_layout
+
+\begin_layout Subsection
+Corticograms
+\end_layout
+
+\begin_layout Standard
+The primary auditory cortex is the part of the brain responsible of the
+ understanding and segregation of equally tuned sound with temporal structure
+ dissimilarity.
+ After the cochlea processing the sound perceived are ordered along the
+ tonotopic axis, witch means that they are projected according the cochlea
+ shape in particular area of brain, ranking according their wavelength .
+ 
+\end_layout
+
+\begin_layout Standard
+Then the primary cortex analyzed the spectro-temporal content of the sound
+ using layers of neuron.
+ Those neurons, act as bank of filters, centered in each frequencies of
+ the tonotopic axis.
+ Each filter, called STRF (spectro temporal response field) is tuned at
+ a specific rate (temporal modulation in Hertz) and scale (frequency modulation
+ in cycle/octave).
+ Those actions can be approximately seen as a bank of 2D wavelet transform.
+ 
+\end_layout
+
+\begin_layout Standard
+The STRF shows the exhibiting and inhibitory fields are designed by 
+\shape italic
+ripples 
+\shape default
+(sound with a spectral pattern that have a sinusoidal shape along the logarithmi
+c frequency axis).
+ The mathematical model of the STRF is shown below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+STRF=h_{IRT}(t)\star h_{IRS}(x)
+\]
+
+\end_inset
+
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $ $
+\end_inset
+
+
+\begin_inset Formula $h_{IRT}(t)$
+\end_inset
+
+ and 
+\begin_inset Formula $h_{IRS}(x)$
+\end_inset
+
+ are two ripples parametrised by the characteristics of a specific neuron.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+h_{IRT}(t,w,\theta)=h_{t}(t;w)cos\theta+\hat{h_{t}}(t;w)sin\theta
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $w$
+\end_inset
+
+ and
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ are the rates and scales, and 
+\begin_inset Formula $\phi$
+\end_inset
+
+, 
+\begin_inset Formula $\theta$
+\end_inset
+
+ are the characteristics phases of asymmetry.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+r\pm(t,f;w,\Omega;\theta,\phi)=z(t,f)\star_{t,f}STRF\pm(t,f;w,\Omega;\theta,\phi)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+r is the response of each Cochleograms convolued in time and frequency by
+ a bank of STRF.
+ We can see the Corticogram as a repeated Cochleogram viewed at different
+ resolution, or as a bank of different spectral and temporal modulation
+ filters with different tuning (from narrowband to broadband).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/cortico1.png
+	BoundingBox 0bp 20bp 432bp 288bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Corticograms visualization as a matrix of time-frequency representations.
+ Each of the plots can be understood as a cochleogram filtered in 2D (rates
+ and sclaes).
+ Filter frequency are controlled by the scale and the rate parameters.
+ In the top left pannel we see a represation with broadband filters in rates
+ and scales.
+ In bottom right we see a represention with sharpband filter of rate and
+ scale, somehow representing the high frequencies of the 'wavelet transform'
+ and is closed to the cochleogram.
+ The botom right and top left are representation with sharp modulation in
+ frequencies and time respectivelly.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Corticogram is a 4D representation indexed by scale/rate/time/frequency
+ matrix.
+ As such it can be figured as a set of matrix of Time/Frequency representation.
+ interested reader can look a the paper ...
+ for better understanding of the computational specificity.
+ The implementation here is provided by the NSL toolbox.
+\end_layout
+
+\begin_layout Subsection
+Quorticograms
+\end_layout
+
+\begin_layout Standard
+As the CQT offer better performances in computation time and is invertible,
+ we simplified the Corticogram by replacing the input Cochleogram by a CQT.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/cortico2.png
+	BoundingBox 0bp 20bp 432bp 288bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Quorticograms visualization as a matrix of time-frequency representations.
+ Each of the plots can be understood as a constant Q transform filtered
+ in 2D (rates and sclaes).
+ Filter frequency are controlled by the scale and the rate parameters.
+ In the top left pannel we see a represation with broadband filters in rates
+ and scales.
+ In bottom right we see a represention with sharpband filter of rate and
+ scale, somehow representing the high frequencies of the 'wavelet transform'
+ and is closed to the CQT.
+ The botom right and top left are representation with sharp modulation in
+ frequencies and time respectivelly.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Other Representations
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+manu
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+SineWave Speech
+\end_layout
+
+\begin_layout Standard
+The sine wave speech synthesis is obtained by tracking formants (resonant
+ frequencies of the vocal track) along time.
+ The simplified sound surprisingly reminds of the original.
+ This representation is obtained by first finding the formants in the spectrogra
+m, then using a Viterbi algorithm for the tracking.
+\end_layout
+
+\begin_layout Standard
+There is a very good introductory article on sinewave speech on 
+\begin_inset CommandInset href
+LatexCommand href
+name "scholarpedia"
+target "http://www.scholarpedia.org/article/Sine-wave_speech"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manumouss/workspace/audio-sketch/src/reporting/figures/sketchified_panzani_SWSSketch.pdf
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Spectrogram of a SineWave Speech reconstruction of an audio excerpt.
+ red regions are more energetic.
+ The signal is sliced in evenly spaced time frames.
+ In each frame, the formants (resonant frequencies of the vocal track) are
+ searched for.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Feature transforms
+\end_layout
+
+\begin_layout Standard
+Literature on audio feature computation is proficient.
+ Any feature extraction process can be used, (MFCC, chroma, LPC, etc..) any
+ feature combination can be thought of as a sketch of the signal.
+ Most of the time, the audio features are analysis-oriented and cannot be
+ inverted.
+ This is for instance the case with Zero-Crossing Rate or spectral moments.
+ 
+\end_layout
+
+\begin_layout Standard
+The synthesis can then be obtained by concatenating sounds from a database
+ based on nearest neighbors search in the feature space.
+ This is for example used in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Muller2005"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Chapter
+Measuring similarities between sounds sketches using a Fingerprinting approach
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Ideas and concepts
+\end_layout
+
+\begin_layout Subsection
+The evaluation problem
+\end_layout
+
+\begin_layout Standard
+Audio objects recognition systems aim at the automatic retrieval of a signal
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ among a collection of known sounds objects 
+\begin_inset Formula $\{y^{(i)}\}$
+\end_inset
+
+.
+ In practice, such collection can be very large and sounds are complicated
+ objects to compare.
+ For this retrieval to be effective, the search must be performed efficiently,
+ for instance by comparing low-dimensional 
+\emph on
+proxies
+\emph default
+ of the objects, or fingerprints.
+\end_layout
+
+\begin_layout Standard
+An audio fingerprint is a collection of signal-characteristic features that
+ present some robustness to distortions and can be efficiently compared
+ to others.
+ There are two big families of audio fingerprinting systems, the first one
+ adopts a bag of features approach.
+ A low-dimensional vector of features (eg.
+ Chroma, MFCC, etc..) is thus used as the fingerprint.
+ It has essentially been proposed by Haitsma 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Haitsma"
+
+\end_inset
+
+ with binarized Chroma.
+ A review of such methods can be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cano_review"
+
+\end_inset
+
+ with more recent avatars being based on wavelet transforms 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Baluja2007"
+
+\end_inset
+
+ or finer frequency models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Betser_article,Dupraz_article"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The second family of methods is similar in spirit to some feature extraction
+ methods developed in image processing.
+ It has first emerged with the work of Wang 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+ and is based on the idea of selecting a subset of 
+\emph on
+keypoints
+\emph default
+ in a Time-Frequency (TF) representation, pairing them to form 
+\emph on
+landmarks
+\emph default
+ and using each of these 
+\emph on
+landmarks
+\emph default
+ as an index in a structured database (
+\emph on
+e.g.
+
+\emph default
+ a hash-table or any fast indexing system).
+ This approach is at the basis of the well known Shazam service 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang_com"
+
+\end_inset
+
+, but also led to the works of Cotton and Ellis
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ and Fenet
+\emph on
+ et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+ among others.
+ While in his seminal work 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang"
+
+\end_inset
+
+, Wang selected 
+\emph on
+keypoints
+\emph default
+ as local maxima in a simple spectrogram, Cotton and Ellis 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+ use a greedy algorithm on a multiscale Gabor dictionary and Fenet 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+ propose a logarithmic transform instead of windowed Fourier.
+\end_layout
+
+\begin_layout Standard
+All of these methods share a common formalism, that is conveniently exposed
+ using a dictionary-based point of view.
+ Given a dictionary 
+\begin_inset Formula $\Phi$
+\end_inset
+
+, one seeks a combination of 
+\begin_inset Formula $k$
+\end_inset
+
+ elements of 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ (labeled 
+\emph on
+atoms
+\emph default
+) that can be efficiently used as 
+\emph on
+keypoints
+\emph default
+ in a fingerprinting system.
+ State of the art methods, mainly proposes different dictionaries (
+\emph on
+e.g.
+
+\emph default
+ Gabor 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com"
+
+\end_inset
+
+, Union of Gabor
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010"
+
+\end_inset
+
+, MDCT 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Moussallam2012c"
+
+\end_inset
+
+, Logarithmic 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ismir"
+
+\end_inset
+
+..) and selection algorithms (Local Peak Picking 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Wang,Wang_com,ismir"
+
+\end_inset
+
+, Matching Pursuit 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cotton2010,Moussallam2012c"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+Using Fingerprint as a proxy measure
+\end_layout
+
+\begin_layout Section
+A fingerprinting framework
+\end_layout
+
+\begin_layout Subsection
+Problem
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\boldsymbol{y}\in\mathbb{E}^{N}$
+\end_inset
+
+ be a 
+\begin_inset Formula $N$
+\end_inset
+
+ - dimensional discrete signal (
+\begin_inset Formula $\boldsymbol{E}=\mathbb{R}$
+\end_inset
+
+ or 
+\begin_inset Formula $\mathbb{C}$
+\end_inset
+
+) and 
+\begin_inset Formula $\boldsymbol{\Phi}=\{\phi_{i}\}_{i=1..M}$
+\end_inset
+
+ a dictionary of 
+\begin_inset Formula $M$
+\end_inset
+
+ 
+\emph on
+atoms 
+\emph default
+
+\begin_inset Formula $\boldsymbol{\phi}_{i}$
+\end_inset
+
+ of same dimension than 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+, one speaks of a 
+\emph on
+representation
+\emph default
+ 
+\begin_inset Formula $\hat{y}$
+\end_inset
+
+ of 
+\begin_inset Formula $\boldsymbol{y}$
+\end_inset
+
+ in 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ as a linear combinations of the atoms, 
+\emph on
+i.e.
+
+\emph default
+ 
+\begin_inset Formula $\hat{y}=\sum_{i=1}^{M}\alpha_{i}\phi_{i}$
+\end_inset
+
+ where the weights coefficients stacked in an 
+\begin_inset Formula $M-$
+\end_inset
+
+dimensional vector 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ now carry the information.
+ The nature and quantity of information conveyed by each (or a combination
+ of) 
+\begin_inset Formula $\alpha_{i}$
+\end_inset
+
+ depends on how the dictionary is designed and what
+\emph on
+ a priori 
+\emph default
+knowledge on the signal is available.
+ 
+\end_layout
+
+\begin_layout Standard
+In an audio fingerprint context, it is interesting to further decompose
+ 
+\begin_inset Formula $\boldsymbol{\alpha}$
+\end_inset
+
+ as the element-wise product 
+\begin_inset Formula $\boldsymbol{\alpha}=\boldsymbol{x}\odot\boldsymbol{s}$
+\end_inset
+
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is real or complex valued and 
+\begin_inset Formula $\boldsymbol{s}$
+\end_inset
+
+ is called the support and restricted to binary values: 
+\begin_inset Formula $s_{i}=$
+\end_inset
+
+1 if the atom is selected as a keypoint and zero otherwise.
+\end_layout
+
+\begin_layout Standard
+In this formalism, limiting the number of keypoints can be straightforwardly
+ transcribed as a sparsity constraint on 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ The robustness property is harder to characterize since different types
+ of distortions may occur.
+ For the sake of clarity, let us consider only the case of additive white
+ Gaussian noise.
+ The best way to resist such distortion is to select atoms minimizing a
+ reconstruction error.
+ More generally, most types of robustness can be enforced by constraints
+ of 
+\emph on
+descriptiveness
+\emph default
+ of the keypoints.
+ 
+\end_layout
+
+\begin_layout Standard
+Expressing the discriminative power, however, is more challenging.
+ This can be done by using information theoretic metrics in general and
+ entropy in particular.
+ Audio signals often carry more energy in their low than high-frequencies.
+ Corresponding keypoints thus have a higher probability of being selected.
+ Intuitively, they provide a less discriminant information on a signal that
+ the least probables ones.
+ If one is able to fully evaluate the probability distribution of the support
+ then one would want to constrain its 
+\emph on
+entropy
+\emph default
+ to be the highest possible.
+\end_layout
+
+\begin_layout Standard
+The problem of finding 
+\begin_inset Formula $k$
+\end_inset
+
+ keypoints that have maximum descriptive and discriminative potentials can
+ thus be stated as:
+\begin_inset Formula 
+\begin{equation}
+\mathcal{P}_{\lambda,k}=\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $H_{\Phi}(s)$
+\end_inset
+
+ is the entropy of the vector 
+\begin_inset Formula $s$
+\end_inset
+
+ given the dictionary.
+\end_layout
+
+\begin_layout Subsection
+Architecture
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/schema.png
+	lyxscale 25
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fingerprinting architecture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Generalization
+\end_layout
+
+\begin_layout Subsection
+Structured Sparsity model
+\end_layout
+
+\begin_layout Standard
+Empirical evidence suggest the sparsity pattern of the support vector in
+ time-frequency dictionaries is highly structured.
+ We propose to use Boltzmann machines as a model for the distribution of
+ 
+\begin_inset Formula $s$
+\end_inset
+
+: 
+\begin_inset Formula 
+\begin{equation}
+p(s)\propto\exp(b^{T}s+s^{T}Ws)
+\end{equation}
+
+\end_inset
+
+This distribution has first been proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hinton1986"
+
+\end_inset
+
+.
+ It models the interaction in a graph of connected nodes (keypoints in our
+ case) using two parameters: a biais 
+\begin_inset Formula $b$
+\end_inset
+
+ and a connectivity matrix 
+\begin_inset Formula $W$
+\end_inset
+
+.
+ This model has recently appeared in dictionary based processing setups.
+ Dremeau 
+\emph on
+et al
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dremeau2012"
+
+\end_inset
+
+ show that it generalizes many structured sparsity models.
+ Under this model, we can evaluate the probability of a state using the
+ difference of energy at node 
+\begin_inset Formula $i$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{equation}
+\Delta E_{i}=\sum_{j}w_{ij}+b_{i}
+\end{equation}
+
+\end_inset
+
+and the notion of temperature 
+\begin_inset Formula $T$
+\end_inset
+
+ that can be dropped out (
+\emph on
+e.g.
+
+\emph default
+ 
+\begin_inset Formula $T=1$
+\end_inset
+
+).
+ Fixing the states of all other variables, the probability of node 
+\begin_inset Formula $i$
+\end_inset
+
+ being turned on (
+\emph on
+i.e.
+
+\emph default
+ keypoint 
+\begin_inset Formula $i$
+\end_inset
+
+ being selected) writes: 
+\begin_inset Formula 
+\begin{equation}
+p(s_{i}=1|\{s_{j\neq i}\})=\frac{1}{1+\exp\left(-\Delta E_{i}\right)}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Reducing model complexity
+\end_layout
+
+\begin_layout Standard
+The expressiveness of the Boltzmann machine is essentially captured by the
+ 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix which is of size 
+\begin_inset Formula $M\times M$
+\end_inset
+
+ where 
+\begin_inset Formula $M$
+\end_inset
+
+ is the number of atoms in the dictionary.
+ Clearly, for real scale data, the resulting model complexity will become
+ prohibitive.
+ Fortunately, the considered dictionaries are further structured.
+ Let assume each atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ can be indexed by a unique triplet 
+\begin_inset Formula $(f_{i},t_{i},l_{i})\in\mathcal{F}\times\mathcal{T}\times\mathcal{L}$
+\end_inset
+
+ of its frequency and time centroids and length.
+ A way to drastically reduce the complexity is to assume separability of
+ the time and frequency centroids variables.
+ Such hypothesis seem reasonable, keypoints frequency localization will
+ essentially be linked to other keypoints frequencies and lengths, independently
+ of their time position.
+ Symmetrically, time localizations may be considered apart from the frequency
+ localization.
+\end_layout
+
+\begin_layout Standard
+In practice, this implies cutting many vertices in the Boltzmann machine,
+ or equivalently putting many elements of 
+\begin_inset Formula $W$
+\end_inset
+
+ to zero.
+ The bias can be rewritten as :
+\begin_inset Formula 
+\begin{equation}
+b_{i}=b(f_{i},t_{i},l_{i})=b(f_{i},l_{i})
+\end{equation}
+
+\end_inset
+
+since we have seen empirically that keypoints are uniformly located in time.
+ Similarly, each element 
+\begin_inset Formula $w_{ij}$
+\end_inset
+
+ of the 
+\begin_inset Formula $W$
+\end_inset
+
+ matrix can be expressed as a product:
+\begin_inset Formula 
+\begin{eqnarray*}
+w_{ij} & = & w\left[\left(f_{i},t_{i},l_{i}\right)\left(f_{j},t_{j},l_{j}\right)\right]\\
+ & = & w^{F}\left[\left(f_{i},l_{i}\right)\left(f_{j},l_{j}\right)\right]w^{T}\left[\left(t_{i},l_{i}\right)\left(t_{j},l_{j}\right)\right]\\
+ & = & w_{ij}^{F}w_{ij}^{T}
+\end{eqnarray*}
+
+\end_inset
+
+where 
+\begin_inset Formula $w_{ij}^{F}\mbox{ and }w_{ij}^{T}$
+\end_inset
+
+ are taken in two factoring matrices 
+\begin_inset Formula $W_{F}$
+\end_inset
+
+ and 
+\begin_inset Formula $W_{T}$
+\end_inset
+
+.
+ We have seen empirical estimators of such bias and 
+\begin_inset Formula $W$
+\end_inset
+
+ matrices in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Biais"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Empirical-Covariance"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Algorithm
+\end_layout
+
+\begin_layout Standard
+Addressing problem 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:problem_full"
+
+\end_inset
+
+ is a complicated issue.
+ Indeed, even with 
+\begin_inset Formula $\lambda=0$
+\end_inset
+
+, it requires either a relaxation of the sparsity constraint or the use
+ of suboptimal greedy algorithms such as MP.
+ Given that the hard sparsity constraint is strict in this case, we have
+ chosen to modify an MP algorithm by simply changing the atom selection
+ rule.
+ 
+\end_layout
+
+\begin_layout Standard
+Such algorithm makes a series of local decisions (
+\emph on
+i.e.
+
+\emph default
+ keypoint selection), based only on the knowledge of the previous choices
+ (
+\emph on
+i.e.
+
+\emph default
+ which keypoints have already been selected).
+ The residual signal 
+\begin_inset Formula $r^{n}$
+\end_inset
+
+ at iteration 
+\begin_inset Formula $n$
+\end_inset
+
+ is usually updated by subtracting from the original signal its projection
+ on the subspace spanned by the selected atoms.
+ At iteration 
+\begin_inset Formula $n$
+\end_inset
+
+ the decision boils down to solving:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\arg\max_{\phi_{i}\in\Phi}|\langle r^{n},\phi_{i}\rangle|(1+\lambda_{H}H(\phi_{i}|s_{n-1}))
+\end{equation}
+
+\end_inset
+
+where 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $H(\phi_{i}|s_{n-1})$
+\end_inset
+
+ is the
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ entropy of choosing atom 
+\begin_inset Formula $\phi_{i}$
+\end_inset
+
+ knowing the support 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+ and writes: 
+\begin_inset Formula 
+\begin{eqnarray}
+H(\phi_{i}|s_{n-1}) & = & -p(\phi_{i}|s_{n-1})\log\left[p(\phi_{i}|s_{n-1})\right]\nonumber \\
+ & = & \frac{\log\left[1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}\right]}{1+\sum_{j\in\Gamma_{n-1}}w_{ij}+b_{i}}
+\end{eqnarray}
+
+\end_inset
+
+with 
+\begin_inset Formula $\Gamma_{n-1}$
+\end_inset
+
+ being the indices of the non zero elements of 
+\begin_inset Formula $s_{n-1}$
+\end_inset
+
+, 
+\emph on
+i.e.
+
+\emph default
+ the keypoints selected so far.
+ An advantage of this algorithm is that it can be quickly implemented using
+ existing MP libraries such as PyMP
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/mmoussallam/PyMP
+\end_layout
+
+\end_inset
+
+.
+ Additionally, existing algorithms can be seen as particular cases.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/manumouss/workspace/audio-sketch/src/icassp14_fgpt/figures/KeyPoints_and_pairs_voicefemale_30k.pdf
+	width 16cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Time-frequency 
+\emph on
+landmarks
+\emph default
+ built by the algorithm with varying parameters on a 5s audio excerpt of
+ female speech.
+ Each case has built 100 landmarks.
+ (a): C10 (
+\begin_inset Formula $\lambda_{H}=0$
+\end_inset
+
+) (b): 
+\begin_inset Formula $\lambda_{H}=1\,(0,W)$
+\end_inset
+
+ (c): 
+\begin_inset Formula $\lambda_{H}=10\,(b,W)$
+\end_inset
+
+(d): W03
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:TF-landmarks"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Distances in the fingerprint domain
+\end_layout
+
+\begin_layout Chapter
+Recents experiments
+\end_layout
+
+\begin_layout Section
+Results on the Constant-Q Transform in computational simulations
+\end_layout
+
+\begin_layout Standard
+We tested the recognition rate of tree differents sounds representations,
+ STFT, CQT and Cochleograms of musical intercept in musical database using
+ fingerprint methods.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/results_Laure_CQT.pdf
+	scale 30
+	BoundingBox -400bp 0bp 430bp 441bp
+	rotateOrigin center
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\lang french
+Results on identifcation task over tree differents models of sound representatio
+n (STFT, CQT, Cochleogram), on the left: recognition rate of the tree representa
+tions over the added white noise, on the rigth: computation time over the
+ size of the database.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Conclusion: The CQT transform seems to offer a good alternative of the auditory
+ model.
+\end_layout
+
+\begin_layout Itemize
+The CQT representation outperforms the results Cochleogram on recognition
+ rate in a data base.
+ Both representation use the same frequencies range with the same resolution,
+ but the parfait invertibility (under the overlapp-add conditions) of the
+ CQT made the difference.
+ The long computation time of Cochleogram is from the calculation cost of
+ the inverse.
+ 
+\end_layout
+
+\begin_layout Itemize
+The STFT still perform better results as the range of frequencies is widder.
+ 
+\end_layout
+
+\begin_layout Itemize
+The CQT seems to offer a good alternative to Cochleogram, as it an invertible
+ representation perceptively inspired, but will the results on an psycho-physica
+l experiment, on listners recognition be comparable?
+\end_layout
+
+\begin_layout Section
+Sparsity-based sketches
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Mettre les comparaisons entre shazam et la même chose avec cqt/cochléo et
+ IHT
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Put the comparison of Shazam research efficiency between different two dimension
+al objects (CQT, Cochleogram and IHT).
+\end_layout
+
+\begin_layout Section
+Invariant time Keys
+\end_layout
+
+\begin_layout Section
+Finding invariants in 4 dimensional objects
+\end_layout
+
+\begin_layout Standard
+In order to see if there was some invariants features in Cochleograms or
+ Corticograms, we look at the local and global maximum repartition on differents
+ scale/rate of the both representations for differents speakers and sentences.
+ The two type of maximums are:
+\end_layout
+
+\begin_layout Enumerate
+Global: The 100 first magnitude maximums on each scale/rate.
+\end_layout
+
+\begin_layout Enumerate
+Local: The Picks Peaking maximums, as used in the Shazam approach.
+\end_layout
+
+\begin_layout Subsection
+Looking for maximums
+\end_layout
+
+\begin_layout Standard
+The experiment was made over 6 speakers (4 male and 2 female), for 6 differents
+ sentence, on Corticogram and Cochleograms for 30 scales/rates parameters,
+ for normal and logarithmic representation (as below 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Multi_quortico"
+
+\end_inset
+
+).
+ In this rapport we only show 3 diferent scale/rate on the Quorticogram
+ reprensention for the PP algoritm and one for the global maximum.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs0plot0_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs1plot0_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases0plot0_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases1plot0_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs0plot14_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs1plot14_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases0plot14_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases1plot14_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs0plot29_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs1plot29_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases0plot29_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases1plot29_pp100.pdf
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs0plot14_dump100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Locuteurs/Locuteurs1plot14_dump100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases0plot14_dump100.pdf
+	scale 25
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/Quortico/Phrases/Phrases1plot14_dump100.pdf
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+In the first tree top rows the represention of PP maximums in a broad, middle
+ and sharp scale/rate of the quorticogram.
+ In the bottom row the reprentation global maximum in a middle scale/rate
+ of the quorticogram.
+ The two left representions are of the sentence accross two different speakers,
+ on the right the representations of two different sentences for the same
+ speaker.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Multi_quortico"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Conclusion: As we observed in this short panel of results, the outcom does
+ not show any appearent sub structure permitting to give any idea of the
+ human processing of understanding a message.
+\end_layout
+
+\begin_layout Itemize
+In next experiment it could be intersting to reduce all the parasite variability
+ we know in order to focus on the one we want to caracterise.
+ We can reduce the time variability, by doing a DTW algorithm (), or by
+ taking shorter intercept of sound such voyelles interjection ().
+\end_layout
+
+\begin_layout Itemize
+Taking fixed number of maximums over different scale, does not match the
+ human processing of sound as theses different layers bring a weigthed contribut
+ion.
+ Comparing the indexed 4 dimensional maximums (scale/rate/frequency/time)
+ extract on a complete weighted representions would be more informative.
+\end_layout
+
+\begin_layout Section
+Sine-Wave speech
+\end_layout
+
+\begin_layout Subsection
+The problem of time: DTW
+\end_layout
+
+\begin_layout Standard
+The problem we found in comparing Sine Wave speech representation, is the
+ time variation of each phonemes between different speakers.
+\end_layout
+
+\begin_layout Standard
+One way of performing a time alignement between two differnts time series,
+ widely used by the comunauty of speak recognizers is the algorithm of Dynamic
+ Time Wrapping.
+ This works is doing by matching the two series in a space showing the similarit
+y of them frames by frames.
+ Such a representation is illustrating in fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:DTWwork"
+
+\end_inset
+
+.
+ Then a dynamic path is determinated to maximise the alignement.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/Sim_sws_dtw.pdf
+	scale 50
+	BoundingBox -130bp 230bp 595bp 600bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Output of the similarity matrix, darker regions shows the maximum similarity
+ magnitude.
+ The red path is the optimised solution to the alignement of the two time
+ series.
+ Here the CQT representation of the Sine wave speech of the same sentence
+ uttered by two differnet speakers.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:DTWwork"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The path is computed with an implementation of a simple dynamic programming
+ algorithm that allows three steps - (1,1), (0,1) and (1,0) - with equal
+ weights.
+ The implementation is from the Laboratory for the Recognition and Organization
+ of Speech and Audio - LabROSA 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Download at http://labrosa.ee.columbia.edu/matlab/dtw/
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To better show the effect on DTW algorithm we applied it on two CQT representati
+ons of a sine Wave speech of the same sentence uterred by two different
+ speakers.
+ The results are shown below 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:CQTDTW_comp"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/CQT_sws_DTW.pdf
+	scale 50
+	BoundingBox -130bp 195bp 543bp 590bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+CQT represention of the sine-wave output (3 formants) of two identic sentences
+ uterred by two diffrents speakers, respectively 1 and 2.
+ The bottom figure show the result of the Dynamic Time Wrapping of sequence
+ 2 over the senquence 1.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:CQTDTW_comp"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Even if the two speakers have high temporal dissymilarities, speaker 2 is
+ slower than speaker 1 and blurred noise was present at the end of the recording.
+ The algorithm find the good features to proceed the alignement.
+\end_layout
+
+\begin_layout Subsection
+Using MPCA for classification
+\end_layout
+
+\begin_layout Subsubsection
+From PCA to MPCA
+\end_layout
+
+\begin_layout Standard
+The Principal Component analysis is an unsupervised technique of dimensional
+ reduction of a dataset, represented as a matrix 
+\begin_inset Formula $X$
+\end_inset
+
+, of size 
+\begin_inset Formula $m\times n$
+\end_inset
+
+, where 
+\begin_inset Formula $n$
+\end_inset
+
+ is a number of variables and 
+\begin_inset Formula $m$
+\end_inset
+
+ the number of repetition of each variables.
+ In order to do so the PCA reduce as much as possible the interrelated variables
+ of the data set, and retain the variation present in the original data
+ set.
+ Interessed reader could look at [] for intuive explanations.
+\end_layout
+
+\begin_layout Itemize
+Two variables 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ are strongly interrelated if the magnitude of the intercorelation coefficients
+ 
+\begin_inset Formula $\sigma_{AB}$
+\end_inset
+
+ is important, and the variability of each variable 
+\begin_inset Formula $A$
+\end_inset
+
+ is set by the autocorrelation coeficient 
+\begin_inset Formula $\sigma_{A}^{2}$
+\end_inset
+
+.
+ Then PCA re-express the data 
+\begin_inset Formula $X$
+\end_inset
+
+ with a new basis 
+\begin_inset Formula $P$
+\end_inset
+
+: 
+\begin_inset Formula $Y=PX$
+\end_inset
+
+, where the correlation matrix 
+\begin_inset Formula $C_{Y}=YY^{T}$
+\end_inset
+
+is 
+\shape italic
+diagonal.
+\end_layout
+
+\begin_layout Itemize
+The dimension reduction is made by preserving only the first compnents of
+ 
+\begin_inset Formula $P$
+\end_inset
+
+ (witch are the so-called 
+\shape italic
+principal component
+\shape default
+).
+\end_layout
+
+\begin_layout Standard
+The Multiple Principal Component Analysis as the similar function but for
+ analysing tensor structure data (2D or 3D)
+\shape italic
+.
+ 
+\shape default
+Their properties over (2D)
+\begin_inset Formula $^{2}$
+\end_inset
+
+PCA analysis are discused in [papier qui envoie].
+ The algorithm used in the next subsection is detail in [papier MPCA], and
+ is available on the MATLAB file exchange plateform 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Download at http://www.mathworks.com/matlabcentral/fileexchange/ 
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Experiment on sine-wave speech
+\end_layout
+
+\begin_layout Standard
+In order to evaluate the impact of DTW on sine wave speech, and to know
+ better about the similarity inner sine-wave speech, we did two experiments
+ on a database sine-wave speech representation (3 formant) of 6 different
+ sentences each uttered by 3 different speakers.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Experiment 1: Practice MPCA analyse of the database, sine wave speech are
+ shortend to their first 135 frames.
+\end_layout
+
+\begin_layout Enumerate
+Experiment 2: Practice MPCA analyse of the data base, for each sentence,
+ the longer and shorter utterance have been time wrapped on the third one,
+ we keept the first 135 frames.
+\end_layout
+
+\begin_layout Standard
+The output of the MPCA is the representation of the data 
+\begin_inset Formula $X$
+\end_inset
+
+ into the principal component space.
+ As the MPCA keep the tensorial form of the input, we take the vectorization
+ of the tensorial features of the output.
+ To shows the similarity between each individual cases, we represent in
+ fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Multidimensional-scalling-(MDS)"
+
+\end_inset
+
+ the distance present between cases of the data set in 2 dimensional space
+ by using the multidimensional scaling (MDS).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/MDS_sws_sh.pdf
+	scale 40
+	BoundingBox 46bp 193bp 556bp 590bp
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/MDS_sws_DTW.pdf
+	scale 40
+	BoundingBox 66bp 193bp 558bp 590bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Multidimensional scalling (MDS) applied on similarity of the results of
+ the MPCA analyse.
+ On the left the 2 dimensionals reprentation of the shortened set of sine-wave
+ speech, on the rigth, te representation on the time wrapped and shortened
+ set of sine wave speech.
+ Colors show the diffferent spekers.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Multidimensional-scalling-(MDS)"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A standar non-metric MDS was performed (matlab, the MathWorks) and lead
+ to the next conclusions:
+\end_layout
+
+\begin_layout Paragraph
+Conclusion: The DTW applied on sine-wave speech show than the variability
+ of exerpt is speakers relative.
+ 
+\end_layout
+
+\begin_layout Itemize
+The results shown on the figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Multidimensional-scalling-(MDS)"
+
+\end_inset
+
+, have to be read carrefully.
+ The fidelity of the MDS representation depends of the dimention reduction
+ permit by the imput data cases.
+ In the case of dynamic time wrapped element, the two first component carry
+ among the weight of 70% of the total variance, then the representation
+ is reliable enough and we can conclude that the dissimilarity into exerpt
+ of the data is more speakers relative, than sentences relative.
+\end_layout
+
+\begin_layout Itemize
+In the case of simple shortened exerpt the two first component carry only
+ 40% of the total weight, we only conclude of the 'noisyness' of the data.
+\end_layout
+
+\begin_layout Itemize
+In an other experiment we found than the first two component of the MPCA
+ of time wrapped sine-wave speech of the third formant only, carry around
+ 80% of the variability.
+ For the second formant the variabilty explained is 60%, and the first 44%.
+\end_layout
+
+\begin_layout Section
+From psycho-physical experiments to computational simulations
+\end_layout
+
+\begin_layout Subsection
+psycho-physical experiments
+\end_layout
+
+\begin_layout Standard
+In the paper []...
+ Suied & Drémeau 2013 perform two different experiments to test the ability
+ of listener to recognize sketches.
+ The first experiment test the overall recognition process of human listener,
+ using sketches from difference psychoacoustics models of the sound (Cochleogram
+/Corticogram).
+ The second experience evaluate the processing of sketches, comparing the
+ understanding of human listner for two different sparse method (IHT/PP).
+\end_layout
+
+\begin_layout Enumerate
+The IHT (Iterative Hard Thresholding) algorithm select iteratively a set
+ of sparse features, by doing a threshold.
+ The stop criteria is the precision of reconstruction.
+\end_layout
+
+\begin_layout Enumerate
+The PP (Peaks Picking) algorithm choose the local extreme values.
+\end_layout
+
+\begin_layout Standard
+The data base consisted of the recorded 4 nonverbal emotion (anger, disgust,
+ happiness and sadness) of the interjection (on the french vowel 
+\begin_inset Formula $/a/$
+\end_inset
+
+) produced by 10 different actors.
+ The results are illustrated by the two figure below.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/FigureSuiedDremeau1.pdf
+	BoundingBox 0bp 570bp 595bp 760bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Results of the experiment 1: Recognition performance of the sketches sounds
+ corresponding to two different auditory models.
+ With an without noise the auditory spectogram (cochleogram) outperform
+ the score of the corticogram.
+ The left plot show the results with a reconstructed clear signal over the
+ right plot who show a noisy reconstructed signal.
+ Two limits are sets: the lower one is the chance level (dotted line) and
+ the upper one (black line) is the average recognition of original sound.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The first experiment show that the recognition on Cochleograms sketches
+ outperform the one in Corticogram sketches.
+ This is surprising as the Corticogram carry more information, and according
+ to the study made in [timbre] this additional information is consequent
+ for algorithm in classification of musical timbre.
+ There are two hypothesis on this:
+\end_layout
+
+\begin_layout Enumerate
+The sounds are too shorts (1s) to see the effects of the modulations filters.
+ 
+\end_layout
+
+\begin_layout Enumerate
+This information help algorithm by mimicking the brain understanding of
+ sound, but can be redundant for the human listeners, then the sparse reconstruc
+tion of sounds loose features in layers witch do not help the auditory recogniti
+on of a sound.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/FigureSuiedDremeau2.pdf
+	BoundingBox 0bp 570bp 595bp 760bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Results of the experiment 2: Recognition performance of the sketches sounds
+ (only the Cochleogram) corresponding to two differents sparse models.
+ The PP algorithm outcast the performance of the IHT (Iterative Hard Thresholdin
+g) algorithm, even with noise, but not for noised signal witch 1000 sparses
+ features/second.
+ Two limits are set: the lower one is the chance level (dotted line) and
+ the upper one (black line) is the average recognition of original sound.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The second experiment show that the PP algorithm outperforms the IHT algorithms.
+ This can be due to the fact that even if IHT performs a better reconstruction
+ of the sound it cover a smaller range of features scale that PP algorithm.
+\end_layout
+
+\begin_layout Standard
+In both experiences we see a surprising change of recognition results in
+ signal with noise reconstructed with 1000 features.
+ in the both experiment the explanations are:
+\end_layout
+
+\begin_layout Enumerate
+Cochleogram/Corticogram: Corticogram excluded noise in layers with the non-impor
+tant informations (could be also use for de-noising task: see [speech enhancemen
+t using spectr...
+ shamma]) then outperform Cochleograms in noise.
+\end_layout
+
+\begin_layout Enumerate
+IHT/PP: IHT, by selecting better features to reconstruction, excluded noise
+ witch is not the case of PP procedure selecting local maxima.
+\end_layout
+
+\begin_layout Subsection
+Computational simulations
+\end_layout
+
+\begin_layout Standard
+We did the same as experiment 2, but instead of listeners we test the ability
+ of fingerprints in recognition (key overlap ratio) on CQT sketches:
+\end_layout
+
+\begin_layout Enumerate
+Caracterized the recognition process of fingerprints on sketches.
+\end_layout
+
+\begin_layout Enumerate
+Correlate the result of human psychoacoustic perception with a fingerprinting
+ measure.
+\end_layout
+
+\begin_layout Standard
+The results are shown below:
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/SparsityRobustness_k-5bar.png
+	scale 50
+	BoundingBox 0bp 0bp 432bp 280bp
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/SparsityRobustness_k3bar.png
+	scale 50
+	BoundingBox 0bp 0bp 432bp 280bp
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Comparison of the key overlap ratio, in fingerprint task performed on sketches
+ of CQT representation performed with PP and IHT sparses algorithmes.
+ The figures show the results on signal reconstructed with wihte noise,
+ in rigth the SNR is -5DB and in left the SNR is 3DB.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k200.pdf
+	scale 50
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/NoiseRobustness_k20.pdf
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Comparison of the key overlap ratio, in fingerprint task performed on sketches
+ of CQT representation performed with PP and IHT sparses algorithmes, with
+ a fixe number of features and over a bench of diffrents SNR in signal reconstru
+ction.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+Conclusion: The results on IHT/PP algorithm are different that what we observed
+ in the second experiment of listners:
+\end_layout
+
+\begin_layout Itemize
+The IHT algorithm is far more robust to noise than PP, this is not true
+ only if the signal is clear (3DB noise) and is the set of sparses features
+ is small (20 features), this can be explain by the fact that IHT algorithm,
+ even if it performs better reconstruction, peak to closed features.
+\end_layout
+
+\begin_layout Itemize
+The fingerprint process is not correlated to the processing of human listener
+ in recognition of sounds.
+ Listner performed better understanding on PP sparse features for reconstruction.
+ 
+\end_layout
+
+\begin_layout Itemize
+The first experience raised unanswered questions.
+ Is the understanding of sketches related to the time of the signal excerpt?
+ if not, how can we explain the decreasing result on experiment 1? Are the
+ listening experiences similar in CQT representation than in Cochleograms?
+\end_layout
+
+\begin_layout Section
+What works and what don't
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Ici un récapitulatif de ce qui marche et de ce qui marche pas
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter*
+Ongoing and future works
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Manu/Laure
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Achievements
+\end_layout
+
+\begin_layout Itemize
+Plateform of testing
+\end_layout
+
+\begin_layout Itemize
+Modeling of the fingerprint framework
+\end_layout
+
+\begin_layout Section*
+Self-criticism
+\end_layout
+
+\begin_layout Itemize
+How good is fingerprint as a proxy measure for similarities?
+\end_layout
+
+\begin_layout Section*
+Link with next WP
+\end_layout
+
+\begin_layout Itemize
+Our recommendations for real tests: SWS or Scale/Space blurred approximates
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "/home/manu/Documents/Global-Fingerprint,/home/manu/Documents/Global-Fingerprint-sketch,/home/manu/Documents/Global-Perception,/home/manu/Documents/Global-Own,/home/manu/Documents/Global"
+options "bibtotoc,abbrv"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
