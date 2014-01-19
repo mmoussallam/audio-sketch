@@ -233,7 +233,7 @@ The STFT is perfectly invertible, provided the Constant Overlap-Add condition
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -1029,12 +1029,12 @@ target "http://www.scholarpedia.org/article/Sine-wave_speech"
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /home/manumouss/workspace/audio-sketch/src/reporting/figures/sketchified_panzani_SWSSketch.pdf
+	filename ../figures/sketchified_panzani_SWSSketch.pdf
 	width 8cm
 
 \end_inset
@@ -3096,7 +3096,7 @@ Our recommendations for real tests: SWS or Scale/Space blurred approximates
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "/home/manu/Documents/Global-Fingerprint,/home/manu/Documents/Global-Fingerprint-sketch,/home/manu/Documents/Global-Perception,/home/manu/Documents/Global-Own,/home/manu/Documents/Global"
+bibfiles "library"
 options "bibtotoc,abbrv"
 
 \end_inset
