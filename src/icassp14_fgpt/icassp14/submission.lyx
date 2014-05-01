@@ -62,7 +62,7 @@
 \index_command default
 \paperfontsize default
 \spacing single
-\use_hyperref true
+\use_hyperref false
 \pdf_title "Icassp14_draft"
 \pdf_author "Manuel Moussallam"
 \pdf_subject "Dictionary Based Audio Fingerprinting"

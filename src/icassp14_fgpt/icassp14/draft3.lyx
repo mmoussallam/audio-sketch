@@ -258,7 +258,7 @@ Audio objects recognition systems aim at the automatic retrieval of a signal
 \begin_inset Formula $y$
 \end_inset
 
- among a collection of known sounds objects 
+ among a collection of known sound objects 
 \begin_inset Formula $\{y^{(i)}\}$
 \end_inset
 
@@ -275,13 +275,12 @@ proxies
 
 \begin_layout Standard
 An audio fingerprint is a collection of signal-characteristic features that
- present some robustness to distortions and can be efficiently compared
- to others.
- There are two big families of audio fingerprinting systems, the first one
- adopts a bag of features approach.
+ is somehow robust to distortions and can be efficiently compared to others.
+ There are two main families of audio fingerprinting systems, the first
+ one adopts a bag of features approach.
  A low-dimensional vector of features (eg.
- Chroma, MFCC, etc..) is thus used as the fingerprint.
- It has essentially been proposed by Haitsma 
+ Chroma, MFCC, etc..) is used as the fingerprint.
+ It has for instance been proposed by Haitsma 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Haitsma"
@@ -323,7 +322,7 @@ key "Wang"
 
 \end_inset
 
- and is based on the idea of selecting a subset of 
+ and builds on the idea of selecting a subset of 
 \emph on
 keypoints
 \emph default
@@ -423,7 +422,7 @@ atoms
 keypoints
 \emph default
  in a fingerprinting system.
- State of the art methods, mainly proposes different dictionaries (
+ State of the art methods, mainly propose different dictionaries (
 \emph on
 e.g.
 
@@ -480,13 +479,13 @@ A unifying framework
 \begin_layout Standard
 Quite naturally, one would hope to design a unifying framework for all these
  methods.
- Mainly what distinguish them is the stress that is imposed either on the
+ Mostly what distinguish them is the stress that is imposed either on the
  robustness of the landmarks or their discriminative power.
- A robust landmark is one that remain unaltered by distortions such as additive
- noise, compression, time or pitch shifting etc.
+ A robust landmark is one that remains unaltered by distortions such as
+ additive noise, compression, time or pitch shifting etc.
  The discriminative power is harder to quantize, but will directly be linked
  to recognition performances.
- A landmark is discriminative when it is highly characteristic of an objects
+ A landmark is discriminative when it is highly characteristic of an object
  fingerprint, that is, it is unlikely to appear in the fingerprint of an
  object that is fairly different.
 \end_layout
@@ -509,7 +508,7 @@ The purpose of this work is not to propose yet another audio fingerprint
  With this in mind, we first propose a formulation of the fingerprint design
  problem as a multi-objective optimization of a dictionary-based processing
  system.
- Then we introduce a proxy of the discriminative power using information
+ Then we introduce a proxy for the discriminative power using information
  theoretic tools.
  Using a structured sparsity model for the keypoints (
 \emph on
@@ -517,12 +516,12 @@ e.g.
 
 \emph default
  atoms of the dictionary) one can model the probability of selecting a keypoint
- and even the probability of their combinations which allows to use entropy
+ and even the probability of their combinations which allows to use an entropy
  measure to characterize the quantity of information carried by a single
  landmark.
  We then propose a general greedy algorithm to build (suboptimal) solutions
- and show that some particular parameter sets corresponds to state of the
- art algorithms described above.
+ and show that some particular parameter sets correspond to the state of
+ the art algorithms described above.
 \end_layout
 
 \begin_layout Standard
@@ -631,7 +630,7 @@ dimensional vector
 \begin_inset Formula $\alpha_{i}$
 \end_inset
 
- depends on how the dictionary is designed and what
+ depend on how the dictionary is designed and what
 \emph on
  a priori 
 \emph default
@@ -661,7 +660,22 @@ In an audio fingerprint context, it is interesting to further decompose
 \begin_inset Formula $s_{i}=$
 \end_inset
 
-1 if the atom is selected as a keypoint and zero otherwise.
+1 if atom 
+\begin_inset Formula $i$
+\end_inset
+
+ is selected as a keypoint and zero otherwise.
+ In the following, the terms 
+\emph on
+keypoints
+\emph default
+ and 
+\emph on
+atoms 
+\emph default
+are equivalent
+\emph on
+.
 \end_layout
 
 \begin_layout Subsection
@@ -696,8 +710,8 @@ Expressing the discriminative power, however, is more challenging.
  entropy in particular.
  Audio signals often carry more energy in their low than high-frequencies.
  Corresponding keypoints thus have a higher probability of being selected.
- Intuitively, they provide a less discriminant information on a signal that
- the least probables ones.
+ Intuitively, they provide a less discriminant information on a signal than
+ the least probable ones.
  If one is able to fully evaluate the probability distribution of the support
  then one would want to constrain its 
 \emph on
@@ -715,7 +729,7 @@ The problem of finding
  thus be stated as:
 \begin_inset Formula 
 \begin{equation}
-\mathcal{P}_{\lambda,k}=\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
+\mathcal{P}_{\lambda,k}:\min_{s}\|y-\sum_{i=1}^{M}x_{i}.s_{i}.\phi_{i}\|_{2}-\lambda H_{\Phi}(s)\mbox{ s.t. }\sum_{i=1}^{M}s_{i}=k\label{eq:problem_full}
 \end{equation}
 
 \end_inset
@@ -728,7 +742,11 @@ where
 \begin_inset Formula $s$
 \end_inset
 
- given the dictionary.
+ given the dictionary and 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ a penalty weight.
 \end_layout
 
 \begin_layout Subsection
@@ -745,7 +763,7 @@ By definition,
 \end_inset
 
  is available.
- Experimentally, one is able to characterize quite efficiently this distribution.
+ Experimentally, we are able to characterize this distribution quite efficiently.
  Let 
 \begin_inset Formula $\Phi$
 \end_inset
@@ -763,7 +781,7 @@ reference "fig:Empirical-Biais"
 \end_inset
 
  displays the empirical distribution of the first 100 keypoints selected
- with a algorithm from the Matching Pursuit (MP 
+ with an algorithm from the Matching Pursuit (MP 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Mallat_TSP1993"
@@ -892,7 +910,7 @@ reference "fig:Empirical-Covariance"
 
 \end_inset
 
- shows experimental co-occurrences of keypoints relative to their frequency
+ shows empirical co-occurrences of keypoints relative to their frequency
  and time index respectively.
  Both matrices have strong coefficients near the diagonals, it reveals the
  neighborhood correlations between keypoints close to each other in the
@@ -940,7 +958,7 @@ key "ismir"
 
 \end_inset
 
-, never explicitly expresses the entropic constraint.
+, never explicitly express the entropic constraint.
  However, their strategy is to enforce the selection of keypoints that are
  spread all over the time-frequency plane.
  Basically, this amounts to forbidding the construction of landmarks from
@@ -975,7 +993,7 @@ key "Burges2003"
 
 \end_inset
 
-, to our knowledge, would also fit in this framework but with a dictionary
+, to our knowledge, this would also fit in this framework but with a dictionary
  learning paradigm.
 \end_layout
 
@@ -1012,7 +1030,7 @@ key "Hinton1986"
 
 .
  It models the interaction in a graph of connected nodes (keypoints in our
- case) using two parameters: a biais 
+ case) using two parameters: a bias 
 \begin_inset Formula $b$
 \end_inset
 
@@ -1021,7 +1039,7 @@ key "Hinton1986"
 \end_inset
 
 .
- This model has recently appeared in dictionary based processing setups.
+ This model recently appeared in dictionary based processing setups.
  Dremeau 
 \emph on
 et al
@@ -1035,7 +1053,7 @@ key "Dremeau2012"
 
  show that it generalizes many structured sparsity models.
  Under this model, we can evaluate the probability of a state using the
- difference of energy at node 
+ difference of energy for atom 
 \begin_inset Formula $i$
 \end_inset
 
@@ -1047,21 +1065,7 @@ key "Dremeau2012"
 
 \end_inset
 
-and the notion of temperature 
-\begin_inset Formula $T$
-\end_inset
-
- that can be dropped out (
-\emph on
-e.g.
-
-\emph default
- 
-\begin_inset Formula $T=1$
-\end_inset
-
-).
- Fixing the states of all other variables, the probability of node 
+Fixing the states of all other variables, the probability of atom 
 \begin_inset Formula $i$
 \end_inset
 
@@ -1107,7 +1111,7 @@ The expressiveness of the Boltzmann machine is essentially captured by the
  Clearly, for real scale data, the resulting model complexity will become
  prohibitive.
  Fortunately, the considered dictionaries are further structured.
- Let assume each atom 
+ Assume each atom 
 \begin_inset Formula $\phi_{i}$
 \end_inset
 
@@ -1117,22 +1121,23 @@ The expressiveness of the Boltzmann machine is essentially captured by the
 
  of its frequency and time centroids and length.
  A way to drastically reduce the complexity is to assume separability of
- the time and frequency centroids variables.
- Such hypothesis seem reasonable, keypoints frequency localization will
- essentially be linked to other keypoints frequencies and lengths, independently
+ the time and frequency centroid variables.
+ Such hypothesis seems reasonable because a keypoint frequency localization
+ is essentially linked to other keypoints frequencies and lengths, independently
  of their time position.
  Symmetrically, time localizations may be considered apart from the frequency
  localization.
 \end_layout
 
 \begin_layout Standard
-In practice, this implies cutting many vertices in the Boltzmann machine,
- or equivalently putting many elements of 
+In practice, this implies cutting many vertices in the Boltzmann machine
+ graph, or equivalently putting many elements of 
 \begin_inset Formula $W$
 \end_inset
 
  to zero.
- The bias can be rewritten as :
+ We have seen empirically that keypoints are uniformly located in time,
+ we can thus drop this dependency:
 \begin_inset Formula 
 \begin{equation}
 b_{i}=b(f_{i},t_{i},l_{i})=b(f_{i},l_{i})
@@ -1140,8 +1145,7 @@ b_{i}=b(f_{i},t_{i},l_{i})=b(f_{i},l_{i})
 
 \end_inset
 
-since we have seen empirically that keypoints are uniformly located in time.
- Similarly, each element 
+Similarly, each element 
 \begin_inset Formula $w_{ij}$
 \end_inset
 
@@ -1502,7 +1506,7 @@ http://www.oracle.com/us/products/database/berkeley-db/overview/index.html
 \end_inset
 
  the difference between their time centroids.
- At each key corresponds a value that is a combination of the file index
+ Each key corresponds to a value that is a combination of the file index
  and the time of occurrence of the landmark in the file.
  In this work we are interested in comparing the keypoints and landmarks
  selection procedures.
@@ -2068,11 +2072,8 @@ key "Tzanetakis2002"
  used for queries.
  The testing segments thus have a very low probability of being aligned
  with the learning ones.
-\end_layout
-
-\begin_layout Standard
-The compromise between the two concurrent objectives is illustrated on Figure
- 
+ The compromise between the two concurrent objectives is illustrated on
+ Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:Recognition-Robustness"
@@ -2080,10 +2081,10 @@ reference "fig:Recognition-Robustness"
 \end_inset
 
 .
- C10 is the more robust method but performs poorly on the recognition task
- at low levels of sparsities.
+ C10 is the most robust method but performs poorly on the recognition task
+ at low levels of sparsity.
  On the opposite, W03 reaches very good recognition scores at low sparsities,
- but is also the more affected by the additive noise.
+ but is also the most affected by the additive noise.
  Between them, the hybrid approaches allows to reach different compromises.
 \end_layout
 
@@ -2139,7 +2140,7 @@ key "Wang,ismir,Moussallam2012c,Cotton2010"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2216,7 +2217,7 @@ The proposed framework is flexible and there are many parameters one can
  one could use it to introduce more prior knowledge on the data.
  Taking harmonic correlations into account would be a natural next step.
  More generally, specific relationships could be learn on a variety of sound
- class, such as speech, instrumental or environmental.
+ classes, such as speech, instrumental or environmental.
 \end_layout
 
 \begin_layout Standard
@@ -2246,15 +2247,6 @@ key "Dremeau2012"
 \end_inset
 
  with Boltzmann machines) or convex relaxations methods.
-\end_layout
-
-\begin_layout Section*
-Acknowledgment
-\end_layout
-
-\begin_layout Standard
-The authors would like to thank Dr.
- Antoine Liutkus for its comments and useful discussions.
 \end_layout
 
 \begin_layout Standard
